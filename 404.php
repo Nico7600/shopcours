@@ -6,7 +6,7 @@
     <title>Page non trouvée</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
+    <style> 
         body {
             background-color: #f8f9fa;
             color: #343a40;
