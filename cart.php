@@ -64,7 +64,7 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-$userName = null; 
+$userName = null;
 
 if (isset($_SESSION['message'])) {
     $message = $_SESSION['message'];
@@ -87,7 +87,8 @@ $userId = $_SESSION['id'];
 $cartItems = getCart($userId);
 $total = 0;
 
-function getCart($userId) {
+function getCart($userId)
+{
     global $db;
 
     $sql = '
@@ -102,5 +103,3 @@ function getCart($userId) {
 
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
-
-?>

@@ -43,6 +43,7 @@ function getOrderHistory($userId)
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
 
+
 // Récupérer l'historique des commandes
 $orderHistory = getOrderHistory($userId);
 ?>

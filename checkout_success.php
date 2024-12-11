@@ -1,6 +1,12 @@
 <?php
 require_once 'connect.php';
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
+
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 session_start();
 
 if (!isset($_SESSION['id'])) {
@@ -9,7 +15,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 $userId = $_SESSION['id'];
-\Stripe\Stripe::setApiKey('sk_test_your_secret_key');
+\Stripe\Stripe::setApiKey($_ENV['STRIPE_API_KEY']);
 
 // Récupérer la session Stripe
 $sessionId = $_GET['session_id'] ?? null;
@@ -66,10 +72,11 @@ try {
     }
 
     // Ajouter une commande dans `orders`
-    $sql = 'INSERT INTO orders (user_id, total_amount) VALUES (:user_id, :total_amount)';
+    $sql = 'INSERT INTO orders (user_id, total_amount,stripe_session_id) VALUES (:user_id, :total_amount, :stripe_session_id)';
     $query = $db->prepare($sql);
     $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
     $query->bindValue(':total_amount', $total, PDO::PARAM_STR);
+    $query->bindValue(':stripe_session_id', $sessionId, PDO::PARAM_STR);
     $query->execute();
     $orderId = $db->lastInsertId();
 
@@ -101,11 +108,9 @@ try {
     $_SESSION['message'] = "Votre commande a été validée avec succès.";
     header('Location: cart.php');
     exit();
-
 } catch (Exception $e) {
     $db->rollBack();
     $_SESSION['message'] = "Erreur lors de la validation de la commande : " . $e->getMessage();
     header('Location: cart.php');
     exit();
 }
-?>

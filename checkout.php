@@ -1,6 +1,6 @@
 <?php
 require_once 'connect.php';
-require_once 'vendor/autoload.php'; 
+require_once 'vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
@@ -19,13 +19,15 @@ if (!isset($_SESSION['id'])) {
 $userId = $_SESSION['id'];
 
 // Fonction pour récupérer le panier
-function getCart($userId) {
+function getCart($userId)
+{
     global $db;
 
     $sql = '
-        SELECT c.id AS cart_id, c.quantity, l.id AS product_id, l.produit, l.prix, l.Promo
+        SELECT c.id AS cart_id, c.quantity, l.id AS product_id, l.produit, l.prix, l.Promo, p.name AS production_company
         FROM cart c
         JOIN liste l ON c.product_id = l.id
+        LEFT JOIN production_companies p ON l.production_company_id = p.id
         WHERE c.user_id = :user_id
     ';
     $query = $db->prepare($sql);
@@ -35,6 +37,23 @@ function getCart($userId) {
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
 
+// Fonction pour vérifier si l'utilisateur est Prime
+function isPrimeUser($userId)
+{
+    global $db;
+
+    $sql = 'SELECT is_prime FROM users WHERE id = :user_id';
+    $query = $db->prepare($sql);
+    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $query->execute();
+    $result = $query->fetch(PDO::FETCH_ASSOC);
+
+    return !empty($result['is_prime']) && $result['is_prime'] == 1;
+}
+
+// Vérifier si l'utilisateur est Prime
+$isPrime = isPrimeUser($userId);
+
 // Récupérer les produits du panier
 $cartItems = getCart($userId);
 
@@ -42,15 +61,25 @@ $cartItems = getCart($userId);
 $lineItems = [];
 foreach ($cartItems as $item) {
     $price = str_replace(',', '.', $item['prix']); // Convertir en numérique
-    $price = (float)$price * (1 - $item['Promo'] / 100); // Appliquer la promotion
+    $price = (float)$price;
 
+    // Appliquer la promotion
+    $promoDiscount = $item['Promo'] ?? 0;
+    $priceAfterPromo = $price * (1 - $promoDiscount / 100);
+
+    // Appliquer la réduction Prime pour les produits Amazon
+    if ($isPrime && strtolower(trim($item['production_company'])) === 'amazon') {
+        $priceAfterPromo *= 0.9; // Réduction supplémentaire de 10 %
+    }
+
+    // Ajouter la ligne à Stripe Checkout
     $lineItems[] = [
         'price_data' => [
             'currency' => 'eur',
             'product_data' => [
                 'name' => $item['produit'],
             ],
-            'unit_amount' => round($price * 100), // Stripe attend un montant en centimes
+            'unit_amount' => round($priceAfterPromo * 100), // Stripe attend un montant en centimes
         ],
         'quantity' => $item['quantity'],
     ];
@@ -62,8 +91,8 @@ try {
         'payment_method_types' => ['card'],
         'line_items' => $lineItems,
         'mode' => 'payment',
-        'success_url' => 'http://yourdomain.com/checkout_success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => 'http://yourdomain.com/cart.php',
+        'success_url' => 'http://localhost/shopcours/checkout_success.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url' => 'http://localhost/shopcours/cart.php',
     ]);
 
     // Rediriger vers Stripe Checkout
@@ -74,4 +103,3 @@ try {
     header('Location: cart.php');
     exit();
 }
-?>
