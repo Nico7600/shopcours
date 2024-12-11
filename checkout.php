@@ -87,12 +87,16 @@ foreach ($cartItems as $item) {
 
 // Créer une session Stripe Checkout
 try {
+    // Récupérer automatiquement l'URL de base
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+    $baseUrl = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']);
+
     $checkoutSession = \Stripe\Checkout\Session::create([
         'payment_method_types' => ['card'],
         'line_items' => $lineItems,
         'mode' => 'payment',
-        'success_url' => 'http://localhost/shopcours/checkout_success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => 'http://localhost/shopcours/cart.php',
+        'success_url' => $baseUrl . '/checkout_success.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url' => $baseUrl . '/cart.php',
     ]);
 
     // Rediriger vers Stripe Checkout
