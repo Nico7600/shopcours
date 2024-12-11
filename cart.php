@@ -64,7 +64,7 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-$userName = null; // Initialize the variable
+$userName = null; 
 
 if (isset($_SESSION['message'])) {
     $message = $_SESSION['message'];
