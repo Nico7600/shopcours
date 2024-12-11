@@ -67,7 +67,6 @@ require_once('close.php');
                             <?php endif; ?>
                         </p>
                         <div class="text-center mt-4">
-                            <a href="edit_profile.php" class="btn btn-warning">Modifier le profil</a>
                             <a href="logout.php" class="btn btn-danger">Se déconnecter</a>
                         </div>
                     </div>

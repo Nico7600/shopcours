@@ -1,8 +1,6 @@
 <?php
-// On inclut la connexion à la base
 require_once('connect.php');
 
-// Verify if the column exists
 $checkColumnSql = "SHOW COLUMNS FROM `liste` LIKE 'image';";
 $checkColumnQuery = $db->prepare($checkColumnSql);
 $checkColumnQuery->execute();

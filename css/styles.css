@@ -301,6 +301,3 @@ body {
         padding: 10px; /* Adjust padding for smaller screens */
     }
 }
-.btn-primary, .btn-danger, .btn-primary.add-to-cart {
-    margin-top: 10px; /* Add margin to buttons */
-}

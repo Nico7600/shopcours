@@ -88,8 +88,10 @@ require_once('close.php');
                 $active = 'active';
                 foreach ($result as $produit) {
                     $image_path = 'image_produit/' . $produit['image_produit'];
-                    if (!file_exists($image_path)) {
-                        echo '<div class="alert alert-danger" role="alert">Image non trouvée : ' . $image_path . '</div>';
+                    $default_image = 'image_produit/test.png';
+                    
+                    if (!file_exists($image_path) || empty($produit['image_produit'])) {
+                        $image_path = $default_image;
                     }
                 ?>
                     <div class="carousel-item <?= $active ?>">
@@ -115,8 +117,10 @@ require_once('close.php');
             <?php
             foreach ($result as $produit) {
                 $image_path = 'image_produit/' . $produit['image_produit'];
-                if (!file_exists($image_path)) {
-                    echo '<div class="alert alert-danger" role="alert">Image non trouvée : ' . $image_path . '</div>';
+                $default_image = 'image_produit/test.png';
+                
+                if (!file_exists($image_path) || empty($produit['image_produit'])) {
+                    $image_path = $default_image; 
                 }
 
                 $quantities = [
@@ -156,7 +160,7 @@ require_once('close.php');
                     'silver' => 'badge-silver',
                     'black' => 'badge-black',
                 ];
-                
+
                 $badgeClass = $badges[$produit['badge']] ?? 'badge-primary';
 
                 $description = implode(' ', array_slice(explode(' ', $produit['Description']), 0, 30)) . '...';
@@ -170,17 +174,16 @@ require_once('close.php');
                 // Calculer le prix après réduction
                 $totalDiscount = min($promo + $primeDiscount, 100); // Limiter à 100 %
                 $finalPrice = $prix * (1 - $totalDiscount / 100);
-
             ?>
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card" onclick="window.location.href='details.php?id=<?= htmlspecialchars($produit['id']); ?>'">
                         <div class="position-relative">
-                            <img src="image_produit/<?= htmlspecialchars($produit['image_produit']); ?>" class="card-img-top" alt="<?= htmlspecialchars($produit['produit']); ?>">
-                            <span class="badge <?= htmlspecialchars($badgeClass); ?> badge-bottom-right"><?= htmlspecialchars($produit['badge']); ?></span>
+                        <img src="<?= htmlspecialchars($image_path); ?>" class="card-img-top" alt="<?= htmlspecialchars($produit['produit']); ?>">
+                        <span class="badge <?= htmlspecialchars($badgeClass); ?> badge-bottom-right"><?= htmlspecialchars($produit['badge']); ?></span>
                         </div>
                         <div class="card-body">
-                            <h5 class="card-title"><?= htmlspecialchars($produit['produit']); ?></h5>
-                            <p class="card-text"><?= htmlspecialchars($description); ?></p>
+                        <h5 class="card-title"><?= htmlspecialchars($produit['produit']); ?></h5>
+                        <p class="card-text"><?= htmlspecialchars($description); ?></p>
                             <p class="card-text"><strong>Produit par :</strong> <?= htmlspecialchars($produit['production_company'] ?? 'Inconnu'); ?></p>
 
                             <!-- Affichage des prix avec réduction -->
@@ -198,10 +201,19 @@ require_once('close.php');
                                 <?= htmlspecialchars($produit['nombre'] > 0 ? 'Quantité : ' . $produit['nombre'] : 'En rupture de stock'); ?>
                             </p>
 
-                            <!-- Bouton Ajouter au panier -->
-                            <a href="add_to_cart.php?product_id=<?= htmlspecialchars($produit['id']); ?>&quantity=1" class="btn btn-primary add-to-cart">Ajouter au panier</a>
+                            <div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <a href="edit.php?id=<?= htmlspecialchars($produit['id']); ?>" class="btn btn-warning">Modifier</a>
+                                    <a href="delete.php?id=<?= htmlspecialchars($produit['id']); ?>" class="btn btn-danger">Supprimer</a>
+                                </div>
+                                <div class="text-center">
+                                    <a href="add_to_cart.php?product_id=<?= htmlspecialchars($produit['id']); ?>&quantity=1" class="btn btn-primary w-100">Ajouter au panier</a>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
+
                 </div>
             <?php
             }
