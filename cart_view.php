@@ -40,6 +40,13 @@ $total = 0;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Votre Panier</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <style>
+        .btn-disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
 <main class="container mt-5">
@@ -54,50 +61,62 @@ $total = 0;
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($cartItems as $item): ?>
-                <?php
-                // Calculer le prix avec promo produit et Amazon Prime
-                $prixOriginal = is_numeric(str_replace(',', '.', $item['prix'])) 
-                    ? (float)str_replace(',', '.', $item['prix']) 
-                    : 0;
-                $prixFinal = $prixOriginal;
-
-                // Appliquer promo produit
-                if (is_numeric($item['Promo']) && $item['Promo'] > 0) {
-                    $prixFinal *= (1 - $item['Promo'] / 100);
-                }
-
-                // Appliquer réduction Prime pour les produits Amazon
-                $companyName = strtolower(trim($item['production_company']));
-                if ($isPrime && $companyName === 'amazon') {
-                    $prixFinal *= 0.9;
-                }
-
-                $prixFinal = max($prixFinal, 0); // Assurez-vous que le prix reste positif
-                $subtotal = $prixFinal * $item['quantity'];
-                $total += $subtotal;
-                ?>
+            <?php if (empty($cartItems)): ?>
                 <tr>
-                    <td><?= htmlspecialchars($item['produit']) ?></td>
-                    <td>
-                        <?php if ($prixFinal < $prixOriginal): ?>
-                            <span class="text-muted"><del><?= number_format($prixOriginal, 2, ',', ' ') ?> €</del></span>
-                            <span><?= number_format($prixFinal, 2, ',', ' ') ?> €</span>
-                        <?php else: ?>
-                            <?= number_format($prixOriginal, 2, ',', ' ') ?> €
-                        <?php endif; ?>
-                    </td>
-                    <td><?= $item['quantity'] ?></td>
-                    <td><?= number_format($subtotal, 2, ',', ' ') ?> €</td>
+                    <td colspan="4" class="text-center">Votre panier est vide.</td>
                 </tr>
-            <?php endforeach; ?>
-            <tr>
-                <td colspan="3"><strong>Total</strong></td>
-                <td><strong><?= number_format($total, 2, ',', ' ') ?> €</strong></td>
-            </tr>
+            <?php else: ?>
+                <?php foreach ($cartItems as $item): ?>
+                    <?php
+                    // Calculer le prix avec promo produit et Amazon Prime
+                    $prixOriginal = is_numeric(str_replace(',', '.', $item['prix'])) 
+                        ? (float)str_replace(',', '.', $item['prix']) 
+                        : 0;
+                    $prixFinal = $prixOriginal;
+
+                    // Appliquer promo produit
+                    if (is_numeric($item['Promo']) && $item['Promo'] > 0) {
+                        $prixFinal *= (1 - $item['Promo'] / 100);
+                    }
+
+                    // Appliquer réduction Prime pour les produits Amazon
+                    $companyName = strtolower(trim($item['production_company']));
+                    if ($isPrime && $companyName === 'amazon') {
+                        $prixFinal *= 0.9;
+                    }
+
+                    $prixFinal = max($prixFinal, 0); // Assurez-vous que le prix reste positif
+                    $subtotal = $prixFinal * $item['quantity'];
+                    $total += $subtotal;
+                    ?>
+                    <tr>
+                        <td><?= htmlspecialchars($item['produit']) ?></td>
+                        <td>
+                            <?php if ($prixFinal < $prixOriginal): ?>
+                                <span class="text-muted"><del><?= number_format($prixOriginal, 2, ',', ' ') ?> €</del></span>
+                                <span><?= number_format($prixFinal, 2, ',', ' ') ?> €</span>
+                            <?php else: ?>
+                                <?= number_format($prixOriginal, 2, ',', ' ') ?> €
+                            <?php endif; ?>
+                        </td>
+                        <td><?= $item['quantity'] ?></td>
+                        <td><?= number_format($subtotal, 2, ',', ' ') ?> €</td>
+                    </tr>
+                <?php endforeach; ?>
+                <tr>
+                    <td colspan="3"><strong>Total</strong></td>
+                    <td><strong><?= number_format($total, 2, ',', ' ') ?> €</strong></td>
+                </tr>
+            <?php endif; ?>
         </tbody>
     </table>
-    <a href="checkout.php" class="btn btn-primary">Continuer vos achats</a>
+
+    <!-- Bouton continuer -->
+    <a href="checkout.php" 
+       class="btn btn-primary <?= empty($cartItems) ? 'btn-disabled' : '' ?>" 
+       <?= empty($cartItems) ? 'disabled' : '' ?>>
+        Continuer vos achats
+    </a>
 </main>
 </body>
 </html>
