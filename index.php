@@ -77,6 +77,10 @@ require_once('close.php');
             z-index: 1050;
             width: 300px;
         }
+        .fixed-height {
+            height: 200px; /* Ajuster la hauteur selon vos besoins */
+            object-fit: cover;
+        }
     </style>
 </head>
 
@@ -99,7 +103,7 @@ require_once('close.php');
                     }
                 ?>
                     <div class="carousel-item <?= $active ?>">
-                        <img src="<?= $image_path ?>" class="d-block w-100" alt="<?= $produit['produit'] ?>" onclick="window.location.href='details.php?id=<?= $produit['id'] ?>'">
+                        <img src="<?= $image_path ?>" class="d-block w-100 fixed-height" alt="<?= $produit['produit'] ?>" onclick="window.location.href='details.php?id=<?= $produit['id'] ?>'">
                         <div class="carousel-caption d-md-block">
                             <h5><?= $produit['produit'] ?></h5>
                             <p>A seulement : <?= $produit['prix'] ?> €</p>
@@ -182,7 +186,7 @@ require_once('close.php');
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card" onclick="window.location.href='details.php?id=<?= htmlspecialchars($produit['id']); ?>'">
                         <div class="position-relative">
-                        <img src="<?= htmlspecialchars($image_path); ?>" class="card-img-top" alt="<?= htmlspecialchars($produit['produit']); ?>">
+                        <img src="<?= htmlspecialchars($image_path); ?>" class="card-img-top fixed-height" alt="<?= htmlspecialchars($produit['produit']); ?>">
                         <span class="badge <?= htmlspecialchars($badgeClass); ?> badge-bottom-right"><?= htmlspecialchars($produit['badge']); ?></span>
                         </div>
                         <div class="card-body">
@@ -211,7 +215,11 @@ require_once('close.php');
                                     <a href="delete.php?id=<?= htmlspecialchars($produit['id']); ?>" class="btn btn-danger">Supprimer</a>
                                 </div>
                                 <div class="text-center">
-                                    <a href="add_to_cart.php?product_id=<?= htmlspecialchars($produit['id']); ?>&quantity=1" class="btn btn-primary w-100">Ajouter au panier</a>
+                                    <?php if ($produit['nombre'] > 0): ?>
+                                        <a href="add_to_cart.php?product_id=<?= htmlspecialchars($produit['id']); ?>&quantity=1" class="btn btn-primary w-100">Ajouter au panier</a>
+                                    <?php else: ?>
+                                        <button class="btn btn-secondary w-100" disabled>Plus de stock pour le moment</button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
 
