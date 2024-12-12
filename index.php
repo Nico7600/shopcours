@@ -3,7 +3,9 @@
 session_start();
 if (isset($_SESSION['message'])) {
     $message = $_SESSION['message'];
+    $messageType = $_SESSION['message_type'] ?? 'success'; // Ensure message type is set
     unset($_SESSION['message']);
+    unset($_SESSION['message_type']);
 }
 
 require_once 'connect.php';
@@ -67,6 +69,15 @@ require_once('close.php');
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        #notification {
+            top: 20px; /* Ajuster si nécessaire */
+            right: 20px; /* Ajuster si nécessaire */
+            position: fixed;
+            z-index: 1050;
+            width: 300px;
+        }
+    </style>
 </head>
 
 <body>
@@ -75,13 +86,6 @@ require_once('close.php');
 
     <!-- Contenu principal -->
     <main class="container mt-5">
-        <?php if (!empty($message)): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?= htmlspecialchars($message) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">Fermer</button>
-            </div>
-        <?php endif; ?>
-
         <div id="productCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
             <div class="carousel-inner">
                 <?php
