@@ -46,13 +46,23 @@ $total = 0;
             opacity: 0.6;
             pointer-events: none;
         }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .thead-dark {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .table-bordered {
+            border: 1px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
 <main class="container mt-5">
     <h1>Votre Panier</h1>
-    <table class="table">
-        <thead>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
             <tr>
                 <th>Produit</th>
                 <th>Prix unitaire</th>
