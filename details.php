@@ -147,6 +147,13 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
     $queryComments->execute();
     $comments = $queryComments->fetchAll();
     
+    // Calculate average rating
+    $averageRating = 0;
+    if (!empty($comments)) {
+        $totalRating = array_sum(array_column($comments, 'rating'));
+        $averageRating = $totalRating / count($comments);
+    }
+
     require_once('close.php');
 } else{
     $_SESSION['erreur'] = "URL invalide";
@@ -308,6 +315,11 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             border-color: #6c757d;
             cursor: not-allowed;
         }
+        .average-rating {
+            font-size: 1.2rem;
+            color: #ffc107;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -334,7 +346,15 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
                         <p class="product-price"><?= number_format($prixOriginal, 2) ?> €</p>
                     <?php endif; ?>
 
-                    <p class="product-quantity">Quantité restante : <?= htmlspecialchars($produit['nombre']) ?></p>
+                    <p class="product-quantity">
+                        Quantité restante : <?= htmlspecialchars($produit['nombre']) ?>
+                        <span class="average-rating">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <?= $i <= round($averageRating) ? '★' : '☆' ?>
+                            <?php endfor; ?>
+                            (<?= number_format($averageRating, 1) ?>)
+                        </span>
+                    </p>
 
                     <!-- Boutons -->
                     <div class="btn-container">

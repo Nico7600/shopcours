@@ -53,6 +53,16 @@ $result = $query->fetchAll(PDO::FETCH_ASSOC);
 // Mélanger les résultats pour un affichage aléatoire
 shuffle($result);
 
+// Fetch average ratings for each product
+$ratingsSql = '
+    SELECT product_id, AVG(rating) as average_rating
+    FROM comments
+    GROUP BY product_id
+';
+$ratingsQuery = $db->prepare($ratingsSql);
+$ratingsQuery->execute();
+$ratings = $ratingsQuery->fetchAll(PDO::FETCH_KEY_PAIR);
+
 require_once('close.php');
 ?>
 <!DOCTYPE html>
@@ -80,6 +90,9 @@ require_once('close.php');
         .fixed-height {
             height: 200px; /* Ajuster la hauteur selon vos besoins */
             object-fit: cover;
+        }
+        .star-rating .fa-star {
+            color: #FFD700; /* Yellow color for stars */
         }
     </style>
 </head>
@@ -183,6 +196,10 @@ require_once('close.php');
                 // Calculer le prix après réduction
                 $totalDiscount = min($promo + $primeDiscount, 100); // Limiter à 100 %
                 $finalPrice = $prix * (1 - $totalDiscount / 100);
+
+                $averageRating = $ratings[$produit['id']] ?? 0;
+                $stars = str_repeat('<i class="fas fa-star"></i>', floor($averageRating));
+                $stars .= str_repeat('<i class="far fa-star"></i>', 5 - floor($averageRating));
             ?>
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card" onclick="window.location.href='details.php?id=<?= htmlspecialchars($produit['id']); ?>'">
@@ -194,6 +211,7 @@ require_once('close.php');
                         <h5 class="card-title"><?= htmlspecialchars($produit['produit']); ?></h5>
                         <p class="card-text"><?= htmlspecialchars($description); ?></p>
                             <p class="card-text"><strong>Produit par :</strong> <?= htmlspecialchars($produit['production_company'] ?? 'Inconnu'); ?></p>
+                            <p class="card-text star-rating"><strong>Note moyenne :</strong> <?= $stars; ?> (<?= number_format($averageRating, 1); ?>)</p>
 
                             <!-- Affichage des prix avec réduction -->
                             <?php if ($promo > 0 || $primeDiscount > 0): ?>
@@ -210,18 +228,12 @@ require_once('close.php');
                                 <?= htmlspecialchars($produit['nombre'] > 0 ? 'Quantité : ' . $produit['nombre'] : 'En rupture de stock'); ?>
                             </p>
 
-                            <div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <a href="edit.php?id=<?= htmlspecialchars($produit['id']); ?>" class="btn btn-warning">Modifier</a>
-                                    <a href="delete.php?id=<?= htmlspecialchars($produit['id']); ?>" class="btn btn-danger">Supprimer</a>
-                                </div>
-                                <div class="text-center">
-                                    <?php if ($produit['nombre'] > 0): ?>
-                                        <a href="add_to_cart.php?product_id=<?= htmlspecialchars($produit['id']); ?>&quantity=1" class="btn btn-primary w-100">Ajouter au panier</a>
-                                    <?php else: ?>
-                                        <button class="btn btn-secondary w-100" disabled>Plus de stock pour le moment</button>
-                                    <?php endif; ?>
-                                </div>
+                            <div class="text-center">
+                                <?php if ($produit['nombre'] > 0): ?>
+                                    <a href="add_to_cart.php?product_id=<?= htmlspecialchars($produit['id']); ?>&quantity=1" class="btn btn-primary w-100">Ajouter au panier</a>
+                                <?php else: ?>
+                                    <button class="btn btn-secondary w-100" disabled>Plus de stock pour le moment</button>
+                                <?php endif; ?>
                             </div>
 
                         </div>
