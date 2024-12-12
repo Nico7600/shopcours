@@ -68,12 +68,13 @@ $total = 0;
                 <th>Prix unitaire</th>
                 <th>Quantité</th>
                 <th>Sous-total</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($cartItems)): ?>
                 <tr>
-                    <td colspan="4" class="text-center">Votre panier est vide.</td>
+                    <td colspan="5" class="text-center">Votre panier est vide.</td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($cartItems as $item): ?>
@@ -109,12 +110,24 @@ $total = 0;
                                 <?= number_format($prixOriginal, 2, ',', ' ') ?> €
                             <?php endif; ?>
                         </td>
-                        <td><?= $item['quantity'] ?></td>
+                        <td>
+                            <form class="update-quantity-form form-inline">
+                                <input type="hidden" name="cart_id" value="<?= $item['cart_id'] ?>">
+                                <input type="number" name="quantity" value="<?= $item['quantity'] ?>" class="form-control mr-2" min="1">
+                                <button type="submit" class="btn btn-secondary">Modifier</button>
+                            </form>
+                        </td>
                         <td><?= number_format($subtotal, 2, ',', ' ') ?> €</td>
+                        <td>
+                            <form class="delete-item-form">
+                                <input type="hidden" name="cart_id" value="<?= $item['cart_id'] ?>">
+                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 <tr>
-                    <td colspan="3"><strong>Total</strong></td>
+                    <td colspan="4"><strong>Total</strong></td>
                     <td><strong><?= number_format($total, 2, ',', ' ') ?> €</strong></td>
                 </tr>
             <?php endif; ?>
@@ -128,5 +141,47 @@ $total = 0;
         Continuer vos achats
     </a>
 </main>
+
+<script>
+document.querySelectorAll('.update-quantity-form').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        fetch('update_quantity.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+
+document.querySelectorAll('.delete-item-form').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        fetch('delete_item.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+</script>
 </body>
 </html>
