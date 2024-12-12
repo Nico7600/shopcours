@@ -89,6 +89,8 @@ require_once('close.php');
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
     <style>
         #notification {
             top: 20px; /* Ajuster si nécessaire */
@@ -103,6 +105,43 @@ require_once('close.php');
         }
         .star-rating .fa-star {
             color: #FFD700; /* Yellow color for stars */
+        }
+        body {
+            font-family: 'Ubuntu', sans-serif;
+        }
+        h5 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        p {
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .card-text {
+            font-size: 1rem;
+            font-weight: 300;
+        }
+        .card-price-original {
+            font-size: 1rem;
+            font-weight: 400;
+            text-decoration: line-through;
+        }
+        .card-price-promo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: red;
+        }
+        .card-quantity {
+            font-size: 0.875rem;
+            font-weight: 400;
+        }
+        .btn {
+            font-size: 1rem;
+            font-weight: 700;
         }
     </style>
 </head>

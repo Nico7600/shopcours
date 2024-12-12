@@ -40,21 +40,44 @@ $total = 0;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Votre Panier</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        .btn-disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-            pointer-events: none;
+        body {
+            font-family: 'Ubuntu', sans-serif;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
         }
         .table th, .table td {
             vertical-align: middle;
+            font-size: 1rem;
         }
         .thead-dark {
             background-color: #343a40;
             color: #fff;
+            font-weight: 700;
         }
         .table-bordered {
             border: 1px solid #dee2e6;
+        }
+        .btn-modifier {
+            background-color: green;
+            color: white;
+            font-weight: 700;
+        }
+        .btn-primary {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .btn-danger {
+            font-weight: 700;
+        }
+        .btn-disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            pointer-events: none;
+            background-color: gray !important;
         }
     </style>
 </head>
@@ -114,7 +137,7 @@ $total = 0;
                             <form class="update-quantity-form form-inline">
                                 <input type="hidden" name="cart_id" value="<?= $item['cart_id'] ?>">
                                 <input type="number" name="quantity" value="<?= $item['quantity'] ?>" class="form-control mr-2" min="1">
-                                <button type="submit" class="btn btn-secondary">Modifier</button>
+                                <button type="submit" class="btn btn-modifier">Modifier</button>
                             </form>
                         </td>
                         <td><?= number_format($subtotal, 2, ',', ' ') ?> €</td>
@@ -137,7 +160,8 @@ $total = 0;
     <!-- Bouton continuer -->
     <a href="checkout.php" 
        class="btn btn-primary <?= empty($cartItems) ? 'btn-disabled' : '' ?>" 
-       <?= empty($cartItems) ? 'disabled' : '' ?>>
+       <?= empty($cartItems) ? 'disabled' : '' ?> 
+       onclick="<?= empty($cartItems) ? 'return false;' : '' ?>">
         Continuer vos achats
     </a>
 </main>

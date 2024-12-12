@@ -6,11 +6,12 @@
     <title>Page en développement</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap">
     <style> 
         body {
             background-color: #f8f9fa;
             color: #343a40;
-            font-family: Arial, sans-serif;
+            font-family: 'Ubuntu', Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,21 +28,24 @@
             width: 100%;
         }
         .error-container h1 {
-            font-size: 6rem;
-            font-weight: bold;
+            font-size: 5rem;
+            font-weight: 700;
             color: #d3d3d3; /* Light gray */
         }
         .error-container h2 {
-            font-size: 2rem;
+            font-size: 2.5rem;
+            font-weight: 700;
             margin-bottom: 20px;
         }
         .error-container p {
             font-size: 1.2rem;
+            font-weight: 400;
             margin-bottom: 30px;
             color: #6c757d;
         }
         .error-container a {
             font-size: 1.2rem;
+            font-weight: 400;
             padding: 10px 20px;
             border-radius: 5px;
             text-decoration: none;

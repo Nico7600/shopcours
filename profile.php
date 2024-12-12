@@ -42,6 +42,8 @@ require_once('close.php');
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap">
 </head>
 <body>
     <!-- Navigation -->
@@ -74,6 +76,28 @@ require_once('close.php');
             </div>
         </div>
     </main>
+
+    <style>
+        body {
+            font-family: 'Ubuntu', sans-serif;
+        }
+        h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        p {
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        .badge {
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+        .btn {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+    </style>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

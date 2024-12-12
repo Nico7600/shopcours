@@ -103,3 +103,42 @@ function getCart($userId)
 
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panier</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Ubuntu', sans-serif;
+        }
+        h1 {
+            font-size: 2em;
+            font-weight: 700;
+        }
+        h2 {
+            font-size: 1.5em;
+            font-weight: 400;
+        }
+        p {
+            font-size: 1em;
+            font-weight: 300;
+        }
+        .error {
+            font-size: 1em;
+            font-weight: 700;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <!-- ...existing code... -->
+    <?php if (isset($_SESSION['erreur'])): ?>
+        <p class="error"><?= $_SESSION['erreur'] ?></p>
+    <?php endif; ?>
+    <!-- ...existing code... -->
+</body>
+</html>

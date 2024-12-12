@@ -6,6 +6,35 @@
 	<title>Inscription</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+	<style>
+		body {
+			font-family: 'Ubuntu', sans-serif;
+		}
+		h4 {
+			font-size: 2rem;
+			font-weight: 700;
+		}
+		label {
+			font-size: 1.2rem;
+			font-weight: 400;
+		}
+		.form-control {
+			font-size: 1.1rem;
+			font-weight: 300;
+		}
+		.btn {
+			font-size: 1.2rem;
+			font-weight: 700;
+		}
+		.text-secondary {
+			font-size: 1.1rem;
+			font-weight: 400;
+		}
+		.w-450 {
+			width: 600px !important;
+		}
+	</style>
 </head>
 <body>
     <div class="d-flex justify-content-center align-items-center vh-100 bg-light">

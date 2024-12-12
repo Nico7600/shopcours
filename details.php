@@ -168,7 +168,12 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails du produit</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'Ubuntu', sans-serif;
+        }
         .product-details {
             display: flex;
             flex-wrap: wrap;
@@ -188,42 +193,60 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         }
         .product-image img {
             border-radius: 10px;
+            width: 100%;
+            height: auto;
         }
         .product-info {
             flex: 2;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
         }
         .product-title {
             font-size: 2.5rem;
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 10px;
             color: #343a40;
         }
+        .product-price {
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: #ff9900;
+            margin-bottom: 10px;
+        }
+        .average-rating {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #ffc107;
+            margin-bottom: 20px;
+        }
         .product-description {
             font-size: 1.2rem;
+            font-weight: 400;
             margin-bottom: 20px;
             color: #6c757d;
             white-space: pre-wrap;
         }
-        .product-price {
-            font-size: 1.8rem;
-            color: #ff9900;
-            margin-bottom: 20px;
-        }
-        .product-quantity {
-            font-size: 1.2rem;
-            color: #555;
-            margin-bottom: 20px;
-        }
-        .btn-back {
+        .btn-container {
+            display: flex;
+            gap: 10px;
             margin-top: 20px;
+            align-items: center;
         }
-        .badge {
-            font-size: 0.9rem;
-            padding: 0.5em 0.75em;
-            margin-left: 0.5em;
+        .btn-custom {
+            flex: 1;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .btn-add-to-cart, .btn-back {
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .badge-bottom-right {
             position: absolute;
@@ -241,25 +264,6 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         .card-price-promo {
             color: #ff9900;
             font-weight: bold;
-        }
-        .btn-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .btn-custom {
-            flex: 1;
-            height: 50px;
-            line-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-add-to-cart {
-            font-size: 1.2rem;
-        }
-        .btn-back {
-            font-size: 1.2rem;
         }
         .star-rating {
             direction: rtl;
@@ -288,7 +292,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             position: relative;
         }
         .comment .username {
-            font-weight: bold;
+            font-weight: 700;
             color: #343a40;
         }
         .comment .rating {
@@ -299,11 +303,13 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         }
         .comment .text {
             margin-top: 10px;
+            font-weight: 400;
             color: #6c757d;
         }
         .comment .date {
             margin-top: 10px;
             font-size: 0.9rem;
+            font-weight: 400;
             color: #adb5bd;
             text-align: right;
         }
@@ -315,10 +321,12 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             border-color: #6c757d;
             cursor: not-allowed;
         }
-        .average-rating {
-            font-size: 1.2rem;
-            color: #ffc107;
-            margin-left: 10px;
+        .comment-form {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -333,90 +341,83 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
                 </div>
                 <div class="product-info">
                     <h1 class="product-title"><?= htmlspecialchars($produit['produit']) ?></h1>
-                    <p class="product-description"><?= nl2br(htmlspecialchars($produit['Description'])) ?></p>
-                    <p><strong>Société de production :</strong> <?= htmlspecialchars($produit['production_company'] ?? 'Inconnu') ?></p>
-
-                    <!-- Affichage des prix -->
-                    <?php if ($prixPromo < $prixOriginal): ?>
-                        <p class="product-price">
+                    <p class="product-price">
+                        <?php if ($prixPromo < $prixOriginal): ?>
                             <span class="card-price-original"><?= number_format($prixOriginal, 2) ?> €</span>
                             <span class="card-price-promo"><?= number_format($prixPromo, 2) ?> €</span>
-                        </p>
-                    <?php else: ?>
-                        <p class="product-price"><?= number_format($prixOriginal, 2) ?> €</p>
-                    <?php endif; ?>
-
-                    <p class="product-quantity">
-                        Quantité restante : <?= htmlspecialchars($produit['nombre']) ?>
-                        <span class="average-rating">
-                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                                <?= $i <= round($averageRating) ? '★' : '☆' ?>
-                            <?php endfor; ?>
-                            (<?= number_format($averageRating, 1) ?>)
-                        </span>
+                        <?php else: ?>
+                            <?= number_format($prixOriginal, 2) ?> €
+                        <?php endif; ?>
                     </p>
-
-                    <!-- Boutons -->
+                    <p class="average-rating">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <?= $i <= round($averageRating) ? '★' : '☆' ?>
+                        <?php endfor; ?>
+                        (<?= number_format($averageRating, 1) ?>)
+                    </p>
+                    <p class="product-description"><?= nl2br(htmlspecialchars($produit['Description'])) ?></p>
                     <div class="btn-container">
                         <form method="post" action="cart.php">
                             <input type="hidden" name="id_produit" value="<?= $produit['id'] ?>">
                             <input type="hidden" name="quantite" value="1">
-                            <button type="submit" class="btn btn-success btn-custom btn-add-to-cart">🛒 Ajouter au panier</button>
+                            <button type="submit" class="btn btn-success btn-custom btn-add-to-cart">
+                                <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i> Ajouter au panier
+                            </button>
                         </form>
                         <a href="index.php" class="btn btn-primary btn-custom btn-back">Retour</a>
                     </div>
-
-                    <!-- Comment and Rating Form -->
-                    <?php if (isset($_SESSION['id'])): ?>
-                        <div class="comment-form">
-                            <h2>Laisser un commentaire</h2>
-                            <form method="post" action="submit_comment.php" id="commentForm">
-                                <input type="hidden" name="product_id" value="<?= $produit['id'] ?>">
-                                <div class="form-group">
-                                    <label for="rating">Note :</label>
-                                    <div id="rating" class="star-rating">
-                                        <?php for ($i = 5; $i >= 1; $i--): ?>
-                                            <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" required>
-                                            <label for="star<?= $i ?>" title="<?= $i ?> étoiles">&#9733;</label>
-                                        <?php endfor; ?>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="comment">Commentaire :</label>
-                                    <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-success btn-submit" id="submitBtn">Envoyer</button>
-                            </form>
-                        </div>
-                    <?php else: ?>
-                        <div class="comment-form">
-                            <h2>Laisser un commentaire</h2>
-                            <p>Vous devez être connecté pour laisser un commentaire.</p>
-                            <button class="btn btn-secondary btn-submit disabled" disabled>Envoyer</button>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Display Comments and Ratings -->
-                    <div class="comments-section">
-                        <h2>Commentaires</h2>
-                        <?php if (!empty($comments)): ?>
-                            <?php foreach ($comments as $comment): ?>
-                                <div class="comment">
-                                    <span class="username"><?= htmlspecialchars($comment['username']) ?></span>
-                                    <span class="rating">
-                                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                                            <?= $i <= $comment['rating'] ? '★' : '☆' ?>
-                                        <?php endfor; ?>
-                                    </span>
-                                    <p class="text"><?= nl2br(htmlspecialchars($comment['comment'])) ?></p>
-                                    <p class="date">Posté le <?= date('d/m/Y à H:i', strtotime($comment['created_at'])) ?></p>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <p>Aucun commentaire pour ce produit.</p>
-                        <?php endif; ?>
-                    </div>
                 </div>
+            </div>
+
+            <!-- Comment and Rating Form -->
+            <?php if (isset($_SESSION['id'])): ?>
+                <div class="comment-form">
+                    <h2>Laisser un commentaire</h2>
+                    <form method="post" action="submit_comment.php" id="commentForm">
+                        <input type="hidden" name="product_id" value="<?= $produit['id'] ?>">
+                        <div class="form-group">
+                            <label for="rating">Note :</label>
+                            <div id="rating" class="star-rating">
+                                <?php for ($i = 5; $i >= 1; $i--): ?>
+                                    <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" required>
+                                    <label for="star<?= $i ?>" title="<?= $i ?> étoiles">&#9733;</label>
+                                <?php endfor; ?>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="comment">Commentaire :</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-submit" id="submitBtn">Envoyer</button>
+                    </form>
+                </div>
+            <?php else: ?>
+                <div class="comment-form">
+                    <h2>Laisser un commentaire</h2>
+                    <p>Vous devez être connecté pour laisser un commentaire.</p>
+                    <button class="btn btn-secondary btn-submit disabled" disabled>Envoyer</button>
+                </div>
+            <?php endif; ?>
+
+            <!-- Display Comments and Ratings -->
+            <div class="comments-section">
+                <h2>Commentaires</h2>
+                <?php if (!empty($comments)): ?>
+                    <?php foreach ($comments as $comment): ?>
+                        <div class="comment">
+                            <span class="username"><?= htmlspecialchars($comment['username']) ?></span>
+                            <span class="rating">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <?= $i <= $comment['rating'] ? '★' : '☆' ?>
+                                <?php endfor; ?>
+                            </span>
+                            <p class="text"><?= nl2br(htmlspecialchars($comment['comment'])) ?></p>
+                            <p class="date">Posté le <?= date('d/m/Y à H:i', strtotime($comment['created_at'])) ?></p>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>Aucun commentaire pour ce produit.</p>
+                <?php endif; ?>
             </div>
         </section>
     </div>

@@ -60,8 +60,35 @@ $orderHistory = getOrderHistory($userId);
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap">
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            font-family: 'Ubuntu', sans-serif;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .table th, .table td {
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .modal-body p {
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+        .btn {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+    </style>
 </head>
 
 <body>
