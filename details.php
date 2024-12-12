@@ -113,6 +113,10 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             $badgeClass = 'badge badge-black';
             $emoji = '⚔️';
             break;
+            case 'Judges':
+                $badgeClass = 'badge badge-nico';
+                $emoji = '⚔️';
+                break;
     }
 
     $prixOriginal = is_numeric(str_replace(',', '.', $produit['prix'])) 
@@ -219,6 +223,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         .badge-brown { background-color: #795548; }
         .badge-silver { background-color: #c0c0c0; }
         .badge-black { background-color: #343a40; }
+        .badge-nico { background-color: #ff5733; } /* Ensure visibility */
         .badge-bottom-right {
             position: absolute;
             bottom: 10px;

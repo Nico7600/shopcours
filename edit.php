@@ -135,6 +135,7 @@ if($_POST){
                             <option value="opérator" <?= $produit['badge'] == 'opérator' ? 'selected' : '' ?> class="badge-brown">Opérator</option>
                             <option value="ares" <?= $produit['badge'] == 'ares' ? 'selected' : '' ?> class="badge-silver">Ares</option>
                             <option value="odin" <?= $produit['badge'] == 'odin' ? 'selected' : '' ?> class="badge-black">Odin</option>
+                            <option value="Judges" <?= $produit['badge'] == 'Judges' ? 'selected' : '' ?> class="badge-white">Judges</option>
                             <option value="ensemble" <?= $produit['badge'] == 'ensemble' ? 'selected' : '' ?> class="badge-primary">Ensemble</option>
                         </select>
                     </div>

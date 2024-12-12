@@ -103,7 +103,7 @@ require_once('close.php');
                     }
                 ?>
                     <div class="carousel-item <?= $active ?>">
-                        <img src="<?= $image_path ?>" class="d-block w-100 fixed-height" alt="<?= $produit['produit'] ?>" onclick="window.location.href='details.php?id=<?= $produit['id'] ?>'">
+                        <img src="<?= $image_path ?>" class="d-block w-100 fixed-height img-fluid" alt="<?= $produit['produit'] ?>" onclick="window.location.href='details.php?id=<?= $produit['id'] ?>'">
                         <div class="carousel-caption d-md-block">
                             <h5><?= $produit['produit'] ?></h5>
                             <p>A seulement : <?= $produit['prix'] ?> €</p>
@@ -167,6 +167,7 @@ require_once('close.php');
                     'brown' => 'badge-brown',
                     'silver' => 'badge-silver',
                     'black' => 'badge-black',
+                    'nico' => 'badge-nico',
                 ];
 
                 $badgeClass = $badges[$produit['badge']] ?? 'badge-primary';
@@ -186,7 +187,7 @@ require_once('close.php');
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card" onclick="window.location.href='details.php?id=<?= htmlspecialchars($produit['id']); ?>'">
                         <div class="position-relative">
-                        <img src="<?= htmlspecialchars($image_path); ?>" class="card-img-top fixed-height" alt="<?= htmlspecialchars($produit['produit']); ?>">
+                        <img src="<?= htmlspecialchars($image_path); ?>" class="card-img-top fixed-height img-fluid" alt="<?= htmlspecialchars($produit['produit']); ?>">
                         <span class="badge <?= htmlspecialchars($badgeClass); ?> badge-bottom-right"><?= htmlspecialchars($produit['badge']); ?></span>
                         </div>
                         <div class="card-body">

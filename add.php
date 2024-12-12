@@ -5,7 +5,7 @@ session_start();
 if ($_POST) {
     if (isset($_POST['produit']) && !empty($_POST['produit'])
         && isset($_POST['description']) && !empty($_POST['description'])
-        && isset($_POST['prix']) && is_numeric($_POST['prix']) // Ensure prix is numeric
+        && isset($_POST['prix']) && !empty($_POST['prix'])
         && isset($_POST['nombre']) && is_numeric($_POST['nombre'])
         && isset($_FILES['image_produit']) && $_FILES['image_produit']['error'] == 0
         && isset($_POST['badge']) && !empty($_POST['badge'])
@@ -138,6 +138,7 @@ if ($_POST) {
                             <option value="opérator" class="badge-brown">Opérator</option>
                             <option value="ares" class="badge-silver">Ares</option>
                             <option value="odin" class="badge-black">Odin</option>
+                            <option value="Judges" class="badge-nico">Ensemble</option>
                             <option value="ensemble" class="badge-primary">Ensemble</option>
                         </select>
                     </div>
