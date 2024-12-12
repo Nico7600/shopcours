@@ -25,8 +25,18 @@ if (isset($_SESSION['id'])) {
 }
 
 $category = isset($_GET['category']) ? $_GET['category'] : '';
+$search = isset($_GET['search']) ? $_GET['search'] : '';
 
-if ($category) {
+if ($search) {
+    $sql = '
+        SELECT l.*, p.name AS production_company
+        FROM liste l
+        LEFT JOIN production_companies p ON l.production_company_id = p.id
+        WHERE l.produit LIKE :search OR l.Description LIKE :search
+    ';
+    $query = $db->prepare($sql);
+    $query->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+} else if ($category) {
     $sql = '
         SELECT l.*, p.name AS production_company
         FROM liste l
