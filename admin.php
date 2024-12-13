@@ -56,8 +56,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_admin'])) {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ban_user'])) {
+    if (isset($_POST['reason']) && isset($_POST['duration'])) {
+        $userId = $_POST['user_id'];
+        $reason = $_POST['reason'];
+        $duration = $_POST['duration'];
+        $banEndDate = date('Y-m-d H:i:s', strtotime("+$duration days"));
+
+        // Fetch the user's IP address
+        $sql = 'SELECT last_ip FROM users WHERE id = :id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':id', $userId, PDO::PARAM_INT);
+        $query->execute();
+        $user = $query->fetch();
+        $userIp = $user['last_ip'];
+
+        $sql = 'INSERT INTO bans (user_id, reason, ban_end_date, banned_by, ip_address) VALUES (:user_id, :reason, :ban_end_date, :banned_by, :ip_address)';
+        $query = $db->prepare($sql);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->bindValue(':reason', $reason, PDO::PARAM_STR);
+        $query->bindValue(':ban_end_date', $banEndDate, PDO::PARAM_STR);
+        $query->bindValue(':banned_by', $_SESSION['id'], PDO::PARAM_INT);
+        $query->bindValue(':ip_address', $userIp, PDO::PARAM_STR);
+        $query->execute();
+
+        // Update the users table to set banned to 1
+        $sql = 'UPDATE users SET banned = 1 WHERE id = :id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        header('Location: admin.php');
+        exit;
+    } else {
+        $_SESSION['erreur'] = "Reason and duration are required.";
+        header('Location: admin.php');
+        exit;
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['unban_user'])) {
+    $banId = $_POST['ban_id'];
+
+    // Fetch the user's IP address
+    $sql = 'SELECT ip_address FROM bans WHERE id = :ban_id';
+    $query = $db->prepare($sql);
+    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+    $query->execute();
+    $ban = $query->fetch();
+    $userIp = $ban['ip_address'];
+
+    $sql = 'DELETE FROM bans WHERE id = :ban_id';
+    $query = $db->prepare($sql);
+    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+    $query->execute();
+
+    // Update the users table to set banned to 0
+    $sql = 'UPDATE users SET banned = 0 WHERE id = (SELECT user_id FROM bans WHERE id = :ban_id)';
+    $query = $db->prepare($sql);
+    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+    $query->execute();
+
+    header('Location: admin.php');
+    exit;
+}
+
 // Fetch recent registered users
-$sql = 'SELECT id, fname, username, is_prime, admin, date FROM users ORDER BY id DESC LIMIT 10';
+$sql = 'SELECT id, fname, username, is_prime, admin, date, banned, last_ip FROM users ORDER BY id DESC LIMIT 10';
 $query = $db->prepare($sql);
 $query->execute();
 $recentUsers = $query->fetchAll(PDO::FETCH_ASSOC);
@@ -67,6 +132,24 @@ $sql = 'SELECT id, order_date, total_amount FROM orders ORDER BY order_date DESC
 $query = $db->prepare($sql);
 $query->execute();
 $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch banned users with admin usernames
+$sql = 'SELECT bans.id AS ban_id, bans.user_id, users.username, bans.reason, bans.ban_end_date, admin.username AS banned_by_username 
+        FROM bans 
+        JOIN users ON bans.user_id = users.id 
+        JOIN users AS admin ON bans.banned_by = admin.id';
+$query = $db->prepare($sql);
+$query->execute();
+$bannedUsers = $query->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch ban history
+$sql = 'SELECT ban_history.id AS ban_id, ban_history.user_id, users.username, ban_history.reason, ban_history.ban_end_date, admin.username AS banned_by_username 
+        FROM ban_history 
+        JOIN users ON ban_history.user_id = users.id 
+        JOIN users AS admin ON ban_history.banned_by = admin.id';
+$query = $db->prepare($sql);
+$query->execute();
+$banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -95,14 +178,25 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
             background-color: #343a40;
             padding: 10px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             position: fixed;
             top: 0;
             left: 0;
             z-index: 1000;
         }
-        .navbar a, .navbar form {
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            margin-right: 20px;
+        }
+        .navbar .menu {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .navbar .menu a, .navbar .menu form {
             color: #ffffff;
             text-decoration: none;
             font-size: 1.2rem;
@@ -114,7 +208,7 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
             padding: 30px;
             background-color: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 1000px;
+            max-width: 1200px;
             width: 100%;
             margin-top: 80px; /* Adjust for navbar height */
             border-radius: 10px;
@@ -165,8 +259,11 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
         .table-title {
             text-align: center;
             margin-top: 40px;
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: 600;
+        }
+        .user-list .table-title {
+            margin-top: 80px; /* Adjust for visibility */
         }
         .btn-toggle-on {
             background-color: #28a745;
@@ -178,21 +275,56 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
             color: #ffffff;
             margin: 5px;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <a href="admin.php">Valomazone Admin</a>
-        <a href="add.php">Ajouter produit</a>
-        <form method="post" style="display:inline;">
-            <button type="submit" name="toggle_maintenance" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>">
-                <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
-            </button>
-        </form>
+        <a href="index.php">Valomazone Admin</a>
+        <div class="menu">
+            <a href="add.php">Ajouter produit</a>
+            <form method="post" style="display:inline;">
+                <button type="submit" name="toggle_maintenance" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>">
+                    <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
+                </button>
+            </form>
+        </div>
     </div>
     <h1>Bienvenue sur la page admin</h1>
     <div class="admin-container">
         <div class="user-list">
+            <h2 class="table-title">Gestion utilisateur</h2>
             <h2 class="table-title">Derniers inscrits</h2>
             <table class="table">
                 <thead>
@@ -203,6 +335,7 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
                         <th>Membre Prime</th>
                         <th>Staff</th>
                         <th>Date d'inscription</th>
+                        <th>Last IP</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -214,22 +347,32 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
                             <td><?php echo htmlspecialchars($user['username']); ?></td>
                             <td><?php echo $user['is_prime'] ? 'Oui' : 'Non'; ?></td>
                             <td><?php echo $user['admin'] ? 'Oui' : 'Non'; ?></td>
-                            <td class="date"><?php echo htmlspecialchars(date('Le d/m/Y à H:i:s', strtotime($user['date']))); ?></td>
+                            <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($user['date']))); ?></td>
+                            <td><?php echo htmlspecialchars($user['last_ip']); ?></td>
                             <td>
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                     <input type="hidden" name="is_prime" value="<?php echo $user['is_prime']; ?>">
                                     <button type="submit" name="toggle_prime" class="btn <?php echo $user['is_prime'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
-                                        <?php echo $user['is_prime'] ? 'Prime On' : 'Prime Off'; ?>
+                                        <?php echo $user['is_prime'] ? '<i class="fa fa-crown" style="color: gold;"></i> Prime On' : '<i class="fa fa-crown" style="color: white;"></i> Prime Off'; ?>
                                     </button>
                                 </form>
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                     <input type="hidden" name="is_admin" value="<?php echo $user['admin']; ?>">
                                     <button type="submit" name="toggle_admin" class="btn <?php echo $user['admin'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
-                                        <?php echo $user['admin'] ? 'Admin On' : 'Admin Off'; ?>
+                                        <?php echo $user['admin'] ? '<i class="fa fa-user-shield" style="color: blue;"></i> Admin On' : '<i class="fa fa-user-shield" style="color: white;"></i> Admin Off'; ?>
                                     </button>
                                 </form>
+                                <?php if ($user['banned']): ?>
+                                    <button class="btn btn-success" onclick="openUnbanPage(<?php echo $user['id']; ?>)">
+                                        <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
+                                    </button>
+                                <?php else: ?>
+                                    <button class="btn btn-danger" onclick="openBanModal(<?php echo $user['id']; ?>)">
+                                        <i class="fa-solid fa-gavel" style="color: red;"></i> Ban
+                                    </button>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -250,14 +393,107 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
                     <?php foreach ($recentSales as $sale): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($sale['id']); ?></td>
-                            <td class="date"><?php echo htmlspecialchars(date('Le d/m/Y à H:i:s', strtotime($sale['order_date']))); ?></td>
+                            <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($sale['order_date']))); ?></td>
                             <td><?php echo htmlspecialchars($sale['total_amount']); ?> €</td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-        <!-- ...existing code for admin page content... -->
+        <div class="ban-user">
+            <h2 class="table-title">Liste des ban en cours</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID du ban</th>
+                        <th>Nom d'utilisateur</th>
+                        <th>Raison</th>
+                        <th>Date de fin</th>
+                        <th>Banni par</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($bannedUsers as $ban): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($ban['ban_id']); ?></td>
+                            <td><?php echo htmlspecialchars($ban['username']); ?></td>
+                            <td><?php echo htmlspecialchars($ban['reason']); ?></td>
+                            <td><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($ban['ban_end_date']))); ?></td>
+                            <td><?php echo htmlspecialchars($ban['banned_by_username']); ?></td>
+                            <td>
+                                <?php if (strtotime($ban['ban_end_date']) > time()): ?>
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
+                                        <button type="submit" name="unban_user" class="btn btn-success">Unban</button>
+                                    </form>
+                                <?php else: ?>
+                                    <span class="text-success">L'utilisateur n'est plus banni</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="ban-history">
+            <h2 class="table-title">Historique des bans</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID du ban</th>
+                        <th>Nom d'utilisateur</th>
+                        <th>Raison</th>
+                        <th>Date de fin</th>
+                        <th>Banni par</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($banHistory as $ban): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($ban['ban_id']); ?></td>
+                            <td><?php echo htmlspecialchars($ban['username']); ?></td>
+                            <td><?php echo htmlspecialchars($ban['reason']); ?></td>
+                            <td><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($ban['ban_end_date']))); ?></td>
+                            <td><?php echo htmlspecialchars($ban['banned_by_username']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <!-- Ban Modal -->
+        <div id="banModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeBanModal()">&times;</span>
+                <h2>Ban User</h2>
+                <form method="post">
+                    <input type="hidden" name="user_id" id="banUserId">
+                    <div class="form-group">
+                        <label for="reason">Raison</label>
+                        <input type="text" name="reason" id="reason" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Durée (jours)</label>
+                        <input type="number" name="duration" id="duration" class="form-control" required>
+                    </div>
+                    <button type="submit" name="ban_user" class="btn btn-danger">Ban</button>
+                </form>
+            </div>
+        </div>
     </div>
+    <script>
+        function openBanModal(userId) {
+            document.getElementById('banUserId').value = userId;
+            document.getElementById('banModal').style.display = 'block';
+        }
+
+        function closeBanModal() {
+            document.getElementById('banModal').style.display = 'none';
+        }
+
+        function openUnbanPage(banId) {
+            window.location.href = 'confirm_unban.php?ban_id=' + banId;
+        }
+    </script>
 </body>
 </html>

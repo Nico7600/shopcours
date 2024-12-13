@@ -16,6 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $uname = trim($_POST['uname']);
 $pass = trim($_POST['pass']);
+$ip_address = $_SERVER['REMOTE_ADDR'];
+
+// Fetch public IP address if running on localhost
+if ($ip_address == '::1' || $ip_address == '127.0.0.1') {
+    $ip_address = file_get_contents('https://api.ipify.org');
+}
 
 if (empty($uname)) {
     $_SESSION['error'] = "Le nom d'utilisateur est requis.";
@@ -40,6 +46,12 @@ try {
         if (password_verify($pass, $user['password'])) {
             $_SESSION['id'] = $user['id'];
             $_SESSION['fname'] = $user['fname'];
+
+            // Store IP address in the database
+            $sql = "UPDATE users SET last_ip = ? WHERE username = ?";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$ip_address, $uname]);
+
             header("Location: /");
             exit;
         } else {
