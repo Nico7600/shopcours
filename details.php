@@ -26,7 +26,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         exit;
     }
 
-     // Vérifier si l'utilisateur est connecté et récupérer son statut Prime
+    // Vérifier si l'utilisateur est connecté et récupérer son statut Prime
     $isPrime = false;
     if (isset($_SESSION['id'])) {
         $userId = $_SESSION['id'];
@@ -113,16 +113,34 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             $badgeClass = 'badge badge-black';
             $emoji = '⚔️';
             break;
-            case 'Judges':
-                $badgeClass = 'badge badge-nico';
-                $emoji = '⚔️';
-                break;
+        case 'Judges':
+            $badgeClass = 'badge badge-nico';
+            $emoji = '⚔️';
+            break;
     }
 
+    // Ensure 'prix' is a float
     $prixOriginal = is_numeric(str_replace(',', '.', $produit['prix'])) 
         ? (float)str_replace(',', '.', $produit['prix']) 
         : 0;
     $prixPromo = $prixOriginal;
+
+    // Determine quantity class and text
+    $quantities = [
+        5 => ['class' => 'text-danger', 'text' => 'Stock faible: '],
+        10 => ['class' => 'text-warning', 'text' => 'Stock moyen: '],
+        PHP_INT_MAX => ['class' => 'text-success', 'text' => 'Stock élevé: ']
+    ];
+
+    $quantityClass = '';
+    $quantityText = '';
+    foreach ($quantities as $limit => $data) {
+        if ($produit['nombre'] <= $limit) {
+            $quantityClass = $data['class'];
+            $quantityText = $data['text'] . $produit['nombre'];
+            break;
+        }
+    }
 
     if (is_numeric($produit['Promo']) && $produit['Promo'] > 0) {
         $prixPromo *= (1 - $produit['Promo'] / 100);
@@ -153,6 +171,21 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         $totalRating = array_sum(array_column($comments, 'rating'));
         $averageRating = $totalRating / count($comments);
     }
+
+    // Fetch related products
+    $sqlRelated = '
+        SELECT l.*, p.name AS production_company,
+               (SELECT AVG(c.rating) FROM comments c WHERE c.product_id = l.id) AS average_rating
+        FROM liste l
+        LEFT JOIN production_companies p ON l.production_company_id = p.id
+        WHERE l.id != :id
+        ORDER BY RAND()
+        LIMIT 4
+    ';
+    $queryRelated = $db->prepare($sqlRelated);
+    $queryRelated->bindValue(':id', $id, PDO::PARAM_INT);
+    $queryRelated->execute();
+    $relatedProducts = $queryRelated->fetchAll();
 
     require_once('close.php');
 } else{
@@ -328,6 +361,17 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             margin-top: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
     </style>
 </head>
 <body>
@@ -349,6 +393,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
                             <?= number_format($prixOriginal, 2) ?> €
                         <?php endif; ?>
                     </p>
+                    <p class="product-quantity <?= $quantityClass ?>"><?= htmlspecialchars($quantityText) ?></p>
                     <p class="average-rating">
                         <?php for ($i = 1; $i <= 5; $i++): ?>
                             <?= $i <= round($averageRating) ? '★' : '☆' ?>
@@ -376,7 +421,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
                     <form method="post" action="submit_comment.php" id="commentForm">
                         <input type="hidden" name="product_id" value="<?= $produit['id'] ?>">
                         <div class="form-group">
-                            <label for="rating">Note :</label>
+                            <label for="rating">Noter :</label>
                             <div id="rating" class="star-rating">
                                 <?php for ($i = 5; $i >= 1; $i--): ?>
                                     <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" required>
@@ -418,6 +463,36 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
                 <?php else: ?>
                     <p>Aucun commentaire pour ce produit.</p>
                 <?php endif; ?>
+            </div>
+
+            <!-- Display Related Products -->
+            <div class="related-products">
+                <h2>Produits similaires</h2>
+                <div class="row">
+                    <?php foreach ($relatedProducts as $related): ?>
+                        <div class="col-md-3">
+                            <div class="card mb-4 shadow-sm">
+                                <img src="image_produit/<?= htmlspecialchars($related['image_produit']) ?>" class="card-img-top" alt="<?= htmlspecialchars($related['produit']) ?>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><?= htmlspecialchars($related['produit']) ?></h5>
+                                    <p class="card-text">À seulement : <?= number_format((float)str_replace(',', '.', $related['prix']), 2) ?> €</p>
+                                    <p class="card-text">Quantité restante: <?= htmlspecialchars($related['nombre']) ?></p>
+                                    <p class="card-text">
+                                        Note moyenne: 
+                                        <?php 
+                                            $averageRating = $related['average_rating'] ?? 0;
+                                            for ($i = 1; $i <= 5; $i++): 
+                                        ?>
+                                            <span style="color: #ffc107;"><?= $i <= round($averageRating) ? '★' : '☆' ?></span>
+                                        <?php endfor; ?>
+                                        (<?= number_format($averageRating, 1) ?>)
+                                    </p>
+                                    <a href="details.php?id=<?= $related['id'] ?>" class="btn btn-primary">Voir le produit</a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </section>
     </div>
