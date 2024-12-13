@@ -25,6 +25,14 @@ $search = $search ?? '';
             font-size: 1rem;
             font-weight: 700;
         }
+        .dropdown-item-admin {
+            color: blue;
+        }
+        .dropdown-menu-end {
+            right: 0;
+            left: auto;
+            transform: translateX(-10%);
+        }
     </style>
 </head>
 <body>
@@ -77,6 +85,10 @@ $search = $search ?? '';
                             <i class="fas fa-history"></i> Historique d'achat</a></li>
                         <li><a class="dropdown-item" href="profile.php">
                             <i class="fas fa-user"></i> Profile</a></li>
+                        <?php if (isset($_SESSION['id'])): ?>
+                            <li><a class="dropdown-item dropdown-item-admin" href="admin.php">
+                                <i class="fas fa-user-shield"></i> Admin</a></li>
+                        <?php endif; ?>
                         <li><a class="dropdown-item text-danger" href="logout.php">
                             <i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
                     </ul>

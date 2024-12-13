@@ -1,4 +1,8 @@
 <?php
+if (file_exists('maintenance.flag')) {
+    header('Location: maintenance.php');
+    exit;
+}
 // On démarre une session
 session_start();
 if (isset($_SESSION['message'])) {
@@ -143,13 +147,34 @@ require_once('close.php');
             font-size: 1rem;
             font-weight: 700;
         }
+        .alert-custom {
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 80%;
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
+    <?php if (isset($message)): ?>
+        <div id="notification" class="alert alert-<?= htmlspecialchars($messageType) ?> alert-dismissible fade show" role="alert">
+            <?= htmlspecialchars($message) ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    <?php endif; ?>
     <!-- Navigation -->
     <?php include 'includes/navbar.php'; ?>
-
+    
+    <?php if (isset($_SESSION['erreur'])): ?>
+        <div class="alert alert-danger alert-custom" role="alert">
+            <?= htmlspecialchars($_SESSION['erreur']) ?>
+        </div>
+        <?php unset($_SESSION['erreur']); ?>
+    <?php endif; ?>
     <!-- Contenu principal -->
     <main class="container mt-5">
         <div id="productCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
@@ -307,6 +332,14 @@ require_once('close.php');
                 this.textContent = 'Dark Mode';
             }
         });
+
+        // Automatically hide the notification after 5 seconds
+        setTimeout(function() {
+            var notification = document.getElementById('notification');
+            if (notification) {
+                notification.style.display = 'none';
+            }
+        }, 5000);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
