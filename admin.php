@@ -63,21 +63,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ban_user'])) {
         $duration = $_POST['duration'];
         $banEndDate = date('Y-m-d H:i:s', strtotime("+$duration days"));
 
-        // Fetch the user's IP address
-        $sql = 'SELECT last_ip FROM users WHERE id = :id';
-        $query = $db->prepare($sql);
-        $query->bindValue(':id', $userId, PDO::PARAM_INT);
-        $query->execute();
-        $user = $query->fetch();
-        $userIp = $user['last_ip'];
-
-        $sql = 'INSERT INTO bans (user_id, reason, ban_end_date, banned_by, ip_address) VALUES (:user_id, :reason, :ban_end_date, :banned_by, :ip_address)';
+        $sql = 'INSERT INTO bans (user_id, reason, ban_end_date, banned_by) VALUES (:user_id, :reason, :ban_end_date, :banned_by)';
         $query = $db->prepare($sql);
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->bindValue(':reason', $reason, PDO::PARAM_STR);
         $query->bindValue(':ban_end_date', $banEndDate, PDO::PARAM_STR);
         $query->bindValue(':banned_by', $_SESSION['id'], PDO::PARAM_INT);
-        $query->bindValue(':ip_address', $userIp, PDO::PARAM_STR);
         $query->execute();
 
         // Update the users table to set banned to 1
@@ -98,13 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ban_user'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['unban_user'])) {
     $banId = $_POST['ban_id'];
 
-    // Fetch the user's IP address
-    $sql = 'SELECT ip_address FROM bans WHERE id = :ban_id';
+    // Move the ban to the ban_history table before deleting
+    $sql = 'INSERT INTO ban_history (user_id, reason, ban_end_date, banned_by)
+            SELECT user_id, reason, ban_end_date, banned_by FROM bans WHERE id = :ban_id';
     $query = $db->prepare($sql);
     $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
     $query->execute();
-    $ban = $query->fetch();
-    $userIp = $ban['ip_address'];
 
     $sql = 'DELETE FROM bans WHERE id = :ban_id';
     $query = $db->prepare($sql);
@@ -314,6 +304,7 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
         <a href="index.php">Valomazone Admin</a>
         <div class="menu">
             <a href="add.php">Ajouter produit</a>
+            <a href="sanctions.php">Sanctions en cours</a>
             <form method="post" style="display:inline;">
                 <button type="submit" name="toggle_maintenance" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>">
                     <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
@@ -365,9 +356,13 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
                                     </button>
                                 </form>
                                 <?php if ($user['banned']): ?>
-                                    <button class="btn btn-success" onclick="openUnbanPage(<?php echo $user['id']; ?>)">
-                                        <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
-                                    </button>
+                                    <?php foreach ($bannedUsers as $ban): ?>
+                                        <?php if ($ban['user_id'] == $user['id']): ?>
+                                            <button class="btn btn-success" onclick="openUnbanPage(<?php echo $ban['ban_id']; ?>)">
+                                                <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
+                                            </button>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
                                 <?php else: ?>
                                     <button class="btn btn-danger" onclick="openBanModal(<?php echo $user['id']; ?>)">
                                         <i class="fa-solid fa-gavel" style="color: red;"></i> Ban
@@ -423,10 +418,9 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
                             <td><?php echo htmlspecialchars($ban['banned_by_username']); ?></td>
                             <td>
                                 <?php if (strtotime($ban['ban_end_date']) > time()): ?>
-                                    <form method="post" style="display:inline;">
-                                        <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
-                                        <button type="submit" name="unban_user" class="btn btn-success">Unban</button>
-                                    </form>
+                                    <button class="btn btn-success" onclick="openUnbanPage(<?php echo $ban['ban_id']; ?>)">
+                                        Unban
+                                    </button>
                                 <?php else: ?>
                                     <span class="text-success">L'utilisateur n'est plus banni</span>
                                 <?php endif; ?>

@@ -33,6 +33,56 @@ $search = $search ?? '';
             left: auto;
             transform: translateX(-10%);
         }
+        .chat-box {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1050;
+        }
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .chat-input button {
+            margin-left: 10px;
+        }
+        .chat-message {
+            margin-bottom: 10px;
+        }
+        .close-chat {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+        }
     </style>
 </head>
 <body>
@@ -76,6 +126,7 @@ $search = $search ?? '';
 
             <!-- Profil utilisateur -->
             <div class="dropdown ms-auto me-2">
+                <button id="openChat" class="btn btn-primary me-2">Ouvrir le chat</button>
                 <?php if (isset($userName)): ?>
                     <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user-circle"></i> <?= htmlspecialchars($userName); ?>
@@ -100,5 +151,68 @@ $search = $search ?? '';
             </div>
         </div>
     </nav>
+
+    <!-- Chat Box -->
+    <div id="chatBox" class="chat-box">
+        <div class="chat-header">
+            <h5>Chat</h5>
+            <button id="closeChat" class="close-chat">&times;</button>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatMessage" placeholder="Écrire un message...">
+            <button id="sendMessage" class="btn btn-primary">Envoyer</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('openChat').addEventListener('click', function() {
+            document.getElementById('chatBox').style.display = 'block';
+        });
+
+        document.getElementById('closeChat').addEventListener('click', function() {
+            document.getElementById('chatBox').style.display = 'none';
+        });
+
+        document.getElementById('sendMessage').addEventListener('click', function() {
+            const message = document.getElementById('chatMessage').value;
+            if (message.trim() !== '') {
+                fetch('send_message.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'message=' + encodeURIComponent(message)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('chatMessage').value = '';
+                        loadMessages();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            }
+        });
+
+        function loadMessages() {
+            fetch('get_messages.php')
+                .then(response => response.json())
+                .then(data => {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = '';
+                    data.forEach(msg => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('chat-message');
+                        messageElement.textContent = msg.username + ': ' + msg.message;
+                        chatMessages.appendChild(messageElement);
+                    });
+                });
+        }
+
+        loadMessages();
+        setInterval(loadMessages, 5000);
+    </script>
 </body>
 </html>

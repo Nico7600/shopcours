@@ -320,29 +320,28 @@ require_once('close.php');
         </div>
     </main>
 
-    <!-- Modal -->
-    <?php include 'includes/modal.php'; ?>
+<!-- Modal -->
+<?php include 'includes/modal.php'; ?>
 
-    <script>
-        document.getElementById('darkModeToggle').addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                this.textContent = 'Light Mode';
-            } else {
-                this.textContent = 'Dark Mode';
-            }
-        });
+<script>
+    document.getElementById('darkModeToggle').addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        if (document.body.classList.contains('dark-mode')) {
+            this.textContent = 'Light Mode';
+        } else {
+            this.textContent = 'Dark Mode';
+        }
+    });
 
-        // Automatically hide the notification after 5 seconds
-        setTimeout(function() {
-            var notification = document.getElementById('notification');
-            if (notification) {
-                notification.style.display = 'none';
-            }
-        }, 5000);
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    // Automatically hide the notification after 5 seconds
+    setTimeout(function() {
+        var notification = document.getElementById('notification');
+        if (notification) {
+            notification.style.display = 'none';
+        }
+    }, 5000);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
-
 </html>

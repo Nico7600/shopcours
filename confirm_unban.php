@@ -10,19 +10,45 @@ if (!isset($_SESSION['id']) || !isset($_GET['ban_id'])) {
 $banId = $_GET['ban_id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_unban'])) {
-    $sql = 'DELETE FROM bans WHERE id = :ban_id';
+    $sql = 'SELECT user_id, reason, ban_end_date, banned_by FROM bans WHERE id = :ban_id';
     $query = $db->prepare($sql);
     $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
     $query->execute();
+    $ban = $query->fetch();
 
-    // Update the users table to set banned to 0
-    $sql = 'UPDATE users SET banned = 0 WHERE id = (SELECT user_id FROM (SELECT user_id FROM bans WHERE id = :ban_id) AS subquery)';
-    $query = $db->prepare($sql);
-    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
-    $query->execute();
+    if ($ban) {
+        $userId = $ban['user_id'];
+        $reason = $ban['reason'];
+        $banEndDate = $ban['ban_end_date'];
+        $bannedBy = $ban['banned_by'];
 
-    header('Location: admin.php');
-    exit;
+        // Insert into ban_history
+        $sql = 'INSERT INTO ban_history (user_id, reason, ban_end_date, banned_by) VALUES (:user_id, :reason, :ban_end_date, :banned_by)';
+        $query = $db->prepare($sql);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->bindValue(':reason', $reason, PDO::PARAM_STR);
+        $query->bindValue(':ban_end_date', $banEndDate, PDO::PARAM_STR);
+        $query->bindValue(':banned_by', $bannedBy, PDO::PARAM_INT);
+        $query->execute();
+
+        $sql = 'DELETE FROM bans WHERE id = :ban_id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+        $query->execute();
+
+        // Update the users table to set banned to 0
+        $sql = 'UPDATE users SET banned = 0 WHERE id = :user_id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
+        header('Location: confirm_unban.php?success=1');
+        exit;
+    } else {
+        $_SESSION['erreur'] = "Ban record not found.";
+        header('Location: admin.php');
+        exit;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -70,6 +96,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_unban'])) {
             margin-bottom: 20px;
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success')) {
+                alert('Utilisateur débanni avec succès.');
+                window.location.href = 'admin.php';
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="container">
