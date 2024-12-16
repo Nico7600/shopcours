@@ -1,15 +1,13 @@
 <?php
-session_start();
-require_once 'vendor/autoload.php';
 require_once 'connect.php';
+require_once 'vendor/autoload.php';
 
-// Initialize $pdo variable
-try {
-    $pdo = new PDO('mysql:host=localhost;dbname=crud', 'root', 'root');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+session_start();
 
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
@@ -17,6 +15,8 @@ if (!isset($_SESSION['id'])) {
 }
 
 $userId = $_SESSION['id'];
+\Stripe\Stripe::setApiKey($_ENV['STRIPE_API_KEY']);
+
 $primeOptions = [
     '30_days' => ['duration' => 30, 'price' => 9.99],
     '365_days' => ['duration' => 365, 'price' => 99.99]
@@ -38,13 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
             'price' => $price
         ];
 
-        // Store the purchase in the order_items table
-        $stmt = $pdo->prepare("INSERT INTO order_items (item_name, item_price, purchase_date) VALUES (?, ?, NOW())");
-        $stmt->execute([$option, $price]);
-
         // Create a Stripe payment session
-        \Stripe\Stripe::setApiKey('sk_test_51QUosiAo0Ob4b0YuvHfov3W4l1lFJv9ZwU09iW6CFAyt9eU5q1cqxT5xeTIiDUe6yRvNsNN6f2baCiaWyTjor9Ap00paqPPNVe');
-
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => ['card'],
             'line_items' => [[
@@ -58,8 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
-            'success_url' => 'https://yourdomain.com/success.php',
-            'cancel_url' => 'https://yourdomain.com/cancel.php',
+            'success_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/prime_success.php?session_id={CHECKOUT_SESSION_ID}&option=' . $option,
+            'cancel_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/index.php?message=prime_cancel',
         ]);
 
         // Redirect to the Stripe payment page
@@ -164,15 +158,15 @@ $user = []; // Replace with actual user fetching logic
                 <form method="POST" action="prime.php">
                     <div class="card mb-3">
                         <div class="card-body text-center">
-                            <h5 class="card-title">30 Jours Prime</h5>
-                            <p class="card-text">Obtenez l'adhésion Prime pour 30 jours pour seulement 9.99 euros.</p>
+                            <h5 class="card-title">1 mois de Prime</h5>
+                            <p class="card-text">Obtenez l'adhésion Prime 1 mois pour seulement 9.99 euros.</p>
                             <button type="submit" name="prime_option" value="30_days" class="btn btn-primary btn-block">Acheter pour 9.99€</button>
                         </div>
                     </div>
                     <div class="card mb-3">
                         <div class="card-body text-center">
-                            <h5 class="card-title">365 Jours Prime</h5>
-                            <p class="card-text">Obtenez l'adhésion Prime pour 365 jours pour seulement 99.99 euros.</p>
+                            <h5 class="card-title">1 an de Prime</h5>
+                            <p class="card-text">Obtenez l'adhésion Prime 1 an a seulement 99.99 euros.</p>
                             <button type="submit" name="prime_option" value="365_days" class="btn btn-primary btn-block">Acheter pour 99.99€</button>
                         </div>
                     </div>

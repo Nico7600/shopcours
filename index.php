@@ -97,6 +97,11 @@ $ratings = $ratingsQuery->fetchAll(PDO::FETCH_KEY_PAIR);
 require_once('close.php');
 
 $message = isset($_GET['message']) ? $_GET['message'] : '';
+if ($message === 'T') {
+    echo '<div class="alert alert-success">Votre adhésion Prime a été réussie.</div>';
+} elseif ($message === 'prime_cancel') {
+    echo '<div class="alert alert-danger">Votre adhésion Prime a été annulée.</div>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -234,19 +239,8 @@ $message = isset($_GET['message']) ? $_GET['message'] : '';
 </head>
 
 <body>
-    <?php if (isset($message)): ?>
-        <div id="notification" class="alert alert-<?= htmlspecialchars($messageType) ?> alert-dismissible fade show" role="alert">
-            <?= htmlspecialchars($message) ?>
-        </div>
-    <?php endif; ?>
     <!-- Navigation -->
     <?php include 'includes/navbar.php'; ?>
-    
-    <?php if ($message === 'prime_success'): ?>
-        <div class="success-message show">
-            <i class="fas fa-check-circle"></i> Votre adhésion Prime a été activée avec succès !
-        </div>
-    <?php endif; ?>
     
     <?php if (isset($_SESSION['erreur'])): ?>
         <div class="alert alert-danger alert-custom" role="alert">
