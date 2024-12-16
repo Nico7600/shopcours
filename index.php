@@ -28,6 +28,19 @@ if (isset($_SESSION['id'])) {
     }
 }
 
+// Check for ban record
+if (isset($_SESSION['id'])) {
+    $banSql = 'SELECT id FROM bans WHERE user_id = :id';
+    $banQuery = $db->prepare($banSql);
+    $banQuery->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
+    $banQuery->execute();
+    $banRecord = $banQuery->fetch(PDO::FETCH_ASSOC);
+    if ($banRecord) {
+        header('Location: ban.php');
+        exit;
+    }
+}
+
 $category = isset($_GET['category']) ? $_GET['category'] : '';
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
@@ -77,7 +90,13 @@ $ratingsQuery = $db->prepare($ratingsSql);
 $ratingsQuery->execute();
 $ratings = $ratingsQuery->fetchAll(PDO::FETCH_KEY_PAIR);
 
+// Remove chat message handling
+
+// Remove chat message handling
+
 require_once('close.php');
+
+$message = isset($_GET['message']) ? $_GET['message'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -107,7 +126,9 @@ require_once('close.php');
             height: 200px; /* Ajuster la hauteur selon vos besoins */
             object-fit: cover;
         }
-        .star-rating .fa-star {
+        .star-rating .fa-star,
+        .star-rating .fa-star-half-alt,
+        .star-rating .fa-star-quarter {
             color: #FFD700; /* Yellow color for stars */
         }
         body {
@@ -154,6 +175,61 @@ require_once('close.php');
             width: 80%;
             text-align: center;
         }
+        .chatbox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            z-index: 1050;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            display: none; /* Initially hidden */
+        }
+        .chatbox-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .chatbox-body {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .chatbox-footer {
+            display: flex;
+            align-items: center;
+        }
+        .chatbox-footer textarea {
+            flex: 1;
+            resize: none;
+        }
+        .chatbox-footer button {
+            margin-left: 10px;
+        }
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .success-message.show {
+            display: block;
+            animation: fadeInOut 4s forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
     </style>
 </head>
 
@@ -161,13 +237,16 @@ require_once('close.php');
     <?php if (isset($message)): ?>
         <div id="notification" class="alert alert-<?= htmlspecialchars($messageType) ?> alert-dismissible fade show" role="alert">
             <?= htmlspecialchars($message) ?>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
         </div>
     <?php endif; ?>
     <!-- Navigation -->
     <?php include 'includes/navbar.php'; ?>
+    
+    <?php if ($message === 'prime_success'): ?>
+        <div class="success-message show">
+            <i class="fas fa-check-circle"></i> Votre adhésion Prime a été activée avec succès !
+        </div>
+    <?php endif; ?>
     
     <?php if (isset($_SESSION['erreur'])): ?>
         <div class="alert alert-danger alert-custom" role="alert">
@@ -272,8 +351,14 @@ require_once('close.php');
                 $finalPrice = $prix * (1 - $totalDiscount / 100);
 
                 $averageRating = $ratings[$produit['id']] ?? 0;
-                $stars = str_repeat('<i class="fas fa-star"></i>', floor($averageRating));
-                $stars .= str_repeat('<i class="far fa-star"></i>', 5 - floor($averageRating));
+                $fullStars = floor($averageRating);
+                $halfStar = ($averageRating - $fullStars >= 0.5) ? 1 : 0;
+                $quarterStar = ($averageRating - $fullStars >= 0.25 && $averageRating - $fullStars < 0.5) ? 1 : 0;
+                $emptyStars = 5 - $fullStars - $halfStar - $quarterStar;
+                $stars = str_repeat('<i class="fas fa-star"></i>', $fullStars);
+                $stars .= str_repeat('<i class="fas fa-star-half-alt"></i>', $halfStar);
+                $stars .= str_repeat('<i class="fas fa-star-quarter"></i>', $quarterStar);
+                $stars .= str_repeat('<i class="far fa-star"></i>', $emptyStars);
             ?>
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card" onclick="window.location.href='details.php?id=<?= htmlspecialchars($produit['id']); ?>'">
@@ -319,7 +404,6 @@ require_once('close.php');
             ?>
         </div>
     </main>
-
 <!-- Modal -->
 <?php include 'includes/modal.php'; ?>
 
@@ -340,6 +424,15 @@ require_once('close.php');
             notification.style.display = 'none';
         }
     }, 5000);
+
+    // Dismiss notification on close button click
+    function dismissNotification() {
+        var notification = document.getElementById('notification');
+        if (notification) {
+            notification.style.display = 'none';
+        }
+    }
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>

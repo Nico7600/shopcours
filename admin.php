@@ -111,6 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['unban_user'])) {
     exit;
 }
 
+// Remove chat message handling
+
+// Remove chat message handling
+
 // Fetch recent registered users
 $sql = 'SELECT id, fname, username, is_prime, admin, date, banned, last_ip FROM users ORDER BY id DESC LIMIT 10';
 $query = $db->prepare($sql);
@@ -297,6 +301,37 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
             text-decoration: none;
             cursor: pointer;
         }
+        .chat-support .message {
+            margin-bottom: 10px;
+        }
+        .chat-support .message .username {
+            font-weight: bold;
+        }
+        .chat-support .message .staff {
+            color: red;
+        }
+        .chat-support .message .timestamp {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        .chat-support .message-form {
+            display: flex;
+            margin-top: 20px;
+        }
+        .chat-support .message-form input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .chat-support .message-form button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: #ffffff;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -304,7 +339,6 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
         <a href="index.php">Valomazone Admin</a>
         <div class="menu">
             <a href="add.php">Ajouter produit</a>
-            <a href="sanctions.php">Sanctions en cours</a>
             <form method="post" style="display:inline;">
                 <button type="submit" name="toggle_maintenance" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>">
                     <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
