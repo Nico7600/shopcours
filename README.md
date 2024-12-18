@@ -5,6 +5,7 @@ BUG
 - bug lors de l achat du prime apres l achat sa redirige mal et le message du stripe est pas jolie.
 - Bug lors de l achat du prime l utilisateur ne le l as pas.
 - le add et le edit sont dispo a all alors que il doit avoir une restriction staff
+- Bug le prime se met pas dans l historique achat.
 
 
 
