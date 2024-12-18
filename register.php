@@ -40,13 +40,46 @@
     <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
     	
     	<form class="shadow w-450 p-3 bg-white rounded" 
-    	      action="register_verify.php" 
+    	      action="register.php" 
     	      method="post">
 
     		<h4 class="text-center mb-4">Créer un compte</h4>
 
     		<?php 
             session_start(); 
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $fname = $_POST['fname'];
+                $uname = $_POST['uname'];
+                $pass = $_POST['pass'];
+                $cpass = $_POST['cpass'];
+
+                if (empty($fname) || empty($uname) || empty($pass) || empty($cpass)) {
+                    $_SESSION['error'] = "Tous les champs sont obligatoires.";
+                } elseif ($pass !== $cpass) {
+                    $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
+                } else {
+                    $conn = new mysqli('localhost', 'root', 'root', 'crud');
+                    if ($conn->connect_error) {
+                        $_SESSION['error'] = "Erreur de connexion à la base de données: " . $conn->connect_error;
+                    } else {
+                        $stmt = $conn->prepare("INSERT INTO users (fname, username, password, date, last_ip) VALUES (?, ?, ?, NOW(), ?)");
+                        $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
+                        $last_ip = $_SERVER['REMOTE_ADDR'];
+                        $stmt->bind_param("ssss", $fname, $uname, $hashed_pass, $last_ip);
+
+                        if ($stmt->execute()) {
+                            $_SESSION['success'] = "Inscription réussie. Vous pouvez maintenant vous connecter.";
+                            header("Location: login.php");
+                            exit();
+                        } else {
+                            $_SESSION['error'] = "Erreur lors de l'inscription. Veuillez réessayer.";
+                        }
+
+                        $stmt->close();
+                        $conn->close();
+                    }
+                }
+            }
             if (isset($_SESSION['error'])): ?>
     		<div class="alert alert-danger alert-dismissible fade show" role="alert">
 			  <?php echo $_SESSION['error']; ?>

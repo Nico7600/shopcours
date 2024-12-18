@@ -4,7 +4,7 @@ include "connect.php";
 session_start();
 
 if (isset($_SESSION['id'])) {
-    header("Location: /");
+    header("Location: index.php");
     exit;
 }
 
@@ -46,13 +46,14 @@ try {
         if (password_verify($pass, $user['password'])) {
             $_SESSION['id'] = $user['id'];
             $_SESSION['fname'] = $user['fname'];
+            $_SESSION['loggedin'] = true;
 
             // Store IP address in the database
             $sql = "UPDATE users SET last_ip = ? WHERE username = ?";
             $stmt = $db->prepare($sql);
             $stmt->execute([$ip_address, $uname]);
 
-            header("Location: /");
+            header("Location: index.php");
             exit;
         } else {
             $_SESSION['error'] = "Nom d'utilisateur ou mot de passe incorrect.";

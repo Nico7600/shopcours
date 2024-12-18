@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+    header("Location: index.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -68,7 +75,6 @@
     		<h4 class="text-center mb-4">Connexion</h4>
 
     		<?php 
-            session_start(); 
             if (isset($_SESSION['error'])): ?>
     		<div class="alert alert-danger alert-dismissible fade show" role="alert">
 			  <?php echo $_SESSION['error']; ?>

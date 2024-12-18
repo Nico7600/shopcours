@@ -1,68 +1,58 @@
 <?php
-include "connect.php";
-
 session_start();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    $_SESSION['error'] = "Requête invalide. Veuillez soumettre le formulaire.";
+$include_path = 'db_conn.php';
+if (!file_exists($include_path)) {
+    $_SESSION['error'] = "Erreur de connexion à la base de données.";
     header("Location: register.php");
-    exit;
+    exit();
 }
 
-$fname = trim($_POST['fname']);
-$uname = trim($_POST['uname']);
-$pass = trim($_POST['pass']);
-$cpass = trim($_POST['cpass']);
+include $include_path;
 
-$_SESSION['fname'] = $fname;
-$_SESSION['uname'] = $uname;
-
-if (empty($fname)) {
-    $_SESSION['error'] = "Le prénom est requis.";
+// Check database connection
+if ($conn->connect_error) {
+    $_SESSION['error'] = "Erreur de connexion à la base de données: " . $conn->connect_error;
     header("Location: register.php");
-    exit;
-} elseif (empty($uname)) {
-    $_SESSION['error'] = "Le nom d'utilisateur est requis.";
-    header("Location: register.php");
-    exit;
-} elseif (empty($pass)) {
-    $_SESSION['error'] = "Le mot de passe est requis.";
-    header("Location: register.php");
-    exit;
-} elseif ($pass !== $cpass) {
-    $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
-    header("Location: register.php");
-    exit;
+    exit();
 }
 
-try {
-    $sql = "SELECT * FROM users WHERE username = ?";
-    $stmt = $db->prepare($sql);
-    $stmt->execute([$uname]);
+if (isset($_POST['fname']) && isset($_POST['uname']) && isset($_POST['pass']) && isset($_POST['cpass'])) {
+    $fname = $_POST['fname'];
+    $uname = $_POST['uname'];
+    $pass = $_POST['pass'];
+    $cpass = $_POST['cpass'];
 
-    if ($stmt->rowCount() > 0) {
-        $_SESSION['error'] = "Le nom d'utilisateur existe déjà. Veuillez en choisir un autre.";
+    if ($pass !== $cpass) {
+        $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
         header("Location: register.php");
-        exit;
+        exit();
     }
 
+    // Hash the password
     $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
 
-    $sql = "INSERT INTO users (fname, username, password) VALUES (?, ?, ?)";
-    $stmt = $db->prepare($sql);
-    $stmt->execute([$fname, $uname, $hashed_pass]);
+    // Prepare and bind
+    $stmt = $conn->prepare("INSERT INTO users (fname, uname, pass) VALUES (?, ?, ?)");
+    if ($stmt === false) {
+        $_SESSION['error'] = "Erreur lors de la préparation de la requête: " . $conn->error;
+        header("Location: register.php");
+        exit();
+    }
+    $stmt->bind_param("sss", $fname, $uname, $hashed_pass);
 
-    unset($_SESSION['fname']);
-    unset($_SESSION['uname']);
+    if ($stmt->execute()) {
+        $_SESSION['success'] = "Inscription réussie.";
+        header("Location: login.php");
+    } else {
+        $_SESSION['error'] = "Erreur lors de l'inscription: " . $stmt->error;
+        header("Location: register.php");
+    }
 
-    $_SESSION['success'] = "Compte créé avec succès ! Vous pouvez maintenant vous connecter.";
-    header("Location: login.php");
-    exit;
-
-} catch (PDOException $e) {
-    error_log($e->getMessage());
-    $_SESSION['error'] = "Une erreur s'est produite. Veuillez réessayer plus tard.";
+    $stmt->close();
+    $conn->close();
+} else {
+    $_SESSION['error'] = "Tous les champs sont obligatoires.";
     header("Location: register.php");
-    exit;
 }
 ?>
