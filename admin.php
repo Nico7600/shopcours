@@ -146,7 +146,7 @@ $query->execute();
 $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch recent prime members based on purchases
-$sql = 'SELECT users.id, users.fname, users.username, users.date, users.last_ip 
+$sql = 'SELECT users.id, users.fname, users.username, users.date, users.last_ip, orders.total_amount 
         FROM users 
         JOIN orders ON users.id = orders.user_id 
         WHERE users.is_prime = 1 
@@ -420,6 +420,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
                         <th>Nom d'utilisateur</th>
                         <th>Date d'inscription</th>
                         <th>Last IP</th>
+                        <th>Type d'abonnement</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -430,6 +431,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
                             <td><?php echo htmlspecialchars($primeMember['username']); ?></td>
                             <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($primeMember['date']))); ?></td>
                             <td><?php echo htmlspecialchars($primeMember['last_ip']); ?></td>
+                            <td><?php echo $primeMember['total_amount'] == 9.99 ? '1 mois' : '1 an'; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -500,7 +502,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="modal-content">
                 <span class="close" onclick="closeBanModal()">&times;</span>
                 <h2>Ban User</h2>
-                <form method="post">
+                <form method="post" name="ban_user">
                     <input type="hidden" name="user_id" id="banUserId">
                     <div class="form-group">
                         <label for="reason">Raison</label>
@@ -528,6 +530,46 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
         function openUnbanPage(banId) {
             window.location.href = 'confirm_unban.php?ban_id=' + banId;
         }
+
+        // Prevent form submission from scrolling to the top
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: form.method,
+                    body: formData
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Une erreur est survenue.');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur est survenue.');
+                });
+            });
+        });
+
+        // Handle ban form submission separately
+        document.querySelector('form[name="ban_user"]').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: this.method,
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Une erreur est survenue.');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue.');
+            });
+        });
     </script>
 </body>
 </html>

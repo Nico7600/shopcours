@@ -235,6 +235,51 @@ if ($message === 'T') {
             90% { opacity: 1; }
             100% { opacity: 0; }
         }
+        /* From Uiverse.io by PaolaMarai */
+        .error {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            width: 320px;
+            padding: 12px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: start;
+            border-radius: 50px;
+            background: -webkit-linear-gradient(to right, #f45c43, #eb3349);
+            background: linear-gradient(to right, #f45c43, #eb3349);
+            box-shadow: 0 0px 10px #de1c3280;
+        }
+
+        .error__icon {
+            width: 20px;
+            height: 20px;
+            transform: translateY(-2px);
+            margin-right: 8px;
+            filter: drop-shadow(2px 1px 2px rgb(0 0 0 / 0.4));
+        }
+
+        .error__icon path {
+            fill: #fff;
+        }
+
+        .error__title {
+            font-weight: 500;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .error__close {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: auto;
+            filter: drop-shadow(2px 1px 2px rgb(0 0 0 / 0.4));
+        }
+
+        .error__close path {
+            fill: #fff;
+        }
     </style>
 </head>
 
