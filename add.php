@@ -64,7 +64,12 @@ if ($_POST) {
 
         $query->execute();
 
-        $_SESSION['message'] = "Produit ajouté";
+        if ($query->rowCount() > 0) {
+            $_SESSION['message'] = "Produit ajouté";
+        } else {
+            $_SESSION['erreur'] = "Erreur lors de l'ajout du produit";
+        }
+
         require_once('close.php');
 
         header('Location: index.php');
