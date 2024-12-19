@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Include the navbar
+include 'navbar.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_produit = $_POST['id_produit'];
     $quantite = $_POST['quantite'];

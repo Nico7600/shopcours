@@ -502,7 +502,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="modal-content">
                 <span class="close" onclick="closeBanModal()">&times;</span>
                 <h2>Ban User</h2>
-                <form method="post" name="ban_user">
+                <form method="post" action="admin.php" name="ban_user">
                     <input type="hidden" name="user_id" id="banUserId">
                     <div class="form-group">
                         <label for="reason">Raison</label>

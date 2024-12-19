@@ -61,7 +61,7 @@ $search = $search ?? '';
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href=".php">
+                        <a class="nav-link" href="contact.php">
                             <i class="fas fa-headset"></i> Support
                         </a>
                     </li>
