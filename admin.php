@@ -144,6 +144,17 @@ $sql = 'SELECT ban_history.id AS ban_id, ban_history.user_id, users.username, ba
 $query = $db->prepare($sql);
 $query->execute();
 $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch recent prime members based on purchases
+$sql = 'SELECT users.id, users.fname, users.username, users.date, users.last_ip 
+        FROM users 
+        JOIN orders ON users.id = orders.user_id 
+        WHERE users.is_prime = 1 
+        ORDER BY orders.order_date DESC LIMIT 10';
+$query = $db->prepare($sql);
+$query->execute();
+$recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -162,10 +173,11 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
             font-family: 'Ubuntu', Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh; /* Change from height to min-height */
             margin: 0;
+            padding-top: 80px;
         }
         .navbar {
             width: 100%;
@@ -204,8 +216,9 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             max-width: 1200px;
             width: 100%;
-            margin-top: 80px; /* Adjust for navbar height */
+            margin-top: 80px;
             border-radius: 10px;
+            overflow-x: auto;
         }
         h1 {
             font-size: 3rem;
@@ -257,7 +270,7 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
             font-weight: 600;
         }
         .user-list .table-title {
-            margin-top: 80px; /* Adjust for visibility */
+            margin-top: 80px;
         }
         .btn-toggle-on {
             background-color: #28a745;
@@ -301,37 +314,6 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
             text-decoration: none;
             cursor: pointer;
         }
-        .chat-support .message {
-            margin-bottom: 10px;
-        }
-        .chat-support .message .username {
-            font-weight: bold;
-        }
-        .chat-support .message .staff {
-            color: red;
-        }
-        .chat-support .message .timestamp {
-            font-size: 0.8rem;
-            color: #888;
-        }
-        .chat-support .message-form {
-            display: flex;
-            margin-top: 20px;
-        }
-        .chat-support .message-form input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .chat-support .message-form button {
-            margin-left: 10px;
-            padding: 10px 20px;
-            border: none;
-            background-color: #007bff;
-            color: #ffffff;
-            border-radius: 5px;
-        }
     </style>
 </head>
 <body>
@@ -349,8 +331,7 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
     <h1>Bienvenue sur la page admin</h1>
     <div class="admin-container">
         <div class="user-list">
-            <h2 class="table-title">Gestion utilisateur</h2>
-            <h2 class="table-title">Derniers inscrits</h2>
+            <h2 class="table-title">Derniers inscrits </h2>
             <table class="table">
                 <thead>
                     <tr>
@@ -424,6 +405,31 @@ $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
                             <td><?php echo htmlspecialchars($sale['id']); ?></td>
                             <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($sale['order_date']))); ?></td>
                             <td><?php echo htmlspecialchars($sale['total_amount']); ?> €</td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="prime-members">
+            <h2 class="table-title">Derniers membres Prime</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Nom d'utilisateur</th>
+                        <th>Date d'inscription</th>
+                        <th>Last IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($recentPrimeMembers as $primeMember): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($primeMember['id']); ?></td>
+                            <td><?php echo htmlspecialchars($primeMember['fname']); ?></td>
+                            <td><?php echo htmlspecialchars($primeMember['username']); ?></td>
+                            <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($primeMember['date']))); ?></td>
+                            <td><?php echo htmlspecialchars($primeMember['last_ip']); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
