@@ -58,25 +58,21 @@
                 } elseif ($pass !== $cpass) {
                     $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
                 } else {
-                    $conn = new mysqli('localhost', 'root', 'root', 'crud');
-                    if ($conn->connect_error) {
-                        $_SESSION['error'] = "Erreur de connexion à la base de données: " . $conn->connect_error;
-                    } else {
-                        $stmt = $conn->prepare("INSERT INTO users (fname, username, password, date, last_ip) VALUES (?, ?, ?, NOW(), ?)");
+                    try {
+                        // Update the database name to 'crud'
+                        $db = new PDO('mysql:host=localhost;dbname=crud', 'root', 'root');
+                        $db->exec('SET NAMES "UTF8"');
+                        
+                        $stmt = $db->prepare("INSERT INTO users (fname, username, password, date, last_ip) VALUES (?, ?, ?, NOW(), ?)");
                         $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
                         $last_ip = $_SERVER['REMOTE_ADDR'];
-                        $stmt->bind_param("ssss", $fname, $uname, $hashed_pass, $last_ip);
+                        $stmt->execute([$fname, $uname, $hashed_pass, $last_ip]);
 
-                        if ($stmt->execute()) {
-                            $_SESSION['success'] = "Inscription réussie. Vous pouvez maintenant vous connecter.";
-                            header("Location: login.php");
-                            exit();
-                        } else {
-                            $_SESSION['error'] = "Erreur lors de l'inscription. Veuillez réessayer.";
-                        }
-
-                        $stmt->close();
-                        $conn->close();
+                        $_SESSION['success'] = "Inscription réussie. Vous pouvez maintenant vous connecter.";
+                        header("Location: login.php");
+                        exit();
+                    } catch (PDOException $e) {
+                        $_SESSION['error'] = "Erreur de connexion à la base de données: " . $e->getMessage();
                     }
                 }
             }
