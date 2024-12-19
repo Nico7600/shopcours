@@ -372,6 +372,20 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             flex-direction: column;
             justify-content: space-between;
         }
+        .product-details,
+        .comment-form,
+        .comments-section,
+        .related-products {
+            margin-bottom: 20px;
+        }
+        .no-comments {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -461,7 +475,9 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <p>Aucun commentaire pour ce produit.</p>
+                    <div class="no-comments">
+                        <p>Aucun commentaire pour ce produit.</p>
+                    </div>
                 <?php endif; ?>
             </div>
 
