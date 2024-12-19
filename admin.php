@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_admin'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ban_user'])) {
-    if (isset($_POST['reason']) && isset($_POST['duration'])) {
+    if (!empty($_POST['reason']) && !empty($_POST['duration'])) {
         $userId = $_POST['user_id'];
         $reason = $_POST['reason'];
         $duration = $_POST['duration'];
@@ -76,6 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ban_user'])) {
         $query = $db->prepare($sql);
         $query->bindValue(':id', $userId, PDO::PARAM_INT);
         $query->execute();
+
+        // Update the $recentUsers array to reflect the change
+        foreach ($recentUsers as &$user) {
+            if ($user['id'] == $userId) {
+                $user['banned'] = 1;
+                break;
+            }
+        }
 
         header('Location: admin.php');
         exit;
@@ -96,24 +104,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['unban_user'])) {
     $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
     $query->execute();
 
+    // Get the user_id before deleting the ban
+    $sql = 'SELECT user_id FROM bans WHERE id = :ban_id';
+    $query = $db->prepare($sql);
+    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+    $query->execute();
+    $userId = $query->fetchColumn();
+
     $sql = 'DELETE FROM bans WHERE id = :ban_id';
     $query = $db->prepare($sql);
     $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
     $query->execute();
 
     // Update the users table to set banned to 0
-    $sql = 'UPDATE users SET banned = 0 WHERE id = (SELECT user_id FROM bans WHERE id = :ban_id)';
+    $sql = 'UPDATE users SET banned = 0 WHERE id = :user_id';
     $query = $db->prepare($sql);
-    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
     $query->execute();
+
+    // Update the $recentUsers array to reflect the change
+    foreach ($recentUsers as &$user) {
+        if ($user['id'] == $userId) {
+            $user['banned'] = 0;
+            break;
+        }
+    }
 
     header('Location: admin.php');
     exit;
 }
-
-// Remove chat message handling
-
-// Remove chat message handling
 
 // Fetch recent registered users
 $sql = 'SELECT id, fname, username, is_prime, admin, date, banned, last_ip FROM users ORDER BY id DESC LIMIT 10';
@@ -505,7 +524,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="modal-content">
                 <span class="close" onclick="closeBanModal()">&times;</span>
                 <h2>Ban User</h2>
-                <form method="post" action="admin.php" name="ban_user">
+                <form method="post" action="admin.php">
                     <input type="hidden" name="user_id" id="banUserId">
                     <div class="form-group">
                         <label for="reason">Raison</label>
