@@ -373,9 +373,12 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
                                 <?php if ($user['banned']): ?>
                                     <?php foreach ($bannedUsers as $ban): ?>
                                         <?php if ($ban['user_id'] == $user['id']): ?>
-                                            <button class="btn btn-success" onclick="openUnbanPage(<?php echo $ban['ban_id']; ?>)">
-                                                <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
-                                            </button>
+                                            <form method="post" style="display:inline;">
+                                                <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
+                                                <button type="submit" name="unban_user" class="btn btn-success">
+                                                    <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
                                 <?php else: ?>
@@ -531,45 +534,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             window.location.href = 'confirm_unban.php?ban_id=' + banId;
         }
 
-        // Prevent form submission from scrolling to the top
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const formData = new FormData(form);
-                fetch(form.action, {
-                    method: form.method,
-                    body: formData
-                }).then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        alert('Une erreur est survenue.');
-                    }
-                }).catch(error => {
-                    console.error('Error:', error);
-                    alert('Une erreur est survenue.');
-                });
-            });
-        });
-
-        // Handle ban form submission separately
-        document.querySelector('form[name="ban_user"]').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            fetch(this.action, {
-                method: this.method,
-                body: formData
-            }).then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    alert('Une erreur est survenue.');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Une erreur est survenue.');
-            });
-        });
+        // Remove form submission prevention
     </script>
 </body>
 </html>
