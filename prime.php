@@ -24,10 +24,14 @@ $primeOptions = [
 
 $error = '';
 
+// Initialize PDO connection
+$pdo = new PDO('mysql:host=localhost;dbname=crud', 'root', 'root');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
     $option = $_POST['prime_option'];
     if (isset($primeOptions[$option])) {
         $price = $primeOptions[$option]['price'];
+        $description = $option === '30_days' ? "Adhésion Prime 1 mois" : "Adhésion Prime 1 an";
 
         // Add the selected prime option to the cart
         if (!isset($_SESSION['cart'])) {
@@ -45,7 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
                 'price_data' => [
                     'currency' => 'eur',
                     'product_data' => [
-                        'name' => $option,
+                        'name' => $description,
+                        'description' => "Profitez des avantages Prime pour $description.",
                     ],
                     'unit_amount' => $price * 100, // Stripe expects the amount in cents
                 ],
@@ -55,6 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
             'success_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/prime_success.php?session_id={CHECKOUT_SESSION_ID}&option=' . $option,
             'cancel_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/index.php?message=prime_cancel',
         ]);
+
+        // Create a new order entry in the orders table
+        $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount) VALUES (?, ?)");
+        $stmt->execute([$userId, $price]);
+        $orderId = $pdo->lastInsertId();
+
+        // Set the Prime subscription expiration date
+        $duration = $primeOptions[$option]['duration'];
+        $expirationDate = date('Y-m-d H:i:s', strtotime("+$duration days"));
+        $stmt = $pdo->prepare("INSERT INTO prime_subscriptions (user_id, expiration_date) VALUES (?, ?) ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date)");
+        $stmt->execute([$userId, $expirationDate]);
 
         // Redirect to the Stripe payment page
         header('Location: ' . $session->url);
