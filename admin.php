@@ -134,6 +134,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['unban_user'])) {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
+    $message = $_POST['update'];
+    $userId = $_SESSION['id'];
+    $sql = 'INSERT INTO updates (user_id, message, created_at) VALUES (:user_id, :message, NOW())';
+    $query = $db->prepare($sql);
+    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $query->bindValue(':message', $message, PDO::PARAM_STR);
+    $query->execute();
+    header('Location: admin.php');
+    exit;
+}
+
 // Fetch recent registered users
 $sql = 'SELECT id, fname, username, is_prime, admin, date, banned, last_ip FROM users ORDER BY id DESC LIMIT 10';
 $query = $db->prepare($sql);
@@ -333,6 +345,18 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             text-decoration: none;
             cursor: pointer;
         }
+        .form-container {
+            margin-top: 50px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -345,6 +369,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
                     <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
                 </button>
             </form>
+            <button class="btn btn-primary" onclick="openPatchNoteModal()">Ajouter Patch Note</button>
         </div>
     </div>
     <h1>Bienvenue sur la page admin</h1>
@@ -539,7 +564,26 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
+    <!-- Patch Note Modal -->
+    <div id="patchNoteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePatchNoteModal()">&times;</span>
+            <h2>Ajouter Patch Note</h2>
+            <form method="post" action="patchnote.php">
+                <textarea name="update" required class="form-control mb-3"></textarea>
+                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+            </form>
+        </div>
+    </div>
     <script>
+        function openPatchNoteModal() {
+            document.getElementById('patchNoteModal').style.display = 'block';
+        }
+
+        function closePatchNoteModal() {
+            document.getElementById('patchNoteModal').style.display = 'none';
+        }
+
         function openBanModal(userId) {
             document.getElementById('banUserId').value = userId;
             document.getElementById('banModal').style.display = 'block';
@@ -555,5 +599,6 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
 
         // Remove form submission prevention
     </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
