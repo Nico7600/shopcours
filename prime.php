@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
         // Set the Prime subscription expiration date
         $duration = $primeOptions[$option]['duration'];
         $expirationDate = date('Y-m-d H:i:s', strtotime("+$duration days"));
-        $stmt = $pdo->prepare("INSERT INTO prime_subscriptions (user_id, expiration_date) VALUES (?, ?) ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date)");
+        $stmt = $pdo->prepare("INSERT INTO crud (user_id, expiration_date) VALUES (?, ?) ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date)");
         $stmt->execute([$userId, $expirationDate]);
 
         // Redirect to the Stripe payment page
