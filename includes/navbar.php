@@ -66,10 +66,11 @@ $search = $search ?? '';
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="prime.php">
-                            <i class="fas fa-crown"></i> Prime
-                        </a>
-                    </li>
+            <a class="nav-link" href="patchnote.php">
+                <i class="fas fa-scroll"></i> Patch Notes
+            </a>
+        </li>
+                    
                 </ul>
 
                 <!-- Barre de recherche -->
