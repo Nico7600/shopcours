@@ -1,6 +1,6 @@
-s<?php
-session_start();
-require_once('connect.php');
+<?php
+require_once('bootstrap.php');
+
 
 if (!isset($_SESSION['id'])) {
     echo json_encode(['status' => 'error', 'message' => 'Vous devez être connecté pour envoyer un message.']);

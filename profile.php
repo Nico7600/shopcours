@@ -1,6 +1,6 @@
 <?php
-// On démarre une session
-session_start();
+require_once('bootstrap.php');
+
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit;

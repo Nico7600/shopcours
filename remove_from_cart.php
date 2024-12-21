@@ -1,16 +1,27 @@
 <?php
-require_once 'connect.php';
-session_start();
+require_once('bootstrap.php');
 
+// Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
 
-$cartId = $_GET['cart_id'];
-removeFromCart($cartId);
-header('Location: cart.php');
+// Récupérer l'ID du panier depuis l'URL
+$cartId = $_GET['cart_id'] ?? null;
 
+if ($cartId) {
+    // Appeler la fonction pour supprimer l'article du panier
+    removeFromCart($cartId);
+    header('Location: cart.php');
+    exit();
+} else {
+    $_SESSION['error'] = 'Aucun article à supprimer.';
+    header('Location: cart.php');
+    exit();
+}
+
+// Fonction pour supprimer un article du panier
 function removeFromCart($cartId) {
     global $db;
 
@@ -19,6 +30,4 @@ function removeFromCart($cartId) {
     $query->bindValue(':cart_id', $cartId, PDO::PARAM_INT);
     $query->execute();
 }
-
-exit();
 ?>

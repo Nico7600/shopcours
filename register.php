@@ -59,10 +59,7 @@
                     $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
                 } else {
                     try {
-                        // Update the database name to 'crud'
-                        $db = new PDO('mysql:host=localhost;dbname=crud', 'root', 'root');
-                        $db->exec('SET NAMES "UTF8"');
-                        
+						require_once 'bootstrap.php';                        
                         $stmt = $db->prepare("INSERT INTO users (fname, username, password, date, last_ip) VALUES (?, ?, ?, NOW(), ?)");
                         $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
                         $last_ip = $_SERVER['REMOTE_ADDR'];

@@ -1,6 +1,5 @@
 <?php
-// On démarre une session
-session_start();
+require_once('bootstrap.php');
 
 // Est-ce que l'id existe et n'est pas vide dans l'URL
 if(isset($_GET['id']) && !empty($_GET['id'])){

@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once('connect.php');
+require_once('bootstrap.php');
 
 if (!isset($_SESSION['id'])) {
     $_SESSION['erreur'] = "Vous devez être connecté pour accéder à cette page";
@@ -597,8 +596,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             window.location.href = 'confirm_unban.php?ban_id=' + banId;
         }
 
-        // Remove form submission prevention
     </script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>

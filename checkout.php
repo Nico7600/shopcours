@@ -1,78 +1,80 @@
 <?php
-require_once 'connect.php';
-require_once 'vendor/autoload.php';
+require_once 'bootstrap.php'; // Charge les sessions, les variables d’environnement et la connexion
 
-use Dotenv\Dotenv;
+use Stripe\Stripe;
 
-$dotenv = Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
-session_start();
-
+// Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
 
-\Stripe\Stripe::setApiKey($_ENV['STRIPE_API_KEY']);
+// Configurer Stripe avec la clé API
+Stripe::setApiKey($_ENV['STRIPE_API_KEY']);
 
-$userId = $_SESSION['id'];
+$userId = (int)$_SESSION['id'];
 
-// Fonction pour récupérer le panier
-function getCart($userId)
+// Fonction pour récupérer les produits du panier
+function getCartItems($userId, $db)
 {
-    global $db;
-
-    $sql = '
-        SELECT c.id AS cart_id, c.quantity, l.id AS product_id, l.produit, l.prix, l.Promo, p.name AS production_company
-        FROM cart c
-        JOIN liste l ON c.product_id = l.id
-        LEFT JOIN production_companies p ON l.production_company_id = p.id
-        WHERE c.user_id = :user_id
-    ';
-    $query = $db->prepare($sql);
-    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $query->execute();
-
-    return $query->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $sql = '
+            SELECT c.id AS cart_id, c.quantity, l.id AS product_id, l.produit, l.prix, l.Promo, p.name AS production_company
+            FROM cart c
+            JOIN liste l ON c.product_id = l.id
+            LEFT JOIN production_companies p ON l.production_company_id = p.id
+            WHERE c.user_id = :user_id
+        ';
+        $query = $db->prepare($sql);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la récupération du panier : " . $e->getMessage());
+        return [];
+    }
 }
 
 // Fonction pour vérifier si l'utilisateur est Prime
-function isPrimeUser($userId)
+function isPrimeUser($userId, $db)
 {
-    global $db;
-
-    $sql = 'SELECT is_prime FROM users WHERE id = :user_id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $query->execute();
-    $result = $query->fetch(PDO::FETCH_ASSOC);
-
-    return !empty($result['is_prime']) && $result['is_prime'] == 1;
+    try {
+        $sql = 'SELECT is_prime FROM users WHERE id = :user_id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        return !empty($result['is_prime']) && $result['is_prime'] == 1;
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la vérification du statut Prime : " . $e->getMessage());
+        return false;
+    }
 }
 
 // Vérifier si l'utilisateur est Prime
-$isPrime = isPrimeUser($userId);
+$isPrime = isPrimeUser($userId, $db);
 
 // Récupérer les produits du panier
-$cartItems = getCart($userId);
+$cartItems = getCartItems($userId, $db);
 
-// Créer une ligne pour chaque article dans Stripe Checkout
+// Préparer les articles pour Stripe Checkout
 $lineItems = [];
 foreach ($cartItems as $item) {
-    $price = str_replace(',', '.', $item['prix']); // Convertir en numérique
-    $price = (float)$price;
+    $price = (float)str_replace(',', '.', $item['prix']);
 
     // Appliquer la promotion
     $promoDiscount = $item['Promo'] ?? 0;
     $priceAfterPromo = $price * (1 - $promoDiscount / 100);
 
-    // Appliquer la réduction Prime pour les produits Amazon
+    // Réduction Prime pour les produits Amazon
     if ($isPrime && strtolower(trim($item['production_company'])) === 'amazon') {
         $priceAfterPromo *= 0.9; // Réduction supplémentaire de 10 %
     }
 
-    // Ajouter la ligne à Stripe Checkout
+    // Vérifier le prix final
+    $priceAfterPromo = max($priceAfterPromo, 0);
+
+    // Ajouter l'article à la liste Stripe Checkout
     $lineItems[] = [
         'price_data' => [
             'currency' => 'eur',
@@ -87,7 +89,6 @@ foreach ($cartItems as $item) {
 
 // Créer une session Stripe Checkout
 try {
-    // Récupérer automatiquement l'URL de base
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $baseUrl = $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']);
 
@@ -99,11 +100,13 @@ try {
         'cancel_url' => $baseUrl . '/cart.php',
     ]);
 
-    // Rediriger vers Stripe Checkout
+    // Rediriger l'utilisateur vers Stripe Checkout
     header('Location: ' . $checkoutSession->url);
     exit();
 } catch (Exception $e) {
-    $_SESSION['message'] = "Erreur lors de la création de la session Stripe : " . $e->getMessage();
+    error_log("Erreur Stripe : " . $e->getMessage());
+    $_SESSION['message'] = "Une erreur est survenue lors de la création de la session Stripe.";
     header('Location: cart.php');
     exit();
 }
+?>

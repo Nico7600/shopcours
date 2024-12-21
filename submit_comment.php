@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once('connect.php');
+require_once('bootstrap.php');
 
 if (isset($_POST['product_id'], $_POST['rating'], $_POST['comment'], $_SESSION['id'])) {
     $productId = strip_tags($_POST['product_id']);

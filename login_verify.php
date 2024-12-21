@@ -1,7 +1,5 @@
 <?php
-include "connect.php";
-
-session_start();
+require_once 'bootstrap.php'; // Charge les sessions et la connexion à la base
 
 if (isset($_SESSION['id'])) {
     header("Location: index.php");

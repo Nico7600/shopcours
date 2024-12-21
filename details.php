@@ -1,7 +1,5 @@
 <?php
-// On démarre une session
-session_start();
-require_once('connect.php');
+require_once('bootstrap.php');
 
 if(isset($_GET['id']) && !empty($_GET['id'])){
     $db->exec("SET NAMES 'utf8mb4'");
