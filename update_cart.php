@@ -1,6 +1,5 @@
 <?php
-require_once 'connect.php';
-session_start();
+require_once('bootstrap.php');
 
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');

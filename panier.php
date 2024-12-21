@@ -1,8 +1,5 @@
 <?php
-session_start();
-
-// Include the navbar
-include 'navbar.php';
+require_once 'bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_produit = $_POST['id_produit'];

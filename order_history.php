@@ -1,52 +1,66 @@
+
 <?php
-require_once 'connect.php';
-session_start();
+require_once 'bootstrap.php'; // Charge les sessions et la connexion à la base
 
-$userName = null;
-if (isset($_SESSION['id'])) {
-    $sql = 'SELECT fname FROM users WHERE id = :id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
-    $query->execute();
-    $user = $query->fetch(PDO::FETCH_ASSOC);
-    if ($user) {
-        $userName = $user['fname'];
-    }
-}
-
+// Vérifiez si l'utilisateur est connecté
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
 
+// Récupérer les informations de l'utilisateur connecté
 $userId = $_SESSION['id'];
+$userName = null;
 
-// Fonction pour récupérer les commandes d'un utilisateur
-function getOrderHistory($userId)
-{
-    global $db;
-
-    $sql = '
-        SELECT o.id AS order_id, o.order_date, o.total_amount, 
-               GROUP_CONCAT(CONCAT(oi.quantity, "x ", l.produit, " (", FORMAT(oi.price, 2), " €)") SEPARATOR ", ") AS items
-        FROM orders o
-        JOIN order_items oi ON o.id = oi.order_id
-        JOIN liste l ON oi.product_id = l.id
-        WHERE o.user_id = :user_id
-        GROUP BY o.id
-        ORDER BY o.order_date DESC
-    ';
+try {
+    $sql = 'SELECT fname FROM users WHERE id = :id';
     $query = $db->prepare($sql);
-    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $query->bindValue(':id', $userId, PDO::PARAM_INT);
     $query->execute();
+    $user = $query->fetch(PDO::FETCH_ASSOC);
 
-    return $query->fetchAll(PDO::FETCH_ASSOC);
+    if ($user) {
+        $userName = $user['fname'];
+    } else {
+        // Si l'utilisateur n'est pas trouvé, déconnectez-le
+        session_destroy();
+        header('Location: login.php');
+        exit();
+    }
+} catch (PDOException $e) {
+    error_log('Erreur lors de la récupération des informations utilisateur : ' . $e->getMessage());
+    header('Location: error.php');
+    exit();
 }
 
+// Fonction pour récupérer l'historique des commandes
+function getOrderHistory($userId, $db)
+{
+    try {
+        $sql = '
+            SELECT o.id AS order_id, o.order_date, o.total_amount, 
+                   GROUP_CONCAT(CONCAT(oi.quantity, "x ", l.produit, " (", FORMAT(oi.price, 2), " €)") SEPARATOR ", ") AS items
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN liste l ON oi.product_id = l.id
+            WHERE o.user_id = :user_id
+            GROUP BY o.id
+            ORDER BY o.order_date DESC
+        ';
+        $query = $db->prepare($sql);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log('Erreur lors de la récupération des commandes : ' . $e->getMessage());
+        return [];
+    }
+}
 
 // Récupérer l'historique des commandes
-$orderHistory = getOrderHistory($userId);
+$orderHistory = getOrderHistory($userId, $db);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="fr">

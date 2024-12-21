@@ -1,13 +1,5 @@
 <?php
-require_once 'connect.php';
-require_once 'vendor/autoload.php';
-
-use Dotenv\Dotenv;
-
-$dotenv = Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
-session_start();
+require_once 'bootstrap.php'; // Charger bootstrap.php pour centraliser la configuration
 
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
@@ -15,6 +7,12 @@ if (!isset($_SESSION['id'])) {
 }
 
 $userId = $_SESSION['id'];
+
+// Valider la configuration de Stripe
+if (empty($_ENV['STRIPE_API_KEY'])) {
+    throw new Exception('La clé API Stripe n\'est pas configurée dans le fichier .env');
+}
+
 \Stripe\Stripe::setApiKey($_ENV['STRIPE_API_KEY']);
 
 // Récupérer la session Stripe
@@ -51,8 +49,7 @@ try {
     foreach ($cartItems as $item) {
         $productId = $item['product_id'];
         $quantity = $item['quantity'];
-        $price = str_replace(',', '.', $item['prix']);
-        $price = (float)$price * (1 - $item['Promo'] / 100); // Appliquer la promotion
+        $price = (float)str_replace(',', '.', $item['prix']) * (1 - $item['Promo'] / 100); // Appliquer la promotion
         $subtotal = $price * $quantity;
         $total += $subtotal;
 
@@ -72,7 +69,7 @@ try {
     }
 
     // Ajouter une commande dans `orders`
-    $sql = 'INSERT INTO orders (user_id, total_amount,stripe_session_id) VALUES (:user_id, :total_amount, :stripe_session_id)';
+    $sql = 'INSERT INTO orders (user_id, total_amount, stripe_session_id) VALUES (:user_id, :total_amount, :stripe_session_id)';
     $query = $db->prepare($sql);
     $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
     $query->bindValue(':total_amount', $total, PDO::PARAM_STR);
@@ -84,8 +81,7 @@ try {
     foreach ($cartItems as $item) {
         $productId = $item['product_id'];
         $quantity = $item['quantity'];
-        $price = str_replace(',', '.', $item['prix']);
-        $price = (float)$price * (1 - $item['Promo'] / 100);
+        $price = (float)str_replace(',', '.', $item['prix']) * (1 - $item['Promo'] / 100);
 
         $sql = 'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (:order_id, :product_id, :quantity, :price)';
         $query = $db->prepare($sql);
@@ -109,8 +105,15 @@ try {
     header('Location: cart.php');
     exit();
 } catch (Exception $e) {
-    $db->rollBack();
-    $_SESSION['message'] = "Erreur lors de la validation de la commande : " . $e->getMessage();
+    // Annuler la transaction en cas d'erreur
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+
+    // Enregistrer l'erreur dans les logs
+    error_log("Erreur de validation de la commande : " . $e->getMessage());
+
+    $_SESSION['message'] = "Erreur lors de la validation de la commande : " . htmlspecialchars($e->getMessage());
     header('Location: cart.php');
     exit();
 }

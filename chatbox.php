@@ -1,7 +1,6 @@
 
 <?php
-session_start();
-require_once 'connect.php';
+require_once('bootstrap.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     $message = trim($_POST['message']);

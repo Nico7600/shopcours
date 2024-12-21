@@ -1,5 +1,5 @@
 <?php
-require_once('connect.php');
+require_once('bootstrap.php');
 
 $checkColumnSql = "SHOW COLUMNS FROM `liste` LIKE 'image';";
 $checkColumnQuery = $db->prepare($checkColumnSql);

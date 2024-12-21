@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once 'bootstrap.php'; // Charge les sessions et la connexion à la base
+
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     header("Location: index.php");
     exit();

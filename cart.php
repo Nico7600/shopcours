@@ -1,6 +1,6 @@
 <?php
-require_once 'connect.php';
-session_start();
+require_once 'bootstrap.php'; // Charge les sessions, les variables d'environnement et la connexion
+
 // Vérification de l'utilisateur connecté
 if (!isset($_SESSION['id'])) {
     $_SESSION['erreur'] = "Vous devez être connecté pour ajouter des articles au panier.";
@@ -9,7 +9,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id = (int) $_SESSION['id']; // ID de l'utilisateur connecté
+    $user_id = (int) $_SESSION['id']; 
     $product_id = (int) $_POST['id_produit'];
     $quantity = (int) $_POST['quantite'];
 

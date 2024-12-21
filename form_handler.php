@@ -1,6 +1,6 @@
 
 <?php
-session_start();
+require_once('bootstrap.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Vérifiez que tous les champs obligatoires sont remplis

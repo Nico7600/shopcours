@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once('connect.php');
+require_once('bootstrap.php');
 
 if (!isset($_SESSION['id']) || !isset($_GET['ban_id'])) {
     header('Location: admin.php');

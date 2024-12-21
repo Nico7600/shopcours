@@ -1,6 +1,5 @@
 <?php
-require_once 'connect.php';
-session_start();
+require_once 'bootstrap.php'; // Charge les sessions, les variables d'environnement et la connexion
 
 // Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['id'])) {
@@ -8,26 +7,36 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-$user_id = (int) $_SESSION['id'];
+$userId = (int)$_SESSION['id'];
 
 // Récupérer le statut Prime de l'utilisateur
-$sqlUser = 'SELECT is_prime FROM users WHERE id = :id';
-$queryUser = $db->prepare($sqlUser);
-$queryUser->execute([':id' => $user_id]);
-$user = $queryUser->fetch();
-$isPrime = $user ? (bool) $user['is_prime'] : false;
+try {
+    $sqlUser = 'SELECT is_prime FROM users WHERE id = :id';
+    $queryUser = $db->prepare($sqlUser);
+    $queryUser->execute([':id' => $userId]);
+    $user = $queryUser->fetch();
+    $isPrime = $user ? (bool)$user['is_prime'] : false;
+} catch (PDOException $e) {
+    error_log("Erreur lors de la récupération des informations utilisateur : " . $e->getMessage());
+    $isPrime = false;
+}
 
 // Récupérer les articles du panier
-$sql = '
-    SELECT c.id AS cart_id, l.produit, l.prix, l.Promo, c.quantity, l.image_produit, p.name AS production_company
-    FROM cart c
-    JOIN liste l ON c.product_id = l.id
-    LEFT JOIN production_companies p ON l.production_company_id = p.id
-    WHERE c.user_id = :user_id
-';
-$query = $db->prepare($sql);
-$query->execute([':user_id' => $user_id]);
-$cartItems = $query->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $sql = '
+        SELECT c.id AS cart_id, l.produit, l.prix, l.Promo, c.quantity, l.image_produit, p.name AS production_company
+        FROM cart c
+        JOIN liste l ON c.product_id = l.id
+        LEFT JOIN production_companies p ON l.production_company_id = p.id
+        WHERE c.user_id = :user_id
+    ';
+    $query = $db->prepare($sql);
+    $query->execute([':user_id' => $userId]);
+    $cartItems = $query->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Erreur lors de la récupération des articles du panier : " . $e->getMessage());
+    $cartItems = [];
+}
 
 // Calculer le total
 $total = 0;
@@ -109,6 +118,7 @@ $total = 0;
 <body>
     <!-- Navigation -->
     <?php include 'includes/navbar.php'; ?>
+    
     <main class="container mt-5">
         <h1>Votre Panier</h1>
         <table class="table table-bordered">
@@ -193,7 +203,7 @@ $total = 0;
         </a>
     </main>
 
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     <script>
     document.querySelectorAll('.update-quantity-form').forEach(form => {
         form.addEventListener('submit', function(event) {

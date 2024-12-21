@@ -64,6 +64,7 @@ body {
 .navbar-center .dropdown-menu {
     font-size: 1rem; /* Ensure same font size */
 }
+
 .navbar-center .form-control, .navbar-center .btn-outline-success {
     height: 30px; /* Ensure same height */
 }

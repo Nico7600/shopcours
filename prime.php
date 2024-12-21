@@ -1,13 +1,5 @@
 <?php
-require_once 'connect.php';
-require_once 'vendor/autoload.php';
-
-use Dotenv\Dotenv;
-
-$dotenv = Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
-session_start();
+require_once('bootstrap.php');
 
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
@@ -24,8 +16,12 @@ $primeOptions = [
 
 $error = '';
 
-// Initialize PDO connection
-$pdo = new PDO('mysql:host=localhost;dbname=crud', 'root', 'root');
+try {
+    $pdo = new PDO('mysql:host=' . $_ENV['DB_HOST'] . ';dbname=' . $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    $error = "Erreur de connexion à la base de données: " . $e->getMessage();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
     $option = $_POST['prime_option'];
@@ -306,6 +302,6 @@ $user = []; // Replace with actual user fetching logic
             ?>
         </div>
     </div>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>

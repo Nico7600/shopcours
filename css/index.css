@@ -1,0 +1,160 @@
+#notification {
+    top: 20px; /* Ajuster si nécessaire */
+    right: 20px; /* Ajuster si nécessaire */
+    position: fixed;
+    z-index: 1050;
+    width: 300px;
+}
+.fixed-height {
+    height: 200px; /* Ajuster la hauteur selon vos besoins */
+    object-fit: cover;
+}
+.star-rating .fa-star,
+.star-rating .fa-star-half-alt,
+.star-rating .fa-star-quarter {
+    color: #FFD700; /* Yellow color for stars */
+}
+body {
+    font-family: 'Ubuntu', sans-serif;
+}
+h5 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+p {
+    font-size: 1rem;
+    font-weight: 400;
+}
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+.card-text {
+    font-size: 1rem;
+    font-weight: 300;
+}
+.card-price-original {
+    font-size: 1rem;
+    font-weight: 400;
+    text-decoration: line-through;
+}
+.card-price-promo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: red;
+}
+.card-quantity {
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+.btn {
+    font-size: 1rem;
+    font-weight: 700;
+}
+.alert-custom {
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+    text-align: center;
+}
+.chatbox {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1050;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    display: none; /* Initially hidden */
+}
+.chatbox-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.chatbox-body {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+.chatbox-footer {
+    display: flex;
+    align-items: center;
+}
+.chatbox-footer textarea {
+    flex: 1;
+    resize: none;
+}
+.chatbox-footer button {
+    margin-left: 10px;
+}
+.success-message {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background-color: #28a745;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.success-message.show {
+    display: block;
+    animation: fadeInOut 4s forwards;
+}
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+}
+/* From Uiverse.io by PaolaMarai */
+.error {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    width: 320px;
+    padding: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    border-radius: 50px;
+    background: -webkit-linear-gradient(to right, #f45c43, #eb3349);
+    background: linear-gradient(to right, #f45c43, #eb3349);
+    box-shadow: 0 0px 10px #de1c3280;
+}
+
+.error__icon {
+    width: 20px;
+    height: 20px;
+    transform: translateY(-2px);
+    margin-right: 8px;
+    filter: drop-shadow(2px 1px 2px rgb(0 0 0 / 0.4));
+}
+
+.error__icon path {
+    fill: #fff;
+}
+
+.error__title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #fff;
+}
+
+.error__close {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-left: auto;
+    filter: drop-shadow(2px 1px 2px rgb(0 0 0 / 0.4));
+}
+
+.error__close path {
+    fill: #fff;
+}
