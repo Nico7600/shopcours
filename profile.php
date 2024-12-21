@@ -27,6 +27,18 @@ if ($user) {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $newUsername = trim($_POST['username']);
+    if (!empty($newUsername)) {
+        $sql = 'UPDATE users SET username = :username WHERE id = :id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':username', $newUsername, PDO::PARAM_STR);
+        $query->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
+        $query->execute();
+        $user['username'] = $newUsername;
+    }
+}
+
 require_once('close.php');
 ?>
 
@@ -44,6 +56,55 @@ require_once('close.php');
     <link rel="stylesheet" href="css/styles.css">
     <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Ubuntu', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        p, label {
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        .badge {
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+        .btn {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .form-control {
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -59,7 +120,13 @@ require_once('close.php');
                     </div>
                     <div class="card-body">
                         <p><strong>Nom complet :</strong> <?= htmlspecialchars($userName); ?></p>
-                        <p><strong>Nom d'utilisateur :</strong> <?= htmlspecialchars($user['username']); ?></p>
+                        <form method="post">
+                            <div class="form-group">
+                                <label for="username"><strong>Nom d'utilisateur :</strong></label>
+                                <input type="text" id="username" name="username" class="form-control" value="<?= htmlspecialchars($user['username']); ?>" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3">Mettre à jour</button>
+                        </form>
                         <p>
                             <strong>Abonnement Prime :</strong>
                             <?php if ($isPrime): ?>
@@ -76,28 +143,6 @@ require_once('close.php');
             </div>
         </div>
     </main>
-
-    <style>
-        body {
-            font-family: 'Ubuntu', sans-serif;
-        }
-        h3 {
-            font-size: 1.75rem;
-            font-weight: 700;
-        }
-        p {
-            font-size: 1rem;
-            font-weight: 400;
-        }
-        .badge {
-            font-size: 0.875rem;
-            font-weight: 700;
-        }
-        .btn {
-            font-size: 1rem;
-            font-weight: 700;
-        }
-    </style>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

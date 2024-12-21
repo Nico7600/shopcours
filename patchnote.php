@@ -88,30 +88,37 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
         body {
             font-family: Arial, sans-serif;
             font-size: 16px;
+            background-color: #f8f9fa;
+            color: #343a40;
         }
         .developer {
             position: absolute;
             bottom: 10px;
             left: 10px;
             font-weight: bold;
+            font-size: 14px;
         }
         .current-date {
             position: absolute;
             bottom: 10px;
             right: 10px;
+            font-size: 14px;
         }
         .centered-bold {
             text-align: center;
             font-weight: bold;
-            font-size: 24px;
+            font-size: 36px;
+            margin-bottom: 30px;
+            color: #007bff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
         .patch-note-container {
             position: relative;
-            padding: 20px;
+            padding: 30px;
             border: 1px solid #ddd;
             border-radius: 10px;
             margin-bottom: 20px;
-            background-color: #f1f1f1;
+            background-color: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .patch-note-container .card-body {
@@ -123,26 +130,29 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
         .formatted-text ul li {
             list-style-type: disc;
             font-size: 18px;
+            margin-bottom: 10px;
         }
         .formatted-text .highlight {
             text-align: center;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 22px;
+            margin-bottom: 15px;
         }
         .vote-buttons {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
+            margin-top: 20px;
         }
         .vote-buttons .btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            font-size: 18px;
+            font-size: 20px;
             transition: transform 0.2s;
         }
         .vote-buttons .btn-success:hover {
