@@ -85,6 +85,10 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
         .developer {
             position: absolute;
             bottom: 10px;
@@ -99,6 +103,7 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
         .centered-bold {
             text-align: center;
             font-weight: bold;
+            font-size: 24px;
         }
         .patch-note-container {
             position: relative;
@@ -117,11 +122,12 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
         }
         .formatted-text ul li {
             list-style-type: disc;
+            font-size: 18px;
         }
         .formatted-text .highlight {
             text-align: center;
             font-weight: bold;
-            font-size: larger;
+            font-size: 20px;
         }
         .vote-buttons {
             display: flex;
