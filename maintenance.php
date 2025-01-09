@@ -10,10 +10,10 @@
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/styles.css">
     <!-- Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap">
     <style>
         body {
-            font-family: 'Ubuntu', sans-serif;
+            font-family: 'Roboto', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,29 +25,46 @@
             background: white;
             padding: 2rem;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             text-align: center;
+            max-width: 500px;
+            width: 100%;
         }
         .maintenance-container img {
             max-width: 100px;
             margin-bottom: 1rem;
         }
         @keyframes hourglass {
-            0% { transform: rotate(0); }
-            45% { transform: rotate(180deg); }
-            55% { transform: rotate(180deg); }
-            100% { transform: rotate(360deg); }
+            0%, 50% { transform: rotate(0); }
+            100% { transform: rotate(180deg); }
         }
         .maintenance-container .fa-hourglass {
             font-size: 4rem;
-            color: #d3d3d3;
+            color: #ff6666; /* Light red color */
             margin-bottom: 1rem;
-            animation: hourglass 8s infinite linear;
+            animation: hourglass 4s infinite linear;
+        }
+        .maintenance-container h1 {
+            font-size: 2rem;
+            color: #343a40;
+            margin-bottom: 1rem;
+        }
+        .maintenance-container p {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        .maintenance-container .brand {
+            font-size: 2.5rem; /* Larger font size */
+            font-weight: bold; /* Bold text */
+            color: #343a40;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
     <div class="maintenance-container">
+        <div class="brand">Valomazone</div>
         <i class="fa-solid fa-hourglass"></i>
         <h1>Site en maintenance</h1>
         <p>Nous reviendrons bientôt. Merci de votre patience.</p>

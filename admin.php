@@ -20,6 +20,13 @@ if (!$user || $user['admin'] != 1) {
     exit;
 }
 
+// Bypass maintenance mode for admin users
+if (file_exists('maintenance.flag') && !$user['admin'] && basename($_SERVER['PHP_SELF']) != 'admin.php') {
+    $_SESSION['erreur'] = "Le site est en maintenance";
+    header('Location: index.php');
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])) {
     $maintenance = file_exists('maintenance.flag');
     if ($maintenance) {
