@@ -1,3 +1,20 @@
+<?php
+$maintenance_mode = true; // Set to false to disable maintenance mode
+if (!$maintenance_mode) {
+    header('Location: index.php'); // Redirect to the homepage or another page
+    exit();
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])) {
+    $maintenance = file_exists('maintenance.flag');
+    if ($maintenance) {
+        unlink('maintenance.flag');
+    } else {
+        file_put_contents('maintenance.flag', '1');
+    }
+    header('Location: maintenance.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -60,6 +77,25 @@
             color: #343a40;
             margin-bottom: 1rem;
         }
+        .maintenance-container .btn {
+            margin-top: 1rem;
+        }
+        .btn-maintenance-on {
+            background-color: #dc3545;
+            color: #ffffff;
+        }
+        .btn-maintenance-on:hover {
+            background-color: #c82333;
+            color: #ffffff;
+        }
+        .btn-maintenance-off {
+            background-color: #28a745;
+            color: #ffffff;
+        }
+        .btn-maintenance-off:hover {
+            background-color: #218838;
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -68,6 +104,11 @@
         <i class="fa-solid fa-hourglass"></i>
         <h1>Site en maintenance</h1>
         <p>Nous reviendrons bientôt. Merci de votre patience.</p>
+        <form method="post">
+            <button type="submit" name="toggle_maintenance" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>">
+                <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
+            </button>
+        </form>
     </div>
 </body>
 </html>
