@@ -21,10 +21,15 @@ if (!$user || $user['admin'] != 1) {
 }
 
 // Bypass maintenance mode for admin users
-if (file_exists('maintenance.flag') && !$user['admin'] && basename($_SERVER['PHP_SELF']) != 'admin.php') {
-    $_SESSION['erreur'] = "Le site est en maintenance";
-    header('Location: index.php');
-    exit;
+if (file_exists('maintenance.flag') && basename($_SERVER['PHP_SELF']) != 'admin.php') {
+    $endTime = file_get_contents('maintenance.flag');
+    if (time() > $endTime) {
+        unlink('maintenance.flag');
+    } elseif (!$user['admin']) {
+        $_SESSION['erreur'] = "Le site est en maintenance";
+        header('Location: index.php');
+        exit;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])) {
@@ -32,7 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])
     if ($maintenance) {
         unlink('maintenance.flag');
     } else {
-        file_put_contents('maintenance.flag', '1');
+        $duration = $_POST['maintenance_duration'];
+        $endTime = time() + ($duration * 1);
+        file_put_contents('maintenance.flag', $endTime);
     }
     header('Location: admin.php');
     exit;
@@ -371,7 +378,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
         <div class="menu">
             <a href="add.php">Ajouter produit</a>
             <form method="post" style="display:inline;">
-                <button type="submit" name="toggle_maintenance" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>">
+                <button type="button" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>" onclick="openMaintenanceModal()">
                     <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
                 </button>
             </form>
@@ -570,6 +577,20 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
+    <!-- Maintenance Modal -->
+    <div id="maintenanceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMaintenanceModal()">&times;</span>
+            <h2>Activer la maintenance</h2>
+            <form method="post" action="admin.php">
+                <div class="form-group">
+                    <label for="maintenance_duration">Durée (minutes)</label>
+                    <input type="number" name="maintenance_duration" id="maintenance_duration" class="form-control" required>
+                </div>
+                <button type="submit" name="toggle_maintenance" class="btn btn-danger">Activer</button>
+            </form>
+        </div>
+    </div>
     <!-- Patch Note Modal -->
     <div id="patchNoteModal" class="modal">
         <div class="modal-content">
@@ -603,6 +624,13 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             window.location.href = 'confirm_unban.php?ban_id=' + banId;
         }
 
+        function openMaintenanceModal() {
+            document.getElementById('maintenanceModal').style.display = 'block';
+        }
+
+        function closeMaintenanceModal() {
+            document.getElementById('maintenanceModal').style.display = 'none';
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
