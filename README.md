@@ -39,4 +39,5 @@ Ce projet a été réalisé par Nicolas Deprets, élève de l'IFAPME de Charlero
 Il est interdit de le réutiliser en sa copie conforme sans mon accord préalable.
 
 ## Date de création
-Ce projet a été créé en octobre 2023.
+Ce projet a été créé en octobre 2024.
+V1 disponible depuis le 10/12/2024 depuis l'hébergeur OVH
