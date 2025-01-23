@@ -400,6 +400,10 @@ $listeItems = $query->fetchAll(PDO::FETCH_ASSOC);
             align-items: center;
             gap: 10px;
         }
+        .liste-items .table td, .liste-items .table th {
+            text-align: center;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
