@@ -205,19 +205,26 @@ $query = $db->prepare($sql);
 $query->execute();
 $listeItems = $query->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch data for charts
+$sql = 'SELECT DATE_FORMAT(date, "%d/%m/%Y") as date, COUNT(*) as count FROM users GROUP BY DATE(date) ORDER BY date DESC LIMIT 10';
+$query = $db->prepare($sql);
+$query->execute();
+$registrationsData = $query->fetchAll(PDO::FETCH_ASSOC);
+
+$sql = 'SELECT DATE_FORMAT(order_date, "%d/%m/%Y") as date, SUM(total_amount) as total FROM orders GROUP BY DATE(order_date) ORDER BY date DESC LIMIT 10';
+$query = $db->prepare($sql);
+$query->execute();
+$salesData = $query->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Admin</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.2.1/css/dataTables.bootstrap5.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             background-color: #343a40;
@@ -404,13 +411,69 @@ $listeItems = $query->fetchAll(PDO::FETCH_ASSOC);
             text-align: center;
             vertical-align: middle;
         }
+        .charts-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .chart-wrapper {
+            width: 45%;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
         <a href="index.php">Valomazone Admin</a>
         <div class="menu">
-            <a href="add.php">Ajouter produit</a>
+            <button class="btn btn-primary" onclick="window.location.href='add.php'">Ajouter produit</button>
             <form method="post" style="display:inline;">
                 <button type="button" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>" onclick="openMaintenanceModal()">
                     <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
@@ -430,6 +493,16 @@ $listeItems = $query->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     <div class="admin-container">
+        <h1 id="statsTitle">Statistiques</h1>
+        <button id="toggleChartsButton" class="btn btn-secondary" onclick="toggleCharts()">Afficher/Masquer les graphiques</button>
+        <div id="chartsContainer" class="charts-container">
+            <div class="chart-wrapper">
+                <canvas id="registrationsChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="salesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
         <div class="user-list">
             <div class="table-title">
                 <h2>Derniers inscrits</h2>
@@ -712,7 +785,95 @@ $listeItems = $query->fetchAll(PDO::FETCH_ASSOC);
         restoreTableVisibility('bannedUsersTable');
         restoreTableVisibility('banHistoryTable');
         restoreTableVisibility('listeTable');
+
+        // Data for charts
+        var registrationsLabels = <?php echo json_encode(array_column($registrationsData, 'date')); ?>;
+        var registrationsCounts = <?php echo json_encode(array_column($registrationsData, 'count')); ?>;
+        var salesLabels = <?php echo json_encode(array_column($salesData, 'date')); ?>;
+        var salesTotals = <?php echo json_encode(array_column($salesData, 'total')); ?>;
+
+        var registrationsChartData = {
+            labels: registrationsLabels.reverse(),
+            datasets: [{
+                label: 'Inscriptions',
+                data: registrationsCounts.reverse(),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        var salesChartData = {
+            labels: salesLabels.reverse(),
+            datasets: [{
+                label: 'Ventes',
+                data: salesTotals.reverse(),
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Initialize charts
+        var ctx1 = document.getElementById('registrationsChart').getContext('2d');
+        var registrationsChart = new Chart(ctx1, {
+            type: 'line',
+            data: registrationsChartData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                family: 'Ubuntu'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        var ctx2 = document.getElementById('salesChart').getContext('2d');
+        var salesChart = new Chart(ctx2, {
+            type: 'line',
+            data: salesChartData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                family: 'Ubuntu'
+                            }
+                        }
+                    }
+                }
+            }
+        });
     });
+
+    function toggleCharts() {
+        var chartsContainer = document.getElementById('chartsContainer');
+        var statsTitle = document.getElementById('statsTitle');
+        var toggleButton = document.getElementById('toggleChartsButton');
+        if (chartsContainer.style.display === 'none' || chartsContainer.style.display === '') {
+            chartsContainer.style.display = 'flex';
+            statsTitle.style.display = 'block';
+            toggleButton.textContent = 'Masquer les graphiques';
+        } else {
+            chartsContainer.style.display = 'none';
+            statsTitle.style.display = 'none';
+            toggleButton.textContent = 'Afficher les graphiques';
+        }
+    }
 
     function initializeDataTable(tableId) {
         if (!$.fn.dataTable.isDataTable('#' + tableId)) {
