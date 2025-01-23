@@ -15,23 +15,23 @@ Le site est capable de :
 ## Pages majeures
 ### Page d'accueil
 La page d'accueil présente les produits phares et les promotions en cours. Elle offre une vue d'ensemble des meilleures offres et des nouveautés.
-[Accéder à la page d'accueil](./index.php)
+[Accéder à la page d'accueil](http://www.nicolas.valomazone.store/index.php)
 
 ### Page de produits
 La page de produits affiche tous les produits disponibles avec des options de filtrage et de tri. Les utilisateurs peuvent parcourir les catégories, voir les détails des produits et ajouter des articles à leur panier.
-[Accéder à la page de produits](./products.php)
+[Accéder à la page de produits](http://www.nicolas.valomazone.store/products.php)
 
 ### Page de panier
 La page de panier permet aux utilisateurs de voir les produits qu'ils ont ajoutés à leur panier et de procéder au paiement. Les utilisateurs peuvent modifier les quantités ou supprimer des articles avant de finaliser leur commande.
-[Accéder à la page de panier](./cart.php)
+[Accéder à la page de panier](http://www.nicolas.valomazone.store/cart.php)
 
 ### Page de commande
 La page de commande permet aux utilisateurs de finaliser leur achat en entrant leurs informations de livraison et de paiement. Un récapitulatif de la commande est affiché avant la confirmation.
-[Accéder à la page de commande](./checkout.php)
+[Accéder à la page de commande](http://www.nicolas.valomazone.store/checkout.php)
 
 ### Page de compte utilisateur
 La page de compte utilisateur permet aux utilisateurs de gérer leurs informations personnelles et de voir l'historique de leurs commandes. Les utilisateurs peuvent mettre à jour leurs informations de contact et consulter les détails de leurs achats passés.
-[Accéder à la page de compte utilisateur](./account.php)
+[Accéder à la page de compte utilisateur](http://www.nicolas.valomazone.store/account.php)
 
 ## Crédits
 Ce projet a été réalisé par Nicolas Deprets, élève de l'IFAPME de Charleroi en classe de 1ère assistant en développement web, dans le cadre du cours de WorkShop.
