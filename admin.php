@@ -199,6 +199,12 @@ $query = $db->prepare($sql);
 $query->execute();
 $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch liste data
+$sql = 'SELECT id, produit, prix, nombre, description, badge, promo FROM liste ORDER BY id DESC';
+$query = $db->prepare($sql);
+$query->execute();
+$listeItems = $query->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -301,7 +307,6 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             padding: 12px;
             border: 1px solid #ddd;
             text-align: center;
-            vertical-align: middle;
         }
         .table th {
             background-color: #212529;
@@ -309,12 +314,6 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
         }
         .table tbody tr:nth-child(even) {
             background-color: #6c757d;
-        }
-        .table tbody tr:nth-child(odd) {
-            background-color: #495057;
-        }
-        .table tbody tr:hover {
-            background-color: #343a40;
         }
         .table-title {
             text-align: center;
@@ -423,6 +422,7 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             <button id="toggleRecentPrimeMembersTable" class="btn btn-secondary" onclick="toggleDataTable('recentPrimeMembersTable')" data-label="Derniers membres Prime">Activer/Désactiver Derniers membres Prime</button>
             <button id="toggleBannedUsersTable" class="btn btn-secondary" onclick="toggleDataTable('bannedUsersTable')" data-label="Liste des ban en cours">Activer/Désactiver Liste des ban en cours</button>
             <button id="toggleBanHistoryTable" class="btn btn-secondary" onclick="toggleDataTable('banHistoryTable')" data-label="Historique des bans">Activer/Désactiver Historique des bans</button>
+            <button id="toggleListeTable" class="btn btn-secondary" data-label="Liste des produits" onclick="toggleDataTable('listeTable')">Activer Liste des produits</button>
         </div>
     </div>
     <div class="admin-container">
@@ -616,6 +616,39 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
                 </table>
             </div>
         </div>
+        <div class="liste-items">
+            <div class="table-title">
+                <h2>Liste des produits</h2>
+            </div>
+            <div id="listeTableContainer">
+                <table id="listeTable" class="table table-striped table-dark" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Produit</th>
+                            <th>Prix</th>
+                            <th>Nombre</th>
+                            <th>Description</th>
+                            <th>Badge</th>
+                            <th>Promo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($listeItems as $item): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($item['id']); ?></td>
+                                <td><?php echo htmlspecialchars($item['produit']); ?></td>
+                                <td><?php echo htmlspecialchars($item['prix']); ?> €</td>
+                                <td><?php echo htmlspecialchars($item['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($item['description']); ?></td>
+                                <td><?php echo htmlspecialchars($item['badge']); ?></td>
+                                <td><?php echo htmlspecialchars($item['promo']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
         <!-- Ban Modal -->
         <div id="banModal" class="modal">
             <div class="modal-content">
@@ -662,27 +695,34 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/2.2.1/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.2.1/js/dataTables.bootstrap5.js"></script>
     <script>
     $(document).ready(function() {
-        initializeDataTable('recentUsersTable');
-        initializeDataTable('recentSalesTable');
-        initializeDataTable('recentPrimeMembersTable');
-        initializeDataTable('bannedUsersTable');
-        initializeDataTable('banHistoryTable');
+        // Initialize tables based on cookie visibility
+        restoreTableVisibility('recentUsersTable');
+        restoreTableVisibility('recentSalesTable');
+        restoreTableVisibility('recentPrimeMembersTable');
+        restoreTableVisibility('bannedUsersTable');
+        restoreTableVisibility('banHistoryTable');
+        restoreTableVisibility('listeTable');
     });
 
     function initializeDataTable(tableId) {
-        $('#' + tableId).DataTable({
-            language: {
-                lengthMenu: "Afficher _MENU_ entrées par page",
-                search: "Rechercher:",
-                info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées (filtré de _MAX_ entrées au total)"
-            }
-        });
-        updateToggleButton(tableId, true);
+        if (!$.fn.dataTable.isDataTable('#' + tableId)) {
+            $('#' + tableId).DataTable({
+                language: {
+                    lengthMenu: "Afficher _MENU_ entrées par page",
+                    search: "Rechercher:",
+                    info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées (filtré de _MAX_ entrées au total)",
+                    emptyTable: "Pas de résultat trouver",
+                    zeroRecords: "Pas de résultat trouver"
+                }
+            });
+            updateToggleButton(tableId, true);
+        }
     }
 
     function toggleDataTable(tableId) {
@@ -693,10 +733,12 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             container.hide();
             title.hide();
             updateToggleButton(tableId, false);
+            Cookies.set(tableId + 'Visible', 'false');
         } else {
             container.show();
             title.show();
             initializeDataTable(tableId);
+            Cookies.set(tableId + 'Visible', 'true');
         }
     }
 
@@ -706,6 +748,19 @@ $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
             button.removeClass('btn-danger').addClass('btn-success').text('Désactiver ' + button.data('label'));
         } else {
             button.removeClass('btn-success').addClass('btn-danger').text('Activer ' + button.data('label'));
+        }
+    }
+
+    function restoreTableVisibility(tableId) {
+        var isVisible = Cookies.get(tableId + 'Visible') === 'true';
+        if (isVisible) {
+            $('#' + tableId + 'Container').show();
+            $('#' + tableId + 'Container').prev('.table-title').show();
+            initializeDataTable(tableId);
+        } else {
+            $('#' + tableId + 'Container').hide();
+            $('#' + tableId + 'Container').prev('.table-title').hide();
+            updateToggleButton(tableId, false);
         }
     }
 
