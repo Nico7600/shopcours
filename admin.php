@@ -221,6 +221,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.2.1/css/dataTables.bootstrap5.css">
@@ -249,6 +250,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             top: 0;
             left: 0;
             z-index: 1000;
+            margin-bottom: 20px; /* Add height between the navbar and the page container */
         }
         .navbar a {
             color: #ffffff;
@@ -258,15 +260,22 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
         }
         .navbar .menu {
             display: flex;
-            justify-content: center;
+            justify-content: flex-end; /* Align buttons to the right */
             align-items: center;
+            flex-grow: 1;
         }
         .navbar .menu a, .navbar .menu form {
             color: #ffffff;
             text-decoration: none;
             font-size: 1.2rem;
-            margin: 0 10px;
+            margin: 0 5px; /* Reduced spacing between buttons */
             text-align: center;
+        }
+        .navbar .menu button, .navbar .menu form button {
+            margin: 0 5px; /* Reduced spacing between buttons */
+            font-size: 1rem; /* Ensure same size for all buttons */
+            padding: 10px 20px; /* Ensure same padding for all buttons */
+            border-radius: 5px; /* Ensure same border radius for all buttons */
         }
         .admin-container {
             text-align: center;
@@ -275,7 +284,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             max-width: 1200px;
             width: 100%;
-            margin-top: 80px;
+            margin-top: 100px; /* Adjust margin-top to account for the added height */
             border-radius: 10px;
             overflow-x: auto;
         }
@@ -406,6 +415,20 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             justify-content: center;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
+        }
+        .secondary-navbar .toggle-arrow {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin-left: 10px;
+            transition: color 0.3s;
+        }
+        .secondary-navbar.collapsed .toggle-arrow {
+            color: #ff0000; /* Change color when collapsed */
+        }
+        .secondary-navbar.collapsed .menu {
+            display: none;
         }
         .liste-items .table td, .liste-items .table th {
             text-align: center;
@@ -415,17 +438,15 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             display: flex;
             justify-content: space-around;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .chart-wrapper {
-            width: 45%;
+            width: 100%;
+            max-width: 45%;
+            margin-bottom: 20px;
         }
         .btn-secondary {
             background-color: #6c757d;
-            color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 5px;
             cursor: pointer;
         }
         .btn-secondary:hover {
@@ -467,6 +488,76 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
         .btn-danger:hover {
             background-color: #c82333;
         }
+        @media (max-width: 1200px) {
+            .admin-container {
+                padding: 20px;
+            }
+            .table th, .table td {
+                padding: 10px;
+            }
+            .navbar a, .navbar .menu a, .navbar .menu form {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .admin-container {
+                padding: 15px;
+            }
+            .table th, .table td {
+                padding: 8px;
+            }
+            .navbar a, .navbar .menu a, .navbar .menu form {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .navbar .menu {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .navbar .menu a, .navbar .menu form {
+                margin: 5px 0;
+            }
+            .admin-container {
+                padding: 10px;
+            }
+            .table th, .table td {
+                padding: 6px;
+            }
+            .table-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar {
+                padding: 5px;
+            }
+            .navbar a {
+                font-size: 1rem;
+            }
+            .navbar .menu a, .navbar .menu form {
+                font-size: 0.8rem;
+            }
+            .admin-container {
+                padding: 5px;
+            }
+            .table th, .table td {
+                padding: 4px;
+            }
+            .table-title {
+                font-size: 1.2rem;
+            }
+        }
+        .table-container {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -480,6 +571,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
                 </button>
             </form>
             <button class="btn btn-primary" onclick="openPatchNoteModal()">Ajouter Patch Note</button>
+            <button id="optionsButton" class="btn btn-secondary" onclick="toggleSecondaryNavbar()">Options &#9881;</button>
         </div>
     </div>
     <div class="secondary-navbar">
@@ -490,11 +582,11 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             <button id="toggleBannedUsersTable" class="btn btn-secondary" onclick="toggleDataTable('bannedUsersTable')" data-label="Liste des ban en cours">Activer/Désactiver Liste des ban en cours</button>
             <button id="toggleBanHistoryTable" class="btn btn-secondary" onclick="toggleDataTable('banHistoryTable')" data-label="Historique des bans">Activer/Désactiver Historique des bans</button>
             <button id="toggleListeTable" class="btn btn-secondary" data-label="Liste des produits" onclick="toggleDataTable('listeTable')">Activer Liste des produits</button>
+            <button id="toggleChartsButton" class="btn btn-secondary" onclick="toggleCharts()">Afficher/Masquer les graphiques</button>
         </div>
     </div>
     <div class="admin-container">
         <h1 id="statsTitle">Statistiques</h1>
-        <button id="toggleChartsButton" class="btn btn-secondary" onclick="toggleCharts()">Afficher/Masquer les graphiques</button>
         <div id="chartsContainer" class="charts-container">
             <div class="chart-wrapper">
                 <canvas id="registrationsChart" width="400" height="200"></canvas>
@@ -507,7 +599,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="table-title">
                 <h2>Derniers inscrits</h2>
             </div>
-            <div id="recentUsersTableContainer">
+            <div id="recentUsersTableContainer" class="table-container">
                 <table id="recentUsersTable" class="table table-striped table-dark" style="width:100%">
                     <thead>
                         <tr>
@@ -573,7 +665,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="table-title">
                 <h2>Dernières ventes</h2>
             </div>
-            <div id="recentSalesTableContainer">
+            <div id="recentSalesTableContainer" class="table-container">
                 <table id="recentSalesTable" class="table table-striped table-dark" style="width:100%">
                     <thead>
                         <tr>
@@ -598,7 +690,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="table-title">
                 <h2>Derniers membres Prime</h2>
             </div>
-            <div id="recentPrimeMembersTableContainer">
+            <div id="recentPrimeMembersTableContainer" class="table-container">
                 <table id="recentPrimeMembersTable" class="table table-striped table-dark" style="width:100%">
                     <thead>
                         <tr>
@@ -629,7 +721,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="table-title">
                 <h2>Liste des ban en cours</h2>
             </div>
-            <div id="bannedUsersTableContainer">
+            <div id="bannedUsersTableContainer" class="table-container">
                 <table id="bannedUsersTable" class="table table-striped table-dark" style="width:100%">
                     <thead>
                         <tr>
@@ -668,7 +760,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="table-title">
                 <h2>Historique des bans</h2>
             </div>
-            <div id="banHistoryTableContainer">
+            <div id="banHistoryTableContainer" class="table-container">
                 <table id="banHistoryTable" class="table table-striped table-dark" style="width:100%">
                     <thead>
                         <tr>
@@ -697,7 +789,7 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             <div class="table-title">
                 <h2>Liste des produits</h2>
             </div>
-            <div id="listeTableContainer">
+            <div id="listeTableContainer" class="table-container">
                 <table id="listeTable" class="table table-striped table-dark" style="width:100%">
                     <thead>
                         <tr>
@@ -785,6 +877,8 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
         restoreTableVisibility('bannedUsersTable');
         restoreTableVisibility('banHistoryTable');
         restoreTableVisibility('listeTable');
+        restoreChartsVisibility();
+        restoreOptionsMenuState();
 
         // Data for charts
         var registrationsLabels = <?php echo json_encode(array_column($registrationsData, 'date')); ?>;
@@ -868,10 +962,36 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
             chartsContainer.style.display = 'flex';
             statsTitle.style.display = 'block';
             toggleButton.textContent = 'Masquer les graphiques';
+            toggleButton.classList.remove('btn-danger');
+            toggleButton.classList.add('btn-success');
+            Cookies.set('chartsVisible', 'true');
         } else {
             chartsContainer.style.display = 'none';
             statsTitle.style.display = 'none';
             toggleButton.textContent = 'Afficher les graphiques';
+            toggleButton.classList.remove('btn-success');
+            toggleButton.classList.add('btn-danger');
+            Cookies.set('chartsVisible', 'false');
+        }
+    }
+
+    function restoreChartsVisibility() {
+        var isVisible = Cookies.get('chartsVisible') === 'true';
+        var chartsContainer = document.getElementById('chartsContainer');
+        var statsTitle = document.getElementById('statsTitle');
+        var toggleButton = document.getElementById('toggleChartsButton');
+        if (isVisible) {
+            chartsContainer.style.display = 'flex';
+            statsTitle.style.display = 'block';
+            toggleButton.textContent = 'Masquer les graphiques';
+            toggleButton.classList.remove('btn-danger');
+            toggleButton.classList.add('btn-success');
+        } else {
+            chartsContainer.style.display = 'none';
+            statsTitle.style.display = 'none';
+            toggleButton.textContent = 'Afficher les graphiques';
+            toggleButton.classList.remove('btn-success');
+            toggleButton.classList.add('btn-danger');
         }
     }
 
@@ -960,6 +1080,32 @@ $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
 
     function closeMaintenanceModal() {
         document.getElementById('maintenanceModal').style.display = 'none';
+    }
+
+    function toggleSecondaryNavbar() {
+        var navbar = document.querySelector('.secondary-navbar');
+        var button = document.getElementById('optionsButton');
+        navbar.classList.toggle('collapsed');
+        var isCollapsed = navbar.classList.contains('collapsed');
+        button.innerHTML = isCollapsed ? 'Options &#9881;' : 'Options &#9881;';
+        button.classList.toggle('btn-success', !isCollapsed);
+        button.classList.toggle('btn-danger', isCollapsed);
+        Cookies.set('optionsMenuOpen', !isCollapsed);
+    }
+
+    function restoreOptionsMenuState() {
+        var isOpen = Cookies.get('optionsMenuOpen') === 'true';
+        var navbar = document.querySelector('.secondary-navbar');
+        var button = document.getElementById('optionsButton');
+        if (isOpen) {
+            navbar.classList.remove('collapsed');
+            button.classList.add('btn-success');
+            button.classList.remove('btn-danger');
+        } else {
+            navbar.classList.add('collapsed');
+            button.classList.add('btn-danger');
+            button.classList.remove('btn-success');
+        }
     }
 </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
