@@ -216,6 +216,17 @@ $query = $db->prepare($sql);
 $query->execute();
 $salesData = $query->fetchAll(PDO::FETCH_ASSOC);
 
+try {
+    $pdo = new PDO('mysql:host=' . $_ENV['DB_HOST'] . ';dbname=' . $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Fetch the latest Prime members
+    $stmt = $pdo->prepare("SELECT users.id, users.username, crud.expiration_date FROM users JOIN crud ON users.id = crud.user_id ORDER BY crud.expiration_date DESC LIMIT 10");
+    $stmt->execute();
+    $primeMembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $error = "Erreur de connexion à la base de données: " . $e->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
