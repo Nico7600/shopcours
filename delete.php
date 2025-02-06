@@ -2,6 +2,13 @@
 require_once 'bootstrap.php'; // Gère sessions, connexion et variables d'environnement
 
 if (isset($_GET['id']) && !empty($_GET['id'])) {
+    // Check if the user is an admin
+    if ($_SESSION['user']['admin'] != 1) {
+        $_SESSION['erreur'] = "Vous n'avez pas les droits pour supprimer ce produit.";
+        header('Location: index.php');
+        exit();
+    }
+
     try {
         $id = filter_var($_GET['id'], FILTER_VALIDATE_INT);
 
