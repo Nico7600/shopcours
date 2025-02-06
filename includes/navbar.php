@@ -110,7 +110,7 @@ $search = $search ?? '';
                                 <i class="fas fa-history"></i> Historique d'achat</a></li>
                         <li><a class="dropdown-item" href="profile.php">
                                 <i class="fas fa-user"></i> Profile</a></li>
-                        <?php if (isset($_SESSION['id'])): ?>
+                        <?php if (isset($_SESSION['id']) && isset($_SESSION['admin']) && $_SESSION['admin'] == 1): ?>
                             <li><a class="dropdown-item dropdown-item-admin" href="admin.php">
                                     <i class="fas fa-user-shield"></i> Admin</a></li>
                         <?php endif; ?>
