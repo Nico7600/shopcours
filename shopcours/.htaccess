@@ -1,0 +1,9 @@
+# Activer le module Rewrite
+RewriteEngine On
+
+# Vérifier si le fichier ou le dossier demandé existe
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rediriger vers 404.php si la page demandée n'existe pas
+RewriteRule ^.*$ /404.php [L]
