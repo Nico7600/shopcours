@@ -245,6 +245,13 @@ if ($message === 'T') {
 <!-- Modal -->
 <?php include 'includes/modal.php'; ?>
 
+<!-- Cookie Consent Popup -->
+<div id="cookieConsent" class="cookie-consent-popup">
+    <p><i class="fas fa-cookie-bite"></i> Ce site utilise des cookies pour améliorer votre expérience. <a href="privacy_policy.php">En savoir plus</a></p>
+    <button id="acceptCookies" class="btn btn-primary"><i class="fas fa-check"></i> Accepter</button>
+    <button id="rejectCookies" class="btn btn-secondary"><i class="fas fa-times"></i> Refuser</button>
+</div>
+
 <script>
     // Automatically hide the notification after 5 seconds
     setTimeout(function() {
@@ -261,7 +268,42 @@ if ($message === 'T') {
             notification.style.display = 'none';
         }
     }
+
+    // Cookie consent logic
+    document.getElementById('acceptCookies').addEventListener('click', function() {
+        document.cookie = "cookies_accepted=true; path=/; max-age=" + (60 * 60 * 24 * 365);
+        document.getElementById('cookieConsent').style.display = 'none';
+    });
+
+    document.getElementById('rejectCookies').addEventListener('click', function() {
+        document.cookie = "cookies_accepted=false; path=/; max-age=" + (60 * 60 * 24 * 365);
+        document.getElementById('cookieConsent').style.display = 'none';
+    });
+
+    // Check if cookies have been accepted or rejected
+    if (document.cookie.indexOf('cookies_accepted') === -1) {
+        document.getElementById('cookieConsent').style.display = 'block';
+    }
 </script>
+
+<style>
+    .cookie-consent-popup {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #fff;
+        padding: 15px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 1000;
+    }
+    .cookie-consent-popup p {
+        margin: 0 0 10px;
+    }
+    .cookie-consent-popup button {
+        margin-right: 10px;
+    }
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>

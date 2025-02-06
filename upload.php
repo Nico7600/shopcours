@@ -518,7 +518,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <p class="card-text"><?= $description ?></p>
                         <p class="card-price"><?= $produit['prix'] ?> €</p>
                         <p class="card-quantity <?= $quantityClass ?>"><?= $quantityText ?></p>
-                        <a href="edit.php?id=<?= $produit['id'] ?>" class="btn btn-primary me-2">Modifier</a> <!-- Ajouter une marge à droite -->
+                        <a href="edit.php?id=<?= $produit['id'] ?>" class="btn btn-primary me-2">Modifier</a> 
                         <a href="delete.php?id=<?= $produit['id'] ?>" class="btn btn-danger">Supprimer</a>
                     </div>
                 </div>
