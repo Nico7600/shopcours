@@ -21,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_unban'])) {
         $banEndDate = $ban['ban_end_date'];
         $bannedBy = $ban['banned_by'];
 
-        // Insert into ban_history
         $sql = 'INSERT INTO ban_history (user_id, reason, ban_end_date, banned_by) VALUES (:user_id, :reason, :ban_end_date, :banned_by)';
         $query = $db->prepare($sql);
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
@@ -35,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_unban'])) {
         $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
         $query->execute();
 
-        // Update the users table to set banned to 0
         $sql = 'UPDATE users SET banned = 0 WHERE id = :user_id';
         $query = $db->prepare($sql);
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);

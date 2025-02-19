@@ -1,7 +1,6 @@
 <?php
-require_once 'bootstrap.php'; // Charge les sessions, les variables d'environnement et la connexion
+require_once 'bootstrap.php';
 
-// Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
@@ -9,7 +8,6 @@ if (!isset($_SESSION['id'])) {
 
 $userId = (int)$_SESSION['id'];
 
-// Récupérer le statut Prime de l'utilisateur
 try {
     $sqlUser = 'SELECT is_prime FROM users WHERE id = :id';
     $queryUser = $db->prepare($sqlUser);
@@ -21,7 +19,6 @@ try {
     $isPrime = false;
 }
 
-// Récupérer les articles du panier
 try {
     $sql = '
         SELECT c.id AS cart_id, l.produit, l.prix, l.Promo, c.quantity, l.image_produit, p.name AS production_company
@@ -38,7 +35,6 @@ try {
     $cartItems = [];
 }
 
-// Calculer le total
 $total = 0;
 ?>
 
@@ -116,7 +112,6 @@ $total = 0;
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <?php include 'includes/navbar.php'; ?>
     
     <main class="container mt-5">
@@ -139,24 +134,21 @@ $total = 0;
                 <?php else: ?>
                     <?php foreach ($cartItems as $item): ?>
                         <?php
-                        // Calculer le prix avec promo produit et Amazon Prime
                         $prixOriginal = is_numeric(str_replace(',', '.', $item['prix'])) 
                             ? (float)str_replace(',', '.', $item['prix']) 
                             : 0;
                         $prixFinal = $prixOriginal;
 
-                        // Appliquer promo produit
                         if (is_numeric($item['Promo']) && $item['Promo'] > 0) {
                             $prixFinal *= (1 - $item['Promo'] / 100);
                         }
 
-                        // Appliquer réduction Prime pour les produits Amazon
                         $companyName = strtolower(trim($item['production_company']));
                         if ($isPrime && $companyName === 'amazon') {
                             $prixFinal *= 0.9;
                         }
 
-                        $prixFinal = max($prixFinal, 0); // Assurez-vous que le prix reste positif
+                        $prixFinal = max($prixFinal, 0);
                         $subtotal = $prixFinal * $item['quantity'];
                         $total += $subtotal;
                         ?>
@@ -194,7 +186,6 @@ $total = 0;
             </tbody>
         </table>
 
-        <!-- Bouton continuer -->
         <a href="checkout.php" 
            class="btn btn-primary <?= empty($cartItems) ? 'btn-disabled' : '' ?>" 
            <?= empty($cartItems) ? 'disabled' : '' ?> 

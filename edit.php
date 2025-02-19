@@ -1,5 +1,4 @@
 <?php
-// On démarre une session
 session_start();
 
 if($_POST){
@@ -8,21 +7,19 @@ if($_POST){
     && isset($_POST['prix']) && !empty($_POST['prix'])
     && isset($_POST['nombre']) && is_numeric($_POST['nombre'])
     && isset($_POST['badge']) && !empty($_POST['badge'])
-    && isset($_POST['Promo']) && is_numeric($_POST['Promo'])){ // Update field name
-        // On inclut la connexion à la base
+    && isset($_POST['Promo']) && is_numeric($_POST['Promo'])){
         require_once('connect.php');
         $db->exec("SET NAMES 'utf8mb4'");
 
-        // On nettoie les données envoyées
         $produit = strip_tags($_POST['produit']);
         $Description = strip_tags($_POST['Description']);
         $prix = strip_tags($_POST['prix']);
         $nombre = strip_tags($_POST['nombre']);
         $badge = strip_tags($_POST['badge']);
-        $promo = strip_tags($_POST['Promo']); // Update field name
+        $promo = strip_tags($_POST['Promo']);
 
         try {
-            $sql = 'UPDATE `liste` SET `produit`=:produit, `Description`=:Description, `prix`=:prix, `nombre`=:nombre, `badge`=:badge, `Promo`=:Promo WHERE `id`=:id;'; // Update field name
+            $sql = 'UPDATE `liste` SET `produit`=:produit, `Description`=:Description, `prix`=:prix, `nombre`=:nombre, `badge`=:badge, `Promo`=:Promo WHERE `id`=:id;';
             $query = $db->prepare($sql);
 
             $query->bindValue(':produit', $produit, PDO::PARAM_STR);
@@ -30,7 +27,7 @@ if($_POST){
             $query->bindValue(':prix', $prix, PDO::PARAM_STR);
             $query->bindValue(':nombre', $nombre, PDO::PARAM_INT);
             $query->bindValue(':badge', $badge, PDO::PARAM_STR);
-            $query->bindValue(':Promo', $promo, PDO::PARAM_INT); // Update field name
+            $query->bindValue(':Promo', $promo, PDO::PARAM_INT);
             $query->bindValue(':id', $_GET['id'], PDO::PARAM_INT);
 
             $query->execute();
@@ -162,8 +159,8 @@ if($_POST){
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="Promo">Promo (%)</label> <!-- Update field name -->
-                        <input type="number" id="Promo" name="Promo" class="form-control" value="<?= $produit['Promo'] ?>"> <!-- Update field name -->
+                        <label for="Promo">Promo (%)</label>
+                        <input type="number" id="Promo" name="Promo" class="form-control" value="<?= $produit['Promo'] ?>">
                     </div>
                     <button type="submit" class="btn btn-primary">Modifier</button>
                 </form>

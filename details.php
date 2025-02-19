@@ -24,7 +24,6 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         exit;
     }
 
-    // Vérifier si l'utilisateur est connecté et récupérer son statut Prime
     $isPrime = false;
     if (isset($_SESSION['id'])) {
         $userId = $_SESSION['id'];
@@ -39,7 +38,6 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         }
     }
     
-    // Determine badge color based on product name
     $badgeClass = '';
     $emoji = '';
     switch ($produit['produit']) {
@@ -150,7 +148,6 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         $prixPromo = max($prixPromo, 0); // S'assurer que le prix reste positif
     }
 
-    // Fetch comments and ratings
     $sqlComments = '
         SELECT c.comment, c.rating, u.username, c.created_at
         FROM comments c
@@ -163,14 +160,12 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
     $queryComments->execute();
     $comments = $queryComments->fetchAll();
     
-    // Calculate average rating
     $averageRating = 0;
     if (!empty($comments)) {
         $totalRating = array_sum(array_column($comments, 'rating'));
         $averageRating = $totalRating / count($comments);
     }
 
-    // Fetch related products
     $sqlRelated = '
         SELECT l.*, p.name AS production_company,
                (SELECT AVG(c.rating) FROM comments c WHERE c.product_id = l.id) AS average_rating

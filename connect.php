@@ -6,7 +6,6 @@ try {
         $_ENV['DB_NAME']
     );
 
-    // Créer une instance PDO
     $db = new PDO($dsn, $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

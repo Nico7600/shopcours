@@ -2,7 +2,6 @@
 require_once 'bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validation des champs obligatoires
     $requiredFields = ['produit', 'description', 'prix', 'nombre', 'badge', 'Promo', 'production_company_id'];
     foreach ($requiredFields as $field) {
         if (empty($_POST[$field]) || (!is_numeric($_POST[$field]) && in_array($field, ['prix', 'nombre', 'Promo', 'production_company_id']))) {
@@ -18,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Nettoyage des données utilisateur
     $produit = strip_tags($_POST['produit']);
     $description = substr(strip_tags($_POST['description']), 0, 255);
     $prix = (float)$_POST['prix'];
@@ -27,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $promo = (int)$_POST['Promo'];
     $production_company_id = (int)$_POST['production_company_id'];
 
-    // Gestion de l'upload de l'image
     $uploadsDir = 'uploads';
     if (!is_dir($uploadsDir)) {
         mkdir($uploadsDir, 0777, true);
@@ -52,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // Insertion dans la base de données
         $sql = 'INSERT INTO liste (produit, description, prix, nombre, image_produit, badge, Promo, actif, production_company_id) 
                 VALUES (:produit, :description, :prix, :nombre, :image_produit, :badge, :Promo, 1, :production_company_id)';
         $query = $db->prepare($sql);
@@ -79,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Pagination logic
 $limit = 5;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;

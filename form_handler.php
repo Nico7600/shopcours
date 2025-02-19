@@ -3,7 +3,6 @@
 require_once('bootstrap.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Vérifiez que tous les champs obligatoires sont remplis
     if (empty($_POST['field1']) || empty($_POST['field2']) || empty($_POST['field3'])) {
         $_SESSION['message'] = 'Le formulaire est incomplet';
         $_SESSION['message_type'] = 'error';
@@ -11,8 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Traitez le formulaire ici
-    // ...
+
 
     $_SESSION['message'] = 'Formulaire soumis avec succès';
     $_SESSION['message_type'] = 'success';

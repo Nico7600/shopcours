@@ -20,6 +20,9 @@ if (!$user || $user['admin'] != 1) {
     exit;
 }
 
+// Log user access to admin page
+logAction($userId, 'Accès à la page admin');
+
 // Bypass maintenance mode for admin users
 if (file_exists('maintenance.flag') && basename($_SERVER['PHP_SELF']) != 'admin.php') {
     $endTime = file_get_contents('maintenance.flag');
@@ -32,146 +35,181 @@ if (file_exists('maintenance.flag') && basename($_SERVER['PHP_SELF']) != 'admin.
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])) {
-    $maintenance = file_exists('maintenance.flag');
-    if ($maintenance) {
-        unlink('maintenance.flag');
-    } else {
-        $duration = $_POST['maintenance_duration'];
-        $endTime = time() + ($duration * 1);
-        file_put_contents('maintenance.flag', $endTime);
+function logAction($userId, $action) {
+    global $db;
+    $sql = 'INSERT INTO logs (user_id, action, created_at) VALUES (:user_id, :action, NOW())';
+    $query = $db->prepare($sql);
+    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $query->bindValue(':action', $action, PDO::PARAM_STR);
+    $query->execute();
+}
+
+function generateCsrfToken() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-    header('Location: admin.php');
-    exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_prime'])) {
-    $userId = $_POST['user_id'];
-    $isPrime = $_POST['is_prime'] ? 0 : 1;
-    $sql = 'UPDATE users SET is_prime = :is_prime WHERE id = :id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':is_prime', $isPrime, PDO::PARAM_INT);
-    $query->bindValue(':id', $userId, PDO::PARAM_INT);
-    $query->execute();
-    header('Location: admin.php');
-    exit;
+function verifyCsrfToken($token) {
+    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_admin'])) {
-    $userId = $_POST['user_id'];
-    $isAdmin = $_POST['is_admin'] ? 0 : 1;
-    $sql = 'UPDATE users SET admin = :admin WHERE id = :id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':admin', $isAdmin, PDO::PARAM_INT);
-    $query->bindValue(':id', $userId, PDO::PARAM_INT);
-    $query->execute();
-    header('Location: admin.php');
-    exit;
-}
+generateCsrfToken();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ban_user'])) {
-    if (!empty($_POST['reason']) && !empty($_POST['duration'])) {
-        $userId = $_POST['user_id'];
-        $reason = $_POST['reason'];
-        $duration = $_POST['duration'];
-        $banEndDate = date('Y-m-d H:i:s', strtotime("+$duration days"));
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrfToken($_POST['csrf_token'])) {
+        $_SESSION['erreur'] = "Invalid CSRF token.";
+        header('Location: admin.php');
+        exit;
+    }
 
-        $sql = 'INSERT INTO bans (user_id, reason, ban_end_date, banned_by) VALUES (:user_id, :reason, :ban_end_date, :banned_by)';
+    if (isset($_POST['toggle_maintenance'])) {
+        $maintenance = file_exists('maintenance.flag');
+        if ($maintenance) {
+            unlink('maintenance.flag');
+        } else {
+            $duration = filter_input(INPUT_POST, 'maintenance_duration', FILTER_SANITIZE_NUMBER_INT);
+            $endTime = time() + ($duration * 60);
+            file_put_contents('maintenance.flag', $endTime);
+        }
+        logAction($userId, $maintenance ? 'Maintenance désactivée' : 'Maintenance activée');
+        header('Location: admin.php');
+        exit;
+    }
+
+    if (isset($_POST['toggle_prime'])) {
+        $userId = filter_input(INPUT_POST, 'user_id', FILTER_SANITIZE_NUMBER_INT);
+        $isPrime = filter_input(INPUT_POST, 'is_prime', FILTER_SANITIZE_NUMBER_INT) ? 0 : 1;
+        $sql = 'UPDATE users SET is_prime = :is_prime WHERE id = :id';
         $query = $db->prepare($sql);
-        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
-        $query->bindValue(':reason', $reason, PDO::PARAM_STR);
-        $query->bindValue(':ban_end_date', $banEndDate, PDO::PARAM_STR);
-        $query->bindValue(':banned_by', $_SESSION['id'], PDO::PARAM_INT);
-        $query->execute();
-
-        // Update the users table to set banned to 1
-        $sql = 'UPDATE users SET banned = 1 WHERE id = :id';
-        $query = $db->prepare($sql);
+        $query->bindValue(':is_prime', $isPrime, PDO::PARAM_INT);
         $query->bindValue(':id', $userId, PDO::PARAM_INT);
         $query->execute();
+        logAction($_SESSION['id'], $isPrime ? 'Prime activé pour l\'utilisateur ' . $userId : 'Prime désactivé pour l\'utilisateur ' . $userId);
+        header('Location: admin.php');
+        exit;
+    }
 
-        // Update the $recentUsers array to reflect the change
+    if (isset($_POST['toggle_admin'])) {
+        $userId = filter_input(INPUT_POST, 'user_id', FILTER_SANITIZE_NUMBER_INT);
+        $isAdmin = filter_input(INPUT_POST, 'is_admin', FILTER_SANITIZE_NUMBER_INT) ? 0 : 1;
+        $sql = 'UPDATE users SET admin = :admin WHERE id = :id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':admin', $isAdmin, PDO::PARAM_INT);
+        $query->bindValue(':id', $userId, PDO::PARAM_INT);
+        $query->execute();
+        logAction($_SESSION['id'], $isAdmin ? 'Admin désactivé pour l\'utilisateur ' . $userId : 'Admin activé pour l\'utilisateur ' . $userId);
+        header('Location: admin.php');
+        exit;
+    }
+
+    if (isset($_POST['ban_user'])) {
+        if (!empty($_POST['reason']) && !empty($_POST['duration'])) {
+            $userId = filter_input(INPUT_POST, 'user_id', FILTER_SANITIZE_NUMBER_INT);
+            $reason = filter_input(INPUT_POST, 'reason', FILTER_SANITIZE_STRING);
+            $duration = filter_input(INPUT_POST, 'duration', FILTER_SANITIZE_NUMBER_INT);
+            $banEndDate = date('Y-m-d H:i:s', strtotime("+$duration days"));
+
+            $sql = 'INSERT INTO bans (user_id, reason, ban_end_date, banned_by) VALUES (:user_id, :reason, :ban_end_date, :banned_by)';
+            $query = $db->prepare($sql);
+            $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            $query->bindValue(':reason', $reason, PDO::PARAM_STR);
+            $query->bindValue(':ban_end_date', $banEndDate, PDO::PARAM_STR);
+            $query->bindValue(':banned_by', $_SESSION['id'], PDO::PARAM_INT);
+            $query->execute();
+
+            $sql = 'UPDATE users SET banned = 1 WHERE id = :id';
+            $query = $db->prepare($sql);
+            $query->bindValue(':id', $userId, PDO::PARAM_INT);
+            $query->execute();
+
+            foreach ($recentUsers as &$user) {
+                if ($user['id'] == $userId) {
+                    $user['banned'] = 1;
+                    break;
+                }
+            }
+
+            logAction($_SESSION['id'], 'Utilisateur ' . $userId . ' banni pour ' . $duration . ' jours. Raison: ' . $reason);
+            header('Location: admin.php');
+            exit;
+        } else {
+            $_SESSION['erreur'] = "Reason and duration are required.";
+            header('Location: admin.php');
+            exit;
+        }
+    }
+
+    if (isset($_POST['unban_user'])) {
+        $banId = filter_input(INPUT_POST, 'ban_id', FILTER_SANITIZE_NUMBER_INT);
+
+        $sql = 'INSERT INTO ban_history (user_id, reason, ban_end_date, banned_by)
+                SELECT user_id, reason, ban_end_date, banned_by FROM bans WHERE id = :ban_id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+        $query->execute();
+
+        $sql = 'SELECT user_id FROM bans WHERE id = :ban_id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+        $query->execute();
+        $userId = $query->fetchColumn();
+
+        $sql = 'DELETE FROM bans WHERE id = :ban_id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+        $query->execute();
+
+        $sql = 'UPDATE users SET banned = 0 WHERE id = :user_id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->execute();
+
         foreach ($recentUsers as &$user) {
             if ($user['id'] == $userId) {
-                $user['banned'] = 1;
+                $user['banned'] = 0;
                 break;
             }
         }
 
+        logAction($_SESSION['id'], 'Utilisateur ' . $userId . ' débanni');
         header('Location: admin.php');
         exit;
-    } else {
-        $_SESSION['erreur'] = "Reason and duration are required.";
+    }
+
+    if (isset($_POST['update'])) {
+        $message = filter_input(INPUT_POST, 'update', FILTER_SANITIZE_STRING);
+        $userId = $_SESSION['id'];
+        $sql = 'INSERT INTO updates (user_id, message, created_at) VALUES (:user_id, :message, NOW())';
+        $query = $db->prepare($sql);
+        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $query->bindValue(':message', $message, PDO::PARAM_STR);
+        $query->execute();
+        logAction($_SESSION['id'], 'Patch note ajouté');
         header('Location: admin.php');
+        exit;
+    }
+
+    if (isset($_POST['fetch_logs'])) {
+        $sql = 'SELECT logs.id, logs.action, logs.created_at, users.username FROM logs JOIN users ON logs.user_id = users.id ORDER BY logs.created_at DESC';
+        $query = $db->prepare($sql);
+        $query->execute();
+        $logs = $query->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($logs);
         exit;
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['unban_user'])) {
-    $banId = $_POST['ban_id'];
-
-    // Move the ban to the ban_history table before deleting
-    $sql = 'INSERT INTO ban_history (user_id, reason, ban_end_date, banned_by)
-            SELECT user_id, reason, ban_end_date, banned_by FROM bans WHERE id = :ban_id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
-    $query->execute();
-
-    // Get the user_id before deleting the ban
-    $sql = 'SELECT user_id FROM bans WHERE id = :ban_id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
-    $query->execute();
-    $userId = $query->fetchColumn();
-
-    $sql = 'DELETE FROM bans WHERE id = :ban_id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
-    $query->execute();
-
-    // Update the users table to set banned to 0
-    $sql = 'UPDATE users SET banned = 0 WHERE id = :user_id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $query->execute();
-
-    // Update the $recentUsers array to reflect the change
-    foreach ($recentUsers as &$user) {
-        if ($user['id'] == $userId) {
-            $user['banned'] = 0;
-            break;
-        }
-    }
-
-    header('Location: admin.php');
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
-    $message = $_POST['update'];
-    $userId = $_SESSION['id'];
-    $sql = 'INSERT INTO updates (user_id, message, created_at) VALUES (:user_id, :message, NOW())';
-    $query = $db->prepare($sql);
-    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $query->bindValue(':message', $message, PDO::PARAM_STR);
-    $query->execute();
-    header('Location: admin.php');
-    exit;
-}
-
-// Fetch recent registered users
 $sql = 'SELECT id, fname, username, is_prime, admin, date, banned, last_ip FROM users ORDER BY id DESC LIMIT 10';
 $query = $db->prepare($sql);
 $query->execute();
 $recentUsers = $query->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch recent sales
 $sql = 'SELECT id, order_date, total_amount FROM orders ORDER BY order_date DESC LIMIT 10';
 $query = $db->prepare($sql);
 $query->execute();
 $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch banned users with admin usernames
 $sql = 'SELECT bans.id AS ban_id, bans.user_id, users.username, bans.reason, bans.ban_end_date, admin.username AS banned_by_username 
         FROM bans 
         JOIN users ON bans.user_id = users.id 
@@ -180,7 +218,6 @@ $query = $db->prepare($sql);
 $query->execute();
 $bannedUsers = $query->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch ban history
 $sql = 'SELECT ban_history.id AS ban_id, ban_history.user_id, users.username, ban_history.reason, ban_history.ban_end_date, admin.username AS banned_by_username 
         FROM ban_history 
         JOIN users ON ban_history.user_id = users.id 
@@ -189,7 +226,6 @@ $query = $db->prepare($sql);
 $query->execute();
 $banHistory = $query->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch recent prime members based on purchases
 $sql = 'SELECT users.id, users.fname, users.username, users.date, users.last_ip, orders.total_amount 
         FROM users 
         JOIN orders ON users.id = orders.user_id 
@@ -199,13 +235,11 @@ $query = $db->prepare($sql);
 $query->execute();
 $recentPrimeMembers = $query->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch liste data
 $sql = 'SELECT id, produit, prix, nombre, description, badge, promo FROM liste ORDER BY id DESC';
 $query = $db->prepare($sql);
 $query->execute();
 $listeItems = $query->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch data for charts
 $sql = 'SELECT DATE_FORMAT(date, "%d/%m/%Y") as date, COUNT(*) as count FROM users GROUP BY DATE(date) ORDER BY date DESC LIMIT 10';
 $query = $db->prepare($sql);
 $query->execute();
@@ -220,13 +254,17 @@ try {
     $pdo = new PDO('mysql:host=' . $_ENV['DB_HOST'] . ';dbname=' . $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Fetch the latest Prime members
     $stmt = $pdo->prepare("SELECT users.id, users.username, crud.expiration_date FROM users JOIN crud ON users.id = crud.user_id ORDER BY crud.expiration_date DESC LIMIT 10");
     $stmt->execute();
     $primeMembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $error = "Erreur de connexion à la base de données: " . $e->getMessage();
 }
+
+$sql = 'SELECT logs.id, logs.action, logs.created_at, users.username FROM logs JOIN users ON logs.user_id = users.id ORDER BY logs.created_at DESC';
+$query = $db->prepare($sql);
+$query->execute();
+$logs = $query->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -261,8 +299,7 @@ try {
             top: 0;
             left: 0;
             z-index: 1000;
-            margin-bottom: 20px; /* Add height between the navbar and the page container */
-        }
+            margin-bottom: 20px; 
         .navbar a {
             color: #ffffff;
             text-decoration: none;
@@ -271,7 +308,7 @@ try {
         }
         .navbar .menu {
             display: flex;
-            justify-content: flex-end; /* Align buttons to the right */
+            justify-content: flex-end;
             align-items: center;
             flex-grow: 1;
         }
@@ -279,14 +316,14 @@ try {
             color: #ffffff;
             text-decoration: none;
             font-size: 1.2rem;
-            margin: 0 5px; /* Reduced spacing between buttons */
+            margin: 0 5px; 
             text-align: center;
         }
         .navbar .menu button, .navbar .menu form button {
-            margin: 0 5px; /* Reduced spacing between buttons */
-            font-size: 1rem; /* Ensure same size for all buttons */
-            padding: 10px 20px; /* Ensure same padding for all buttons */
-            border-radius: 5px; /* Ensure same border radius for all buttons */
+            margin: 0 5px; 
+            font-size: 1rem; 
+            padding: 10px 20px; 
+            border-radius: 5px;
         }
         .admin-container {
             text-align: center;
@@ -295,7 +332,7 @@ try {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             max-width: 1200px;
             width: 100%;
-            margin-top: 100px; /* Adjust margin-top to account for the added height */
+            margin-top: 100px;
             border-radius: 10px;
             overflow-x: auto;
         }
@@ -428,18 +465,11 @@ try {
             gap: 10px;
             flex-wrap: wrap;
         }
-        .secondary-navbar .toggle-arrow {
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: #ffffff;
-            margin-left: 10px;
-            transition: color 0.3s;
-        }
-        .secondary-navbar.collapsed .toggle-arrow {
-            color: #ff0000; /* Change color when collapsed */
-        }
         .secondary-navbar.collapsed .menu {
             display: none;
+        }
+        .secondary-navbar.collapsed {
+            height: 40px;
         }
         .liste-items .table td, .liste-items .table th {
             text-align: center;
@@ -569,6 +599,58 @@ try {
         .table-container {
             margin-bottom: 20px;
         }
+        .logs-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+            background-color: #495057;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1200px;
+        }
+        .logs-table {
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        .logs-table th, .logs-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .logs-table th {
+            background-color: #212529;
+            color: #ffffff;
+        }
+        .logs-table tbody tr:nth-child(even) {
+            background-color: #6c757d;
+        }
+        .logs-table tbody tr:hover {
+            background-color: #343a40;
+            color: #ffffff;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .filter-container select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: #495057;
+            color: #ffffff;
+            width: 100%;
+            max-width: 300px;
+        }
     </style>
 </head>
 <body>
@@ -577,6 +659,7 @@ try {
         <div class="menu">
             <button class="btn btn-primary" onclick="window.location.href='add.php'">Ajouter produit</button>
             <form method="post" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 <button type="button" class="btn <?php echo file_exists('maintenance.flag') ? 'btn-maintenance-on' : 'btn-maintenance-off'; ?>" onclick="openMaintenanceModal()">
                     <?php echo file_exists('maintenance.flag') ? 'Désactiver la maintenance' : 'Activer la maintenance'; ?>
                 </button>
@@ -587,16 +670,17 @@ try {
     </div>
     <div class="secondary-navbar">
         <div class="menu">
+            <button id="toggleChartsButton" class="btn btn-secondary" onclick="toggleCharts()">Afficher/Masquer les graphiques</button>
             <button id="toggleRecentUsersTable" class="btn btn-secondary" data-label="Derniers inscrits" onclick="toggleDataTable('recentUsersTable')">Activer Derniers inscrits</button>
             <button id="toggleRecentSalesTable" class="btn btn-secondary" data-label="Dernières ventes" onclick="toggleDataTable('recentSalesTable')">Activer Dernières ventes</button>
             <button id="toggleRecentPrimeMembersTable" class="btn btn-secondary" onclick="toggleDataTable('recentPrimeMembersTable')" data-label="Derniers membres Prime">Activer/Désactiver Derniers membres Prime</button>
             <button id="toggleBannedUsersTable" class="btn btn-secondary" onclick="toggleDataTable('bannedUsersTable')" data-label="Liste des ban en cours">Activer/Désactiver Liste des ban en cours</button>
             <button id="toggleBanHistoryTable" class="btn btn-secondary" onclick="toggleDataTable('banHistoryTable')" data-label="Historique des bans">Activer/Désactiver Historique des bans</button>
             <button id="toggleListeTable" class="btn btn-secondary" data-label="Liste des produits" onclick="toggleDataTable('listeTable')">Activer Liste des produits</button>
-            <button id="toggleChartsButton" class="btn btn-secondary" onclick="toggleCharts()">Afficher/Masquer les graphiques</button>
+            <button id="toggleLogsTable" class="btn btn-secondary" data-label="Logs des actions" onclick="toggleDataTable('logsTable')">Activer Logs des actions</button>
         </div>
     </div>
-    <div class="admin-container">
+    <div id="adminContainer" class="admin-container" style="display: none;">
         <h1 id="statsTitle">Statistiques</h1>
         <div id="chartsContainer" class="charts-container">
             <div class="chart-wrapper">
@@ -636,6 +720,7 @@ try {
                                 <td><?php echo htmlspecialchars($user['last_ip']); ?></td>
                                 <td>
                                     <form method="post" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                         <input type="hidden" name="is_prime" value="<?php echo $user['is_prime']; ?>">
                                         <button type="submit" name="toggle_prime" class="btn <?php echo $user['is_prime'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
@@ -643,6 +728,7 @@ try {
                                         </button>
                                     </form>
                                     <form method="post" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                         <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                         <input type="hidden" name="is_admin" value="<?php echo $user['admin']; ?>">
                                         <button type="submit" name="toggle_admin" class="btn <?php echo $user['admin'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
@@ -653,6 +739,7 @@ try {
                                         <?php foreach ($bannedUsers as $ban): ?>
                                             <?php if ($ban['user_id'] == $user['id']): ?>
                                                 <form method="post" style="display:inline;">
+                                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                                     <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
                                                     <button type="submit" name="unban_user" class="btn btn-success">
                                                         <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
@@ -835,6 +922,7 @@ try {
                 <span class="close" onclick="closeBanModal()">&times;</span>
                 <h2>Ban User</h2>
                 <form method="post" action="admin.php">
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                     <input type="hidden" name="user_id" id="banUserId">
                     <div class="form-group">
                         <label for="reason">Raison</label>
@@ -855,6 +943,7 @@ try {
             <span class="close" onclick="closeMaintenanceModal()">&times;</span>
             <h2>Activer la maintenance</h2>
             <form method="post" action="admin.php">
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 <div class="form-group">
                     <label for="maintenance_duration">Durée (minutes)</label>
                     <input type="number" name="maintenance_duration" id="maintenance_duration" class="form-control" required>
@@ -869,9 +958,45 @@ try {
             <span class="close" onclick="closePatchNoteModal()">&times;</span>
             <h2>Ajouter Patch Note</h2>
             <form method="post" action="patchnote.php">
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 <textarea name="update" required class="form-control mb-3"></textarea>
                 <button type="submit" class="btn btn-primary btn-block">Submit</button>
             </form>
+        </div>
+    </div>
+    <div class="logs-container" id="logsTableContainer">
+        <div class="table-title">
+            <h2>Logs des actions</h2>
+        </div>
+        <div class="filter-container">
+            <label for="logFilter">Filtrer par action:</label>
+            <select id="logFilter" onchange="filterLogs()">
+                <option value="">Tous</option>
+                <option value="Maintenance activée">Maintenance activée</option>
+                <option value="Maintenance désactivée">Maintenance désactivée</option>
+                <option value="Prime activé">Prime activé</option>
+                <option value="Prime désactivé">Prime désactivé</option>
+                <option value="Admin activé">Admin activé</option>
+                <option value="Admin désactivé">Admin désactivé</option>
+                <option value="Utilisateur banni">Utilisateur banni</option>
+                <option value="Utilisateur débanni">Utilisateur débanni</option>
+                <option value="Patch note ajouté">Patch note ajouté</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table id="logsTable" class="logs-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Utilisateur</th>
+                        <th>Action</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                    <!-- Logs will be dynamically loaded here -->
+                </tbody>
+            </table>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -882,31 +1007,6 @@ try {
     <script>
     $(document).ready(function() {
         // Initialize tables based on cookie visibility
-        restoreTableVisibility('recentUsersTable');
-        restoreTableVisibility('recentSalesTable');
-        restoreTableVisibility('recentPrimeMembersTable');
-        restoreTableVisibility('bannedUsersTable');
-        restoreTableVisibility('banHistoryTable');
-        restoreTableVisibility('listeTable');
-        restoreChartsVisibility();
-        restoreOptionsMenuState();
-
-        // Data for charts
-        var registrationsLabels = <?php echo json_encode(array_column($registrationsData, 'date')); ?>;
-        var registrationsCounts = <?php echo json_encode(array_column($registrationsData, 'count')); ?>;
-        var salesLabels = <?php echo json_encode(array_column($salesData, 'date')); ?>;
-        var salesTotals = <?php echo json_encode(array_column($salesData, 'total')); ?>;
-
-        var registrationsChartData = {
-            labels: registrationsLabels.reverse(),
-            datasets: [{
-                label: 'Inscriptions',
-                data: registrationsCounts.reverse(),
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        };
 
         var salesChartData = {
             labels: salesLabels.reverse(),
@@ -963,7 +1063,33 @@ try {
                 }
             }
         });
+
+        function fetchLogs() {
+            $.post('admin.php', { fetch_logs: true }, function(data) {
+                var logs = JSON.parse(data);
+                var logsTableBody = $('#logsTableBody');
+                logsTableBody.empty();
+                logs.forEach(function(log) {
+                    var row = '<tr>' +
+                        '<td>' + log.id + '</td>' +
+                        '<td>' + log.username + '</td>' +
+                        '<td>' + log.action + '</td>' +
+                        '<td class="date">' + new Date(log.created_at).toLocaleString() + '</td>' +
+                        '</tr>';
+                    logsTableBody.append(row);
+                });
+            });
+        }
+
+        setInterval(fetchLogs, 5000); // Fetch logs every 5 seconds
     });
+
+    function filterLogs() {
+        var filterValue = $('#logFilter').val().toLowerCase();
+        $('#logsTableBody tr').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(filterValue) > -1)
+        });
+    }
 
     function toggleCharts() {
         var chartsContainer = document.getElementById('chartsContainer');
@@ -984,6 +1110,7 @@ try {
             toggleButton.classList.add('btn-danger');
             Cookies.set('chartsVisible', 'false');
         }
+        updateAdminContainerVisibility();
     }
 
     function restoreChartsVisibility() {
@@ -1014,7 +1141,8 @@ try {
                     search: "Rechercher:",
                     info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées (filtré de _MAX_ entrées au total)",
                     emptyTable: "Pas de résultat trouver",
-                    zeroRecords: "Pas de résultat trouver"
+                    zeroRecords: "Pas de résultat trouver",
+                    infoEmpty: "Affichage de 0 à 0 sur 0 entrées"
                 }
             });
             updateToggleButton(tableId, true);
@@ -1036,6 +1164,7 @@ try {
             initializeDataTable(tableId);
             Cookies.set(tableId + 'Visible', 'true');
         }
+        updateAdminContainerVisibility();
     }
 
     function updateToggleButton(tableId, isActive) {
@@ -1060,65 +1189,66 @@ try {
         }
     }
 
+    function updateAdminContainerVisibility() {
+        var isVisible = $('#recentUsersTableContainer').is(':visible') ||
+                        $('#recentSalesTableContainer').is(':visible') ||
+                        $('#recentPrimeMembersTableContainer').is(':visible') ||
+                        $('#bannedUsersTableContainer').is(':visible') ||
+                        $('#banHistoryTableContainer').is(':visible') ||
+                        $('#listeTableContainer').is(':visible') ||
+                        $('#logsTableContainer').is(':visible') ||
+                        $('#chartsContainer').is(':visible');
+        $('#adminContainer').toggle(isVisible);
+    }
+
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
     function openPatchNoteModal() {
-        document.getElementById('patchNoteModal').style.display = 'block';
+        // ...existing code...
     }
 
     function closePatchNoteModal() {
-        document.getElementById('patchNoteModal').style.display = 'none';
+        // ...existing code...
     }
 
     function openBanModal(userId) {
-        document.getElementById('banUserId').value = userId;
-        document.getElementById('banModal').style.display = 'block';
+        // ...existing code...
     }
 
     function closeBanModal() {
-        document.getElementById('banModal').style.display = 'none';
+        // ...existing code...
     }
 
     function openUnbanPage(banId) {
-        window.location.href = 'confirm_unban.php?ban_id=' + banId;
+        // ...existing code...
     }
 
     function openMaintenanceModal() {
-        document.getElementById('maintenanceModal').style.display = 'block';
+        // ...existing code...
     }
 
     function closeMaintenanceModal() {
-        document.getElementById('maintenanceModal').style.display = 'none';
+        // ...existing code...
     }
 
     function toggleSecondaryNavbar() {
         var navbar = document.querySelector('.secondary-navbar');
-        var button = document.getElementById('optionsButton');
         navbar.classList.toggle('collapsed');
-        var isCollapsed = navbar.classList.contains('collapsed');
-        button.innerHTML = isCollapsed ? 'Options &#9881;' : 'Options &#9881;';
-        button.classList.toggle('btn-success', !isCollapsed);
-        button.classList.toggle('btn-danger', isCollapsed);
-        Cookies.set('optionsMenuOpen', !isCollapsed);
+        Cookies.set('secondaryNavbarCollapsed', navbar.classList.contains('collapsed'));
     }
 
     function restoreOptionsMenuState() {
-        var isOpen = Cookies.get('optionsMenuOpen') === 'true';
+        var isCollapsed = Cookies.get('secondaryNavbarCollapsed') === 'true';
         var navbar = document.querySelector('.secondary-navbar');
-        var button = document.getElementById('optionsButton');
-        if (isOpen) {
-            navbar.classList.remove('collapsed');
-            button.classList.add('btn-success');
-            button.classList.remove('btn-danger');
-        } else {
+        if (isCollapsed) {
             navbar.classList.add('collapsed');
-            button.classList.add('btn-danger');
-            button.classList.remove('btn-success');
+        } else {
+            navbar.classList.remove('collapsed');
         }
     }
-</script>
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>

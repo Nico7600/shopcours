@@ -1,5 +1,5 @@
 <?php
-require_once 'bootstrap.php'; // Charger bootstrap.php pour centraliser la configuration
+require_once 'bootstrap.php';
 
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
@@ -8,14 +8,12 @@ if (!isset($_SESSION['id'])) {
 
 $userId = $_SESSION['id'];
 
-// Valider la configuration de Stripe
 if (empty($_ENV['STRIPE_API_KEY'])) {
     throw new Exception('La clé API Stripe n\'est pas configurée dans le fichier .env');
 }
 
 \Stripe\Stripe::setApiKey($_ENV['STRIPE_API_KEY']);
 
-// Récupérer la session Stripe
 $sessionId = $_GET['session_id'] ?? null;
 if (!$sessionId) {
     $_SESSION['message'] = "Session de paiement introuvable.";
@@ -29,7 +27,6 @@ try {
         throw new Exception("Le paiement n'a pas été validé.");
     }
 
-    // Récupérer les articles du panier
     $sql = '
         SELECT c.id AS cart_id, c.quantity, l.id AS product_id, l.produit, l.prix, l.Promo, l.nombre AS stock_disponible
         FROM cart c
@@ -43,24 +40,21 @@ try {
 
     $total = 0;
 
-    // Démarrer une transaction
     $db->beginTransaction();
 
     foreach ($cartItems as $item) {
         $productId = $item['product_id'];
         $quantity = $item['quantity'];
-        $price = (float)str_replace(',', '.', $item['prix']) * (1 - $item['Promo'] / 100); // Appliquer la promotion
+        $price = (float)str_replace(',', '.', $item['prix']) * (1 - $item['Promo'] / 100);
         $subtotal = $price * $quantity;
         $total += $subtotal;
 
         $stockDisponible = $item['stock_disponible'];
 
-        // Vérifier le stock
         if ($quantity > $stockDisponible) {
             throw new Exception("Le stock du produit '{$item['produit']}' est insuffisant.");
         }
 
-        // Réduire le stock
         $sql = 'UPDATE liste SET nombre = nombre - :quantity WHERE id = :product_id';
         $query = $db->prepare($sql);
         $query->bindValue(':quantity', $quantity, PDO::PARAM_INT);
@@ -68,7 +62,6 @@ try {
         $query->execute();
     }
 
-    // Ajouter une commande dans `orders`
     $sql = 'INSERT INTO orders (user_id, total_amount, stripe_session_id) VALUES (:user_id, :total_amount, :stripe_session_id)';
     $query = $db->prepare($sql);
     $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
@@ -77,7 +70,6 @@ try {
     $query->execute();
     $orderId = $db->lastInsertId();
 
-    // Ajouter les articles dans `order_items`
     foreach ($cartItems as $item) {
         $productId = $item['product_id'];
         $quantity = $item['quantity'];
@@ -92,25 +84,21 @@ try {
         $query->execute();
     }
 
-    // Vider le panier
     $sql = 'DELETE FROM cart WHERE user_id = :user_id';
     $query = $db->prepare($sql);
     $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
     $query->execute();
 
-    // Valider la transaction
     $db->commit();
 
     $_SESSION['message'] = "Votre commande a été validée avec succès.";
     header('Location: cart.php');
     exit();
 } catch (Exception $e) {
-    // Annuler la transaction en cas d'erreur
     if ($db->inTransaction()) {
         $db->rollBack();
     }
 
-    // Enregistrer l'erreur dans les logs
     error_log("Erreur de validation de la commande : " . $e->getMessage());
 
     $_SESSION['message'] = "Erreur lors de la validation de la commande : " . htmlspecialchars($e->getMessage());

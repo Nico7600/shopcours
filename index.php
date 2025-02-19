@@ -31,16 +31,12 @@ if ($search) {
     $query = $db->prepare($sql);
 }
 
-// On exécute la requête
 $query->execute();
 
-// On stocke le résultat dans un tableau associatif
 $result = $query->fetchAll(PDO::FETCH_ASSOC);
 
-// Mélanger les résultats pour un affichage aléatoire
 shuffle($result);
 
-// Fetch average ratings for each product
 $ratingsSql = '
     SELECT product_id, AVG(rating) as average_rating
     FROM comments
@@ -67,20 +63,14 @@ if ($message === 'T') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liste des produits</title>
 
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/styles.css">
-    <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/index.css">
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
 </head>
 
 <body>
-    <!-- Navigation -->
     <?php include 'includes/navbar.php'; ?>
     
     <?php if (isset($_SESSION['erreur'])): ?>
@@ -89,7 +79,6 @@ if ($message === 'T') {
         </div>
         <?php unset($_SESSION['erreur']); ?>
     <?php endif; ?>
-    <!-- Contenu principal -->
     <main class="container mt-5">
         <div id="productCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
             <div class="carousel-inner">
@@ -179,12 +168,10 @@ if ($message === 'T') {
                 $prix = is_numeric(str_replace(',', '.', $produit['prix'])) ? (float)str_replace(',', '.', $produit['prix']) : 0;
                 $promo = is_numeric($produit['Promo']) ? (float)$produit['Promo'] : 0;
 
-                // Appliquer la réduction Prime pour les produits Amazon
                 $isAmazon = strtolower($produit['production_company']) === 'amazon';
                 $primeDiscount = ($isPrime && $isAmazon) ? 10 : 0;
 
-                // Calculer le prix après réduction
-                $totalDiscount = min($promo + $primeDiscount, 100); // Limiter à 100 %
+                $totalDiscount = min($promo + $primeDiscount, 100);
                 $finalPrice = $prix * (1 - $totalDiscount / 100);
 
                 $averageRating = $ratings[$produit['id']] ?? 0;
@@ -209,7 +196,6 @@ if ($message === 'T') {
                             <p class="card-text"><strong>Produit par :</strong> <?= htmlspecialchars($produit['production_company'] ?? 'Inconnu'); ?></p>
                             <p class="card-text star-rating"><strong>Note moyenne :</strong> <?= $stars; ?> (<?= number_format($averageRating, 1); ?>)</p>
 
-                            <!-- Affichage des prix avec réduction -->
                             <?php if ($promo > 0 || $primeDiscount > 0): ?>
                                 <p class="card-price">
                                     <span class="card-price-original"><?= number_format($prix, 2, ',', ' '); ?> €</span>
@@ -219,7 +205,6 @@ if ($message === 'T') {
                                 <p class="card-price"><?= number_format($prix, 2, ',', ' '); ?> €</p>
                             <?php endif; ?>
 
-                            <!-- Affichage de la quantité -->
                             <p class="card-quantity <?= htmlspecialchars($quantityClass); ?>">
                                 <?= htmlspecialchars($produit['nombre'] > 0 ? 'Quantité : ' . $produit['nombre'] : 'En rupture de stock'); ?>
                             </p>
@@ -242,10 +227,8 @@ if ($message === 'T') {
         </div>
     </main>
 
-<!-- Modal -->
 <?php include 'includes/modal.php'; ?>
 
-<!-- Cookie Consent Popup -->
 <div id="cookieConsent" class="cookie-consent-popup">
     <p><i class="fas fa-cookie-bite"></i> Ce site utilise des cookies pour améliorer votre expérience. <a href="privacy_policy.php">En savoir plus</a></p>
     <button id="acceptCookies" class="btn btn-primary"><i class="fas fa-check"></i> Accepter</button>
@@ -253,7 +236,6 @@ if ($message === 'T') {
 </div>
 
 <script>
-    // Automatically hide the notification after 5 seconds
     setTimeout(function() {
         var notification = document.getElementById('notification');
         if (notification) {
@@ -261,7 +243,6 @@ if ($message === 'T') {
         }
     }, 5000);
 
-    // Dismiss notification on close button click
     function dismissNotification() {
         var notification = document.getElementById('notification');
         if (notification) {
@@ -269,7 +250,6 @@ if ($message === 'T') {
         }
     }
 
-    // Cookie consent logic
     document.getElementById('acceptCookies').addEventListener('click', function() {
         document.cookie = "cookies_accepted=true; path=/; max-age=" + (60 * 60 * 24 * 365);
         document.getElementById('cookieConsent').style.display = 'none';
@@ -280,7 +260,6 @@ if ($message === 'T') {
         document.getElementById('cookieConsent').style.display = 'none';
     });
 
-    // Check if cookies have been accepted or rejected
     if (document.cookie.indexOf('cookies_accepted') === -1) {
         document.getElementById('cookieConsent').style.display = 'block';
     }

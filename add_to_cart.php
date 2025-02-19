@@ -1,5 +1,5 @@
 <?php
-require_once 'bootstrap.php'; // Charge les sessions, la connexion, et les variables d'environnement
+require_once 'bootstrap.php';
 
 if (!isset($_SESSION['id'])) {
     $_SESSION['message'] = 'Vous devez être connecté pour ajouter un produit au panier.';
@@ -11,7 +11,6 @@ $userId = (int)$_SESSION['id'];
 $productId = isset($_GET['product_id']) ? (int)$_GET['product_id'] : 0;
 $quantity = isset($_GET['quantity']) ? (int)$_GET['quantity'] : 1;
 
-// Validation des données
 if ($productId <= 0 || $quantity <= 0) {
     $_SESSION['message'] = 'Données invalides pour le produit ou la quantité.';
     header('Location: index.php');
@@ -19,7 +18,6 @@ if ($productId <= 0 || $quantity <= 0) {
 }
 
 try {
-    // Vérifier si le produit existe et est actif
     $sql = 'SELECT id, nombre FROM liste WHERE id = :product_id AND actif = 1';
     $query = $db->prepare($sql);
     $query->bindValue(':product_id', $productId, PDO::PARAM_INT);
@@ -32,14 +30,12 @@ try {
         exit();
     }
 
-    // Vérifier la disponibilité du stock
     if ($product['nombre'] < $quantity) {
         $_SESSION['message'] = 'Stock insuffisant pour ce produit.';
         header('Location: index.php');
         exit();
     }
 
-    // Vérifier si le produit est déjà dans le panier
     $sql = 'SELECT id, quantity FROM cart WHERE user_id = :user_id AND product_id = :product_id';
     $query = $db->prepare($sql);
     $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
@@ -48,7 +44,6 @@ try {
     $cartItem = $query->fetch(PDO::FETCH_ASSOC);
 
     if ($cartItem) {
-        // Mettre à jour la quantité si le produit est déjà dans le panier
         $newQuantity = $cartItem['quantity'] + $quantity;
         if ($product['nombre'] < $newQuantity) {
             $_SESSION['message'] = 'Stock insuffisant pour la quantité totale demandée.';
@@ -62,7 +57,6 @@ try {
         $query->bindValue(':cart_id', $cartItem['id'], PDO::PARAM_INT);
         $query->execute();
     } else {
-        // Ajouter un nouvel article au panier
         $sql = 'INSERT INTO cart (user_id, product_id, quantity) VALUES (:user_id, :product_id, :quantity)';
         $query = $db->prepare($sql);
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
