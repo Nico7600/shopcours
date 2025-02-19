@@ -6,13 +6,11 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-// On inclut la connexion à la base
 require_once 'connect.php';
 
 $userName = null;
 $isPrime = false;
 
-// Récupération des informations de l'utilisateur
 $sql = 'SELECT fname, username, is_prime FROM users WHERE id = :id';
 $query = $db->prepare($sql);
 $query->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
@@ -23,7 +21,7 @@ if ($user) {
     $userName = $user['fname'];
     $isPrime = (bool)$user['is_prime'];
 } else {
-    header('Location: logout.php'); // Rediriger si l'utilisateur n'existe pas
+    header('Location: logout.php');
     exit;
 }
 
@@ -48,13 +46,9 @@ require_once('close.php');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil utilisateur</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap">
     <style>
         body {
@@ -107,10 +101,8 @@ require_once('close.php');
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <?php include 'includes/navbar.php'; ?>
 
-    <!-- Contenu principal -->
     <main class="container mt-5">
         <div class="row">
             <div class="col-md-8 offset-md-2">
@@ -144,7 +136,6 @@ require_once('close.php');
         </div>
     </main>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>

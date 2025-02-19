@@ -1,25 +1,21 @@
 <?php
 require_once('bootstrap.php');
 
-// Vérifier si les champs nécessaires sont présents dans le formulaire
 if (isset($_POST['fname']) && isset($_POST['uname']) && isset($_POST['pass']) && isset($_POST['cpass'])) {
     $fname = $_POST['fname'];
     $uname = $_POST['uname'];
     $pass = $_POST['pass'];
     $cpass = $_POST['cpass'];
 
-    // Vérification de la correspondance des mots de passe
     if ($pass !== $cpass) {
         $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
         header("Location: register.php");
         exit();
     }
 
-    // Hachage du mot de passe
     $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
 
     try {
-        // Préparer et exécuter la requête d'insertion
         $sql = "INSERT INTO users (fname, uname, pass) VALUES (:fname, :uname, :pass)";
         $query = $db->prepare($sql);
         $query->bindValue(':fname', $fname, PDO::PARAM_STR);

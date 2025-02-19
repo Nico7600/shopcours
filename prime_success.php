@@ -26,7 +26,6 @@ try {
         throw new Exception("Le paiement n'a pas été validé.");
     }
 
-    // Update the user's Prime status
     $primeOptions = [
         '30_days' => 30,
         '365_days' => 365

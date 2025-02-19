@@ -1,5 +1,5 @@
 <?php
-require_once 'bootstrap.php'; // Charge les sessions et la connexion à la base
+require_once 'bootstrap.php';
 
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     header("Location: index.php");
@@ -55,7 +55,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 			padding: 2rem;
 			border-radius: 10px;
 			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-			width: 500px; /* Increased width */
+			width: 500px; 
 		}
 		footer {
 			position: fixed;

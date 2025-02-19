@@ -1,5 +1,5 @@
 <?php
-require_once 'bootstrap.php'; // Gère sessions, connexion et variables d'environnement
+require_once 'bootstrap.php';
 
 if (!isset($_SESSION['id'])) {
     echo json_encode(['status' => 'error', 'message' => 'Utilisateur non connecté']);

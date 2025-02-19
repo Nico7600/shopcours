@@ -1,14 +1,11 @@
-
 <?php
-require_once 'bootstrap.php'; // Charge les sessions et la connexion à la base
+require_once 'bootstrap.php';
 
-// Vérifiez si l'utilisateur est connecté
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
 
-// Récupérer les informations de l'utilisateur connecté
 $userId = $_SESSION['id'];
 $userName = null;
 
@@ -22,7 +19,6 @@ try {
     if ($user) {
         $userName = $user['fname'];
     } else {
-        // Si l'utilisateur n'est pas trouvé, déconnectez-le
         session_destroy();
         header('Location: login.php');
         exit();
@@ -33,7 +29,6 @@ try {
     exit();
 }
 
-// Fonction pour récupérer l'historique des commandes
 function getOrderHistory($userId, $db)
 {
     try {
@@ -57,10 +52,8 @@ function getOrderHistory($userId, $db)
     }
 }
 
-// Récupérer l'historique des commandes
 $orderHistory = getOrderHistory($userId, $db);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -70,13 +63,9 @@ $orderHistory = getOrderHistory($userId, $db);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historique des commandes</title>
 
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap">
-    <!-- CSS personnalisé -->
     <link rel="stylesheet" href="css/styles.css">
     <style>
         body {
@@ -106,7 +95,6 @@ $orderHistory = getOrderHistory($userId, $db);
 </head>
 
 <body>
-    <!-- Navigation -->
     <?php include 'includes/navbar.php'; ?>
     <main class="container mt-5">
         <?php if (!empty($message)): ?>

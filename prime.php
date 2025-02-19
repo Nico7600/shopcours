@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
         $price = $primeOptions[$option]['price'];
         $description = $option === '30_days' ? "Adhésion Prime 1 mois" : "Adhésion Prime 1 an";
 
-        // Add the selected prime option to the cart
         if (!isset($_SESSION['cart'])) {
             $_SESSION['cart'] = [];
         }
@@ -38,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
             'price' => $price
         ];
 
-        // Create a Stripe payment session
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => ['card'],
             'line_items' => [[
@@ -48,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
                         'name' => $description,
                         'description' => "Profitez des avantages Prime pour $description.",
                     ],
-                    'unit_amount' => $price * 100, // Stripe expects the amount in cents
+                    'unit_amount' => $price * 100,
                 ],
                 'quantity' => 1,
             ]],
@@ -57,18 +55,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
             'cancel_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/index.php?message=prime_cancel',
         ]);
 
-        // Create a new order entry in the orders table
         $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_amount) VALUES (?, ?)");
         $stmt->execute([$userId, $price]);
         $orderId = $pdo->lastInsertId();
 
-        // Set the Prime subscription expiration date
         $duration = $primeOptions[$option]['duration'];
         $expirationDate = date('Y-m-d H:i:s', strtotime("+$duration days"));
         $stmt = $pdo->prepare("INSERT INTO crud (user_id, expiration_date) VALUES (?, ?) ON DUPLICATE KEY UPDATE expiration_date = VALUES(expiration_date)");
         $stmt->execute([$userId, $expirationDate]);
 
-        // Redirect to the Stripe payment page
         header('Location: ' . $session->url);
         exit();
     } else {
@@ -76,11 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prime_option'])) {
     }
 }
 
-// Initialize $result variable
-$result = []; // Replace with actual data fetching logic
+$result = [];
 
-// Fetch user information
-$user = []; // Replace with actual user fetching logic
+$user = [];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -240,12 +233,10 @@ $user = []; // Replace with actual user fetching logic
                 $prix = is_numeric(str_replace(',', '.', $produit['prix'])) ? (float)str_replace(',', '.', $produit['prix']) : 0;
                 $promo = is_numeric($produit['Promo']) ? (float)$produit['Promo'] : 0;
 
-                // Appliquer la réduction Prime pour les produits Amazon
                 $isAmazon = strtolower($produit['production_company']) === 'amazon';
                 $primeDiscount = ($isPrime && $isAmazon) ? 10 : 0;
 
-                // Calculer le prix après réduction
-                $totalDiscount = min($promo + $primeDiscount, 100); // Limiter à 100 %
+                $totalDiscount = min($promo + $primeDiscount, 100);
                 $finalPrice = $prix * (1 - $totalDiscount / 100);
 
                 $averageRating = $ratings[$produit['id']] ?? 0;
@@ -270,7 +261,6 @@ $user = []; // Replace with actual user fetching logic
                             <p class="card-text"><strong>Produit par :</strong> <?= htmlspecialchars($produit['production_company'] ?? 'Inconnu'); ?></p>
                             <p class="card-text star-rating"><strong>Note moyenne :</strong> <?= $stars; ?> (<?= number_format($averageRating, 1); ?>)</p>
 
-                            <!-- Affichage des prix avec réduction -->
                             <?php if ($promo > 0 || $primeDiscount > 0): ?>
                                 <p class="card-price">
                                     <span class="card-price-original"><?= number_format($prix, 2, ',', ' '); ?> €</span>
@@ -280,7 +270,6 @@ $user = []; // Replace with actual user fetching logic
                                 <p class="card-price"><?= number_format($prix, 2, ',', ' '); ?> €</p>
                             <?php endif; ?>
 
-                            <!-- Affichage de la quantité -->
                             <p class="card-quantity <?= htmlspecialchars($quantityClass); ?>">
                                 <?= htmlspecialchars($produit['nombre'] > 0 ? 'Quantité : ' . $produit['nombre'] : 'En rupture de stock'); ?>
                             </p>

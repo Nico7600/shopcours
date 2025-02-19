@@ -1,17 +1,14 @@
 <?php
 require_once('bootstrap.php');
 
-// Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit();
 }
 
-// Récupérer l'ID du panier depuis l'URL
 $cartId = $_GET['cart_id'] ?? null;
 
 if ($cartId) {
-    // Appeler la fonction pour supprimer l'article du panier
     removeFromCart($cartId);
     header('Location: cart.php');
     exit();
@@ -21,7 +18,6 @@ if ($cartId) {
     exit();
 }
 
-// Fonction pour supprimer un article du panier
 function removeFromCart($cartId) {
     global $db;
 
