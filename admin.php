@@ -1081,7 +1081,16 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             });
         }
 
-        setInterval(fetchLogs, 5000); // Fetch logs every 5 seconds
+        setInterval(fetchLogs, 5000);
+        restoreChartsVisibility();
+        restoreTableVisibility('recentUsersTable');
+        restoreTableVisibility('recentSalesTable');
+        restoreTableVisibility('recentPrimeMembersTable');
+        restoreTableVisibility('bannedUsersTable');
+        restoreTableVisibility('banHistoryTable');
+        restoreTableVisibility('listeTable');
+        restoreTableVisibility('logsTable');
+        updateAdminContainerVisibility();
     });
 
     function filterLogs() {

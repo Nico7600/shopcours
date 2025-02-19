@@ -85,10 +85,11 @@ $search = $search ?? '';
                             <i class="fas fa-crown"></i> Prime
                         </a>
                     </li>
-                    <!-- Bouton Changer le mode -->
-                    <!-- <li class="nav-item">
-                        <button id="darkModeToggle" class="btn btn-outline-light">Changer le mode</button>
-                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="privacy_policy.php">
+                            <i class="fas fa-file-contract"></i> CGU
+                        </a>
+                    </li>
                 </ul>
 
                 <!-- Barre de recherche -->
