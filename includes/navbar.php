@@ -87,7 +87,7 @@ $search = $search ?? '';
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="privacy_policy.php">
-                            <i class="fas fa-file-contract"></i> CGU
+                            <i class="fas fa-file-alt"></i> CGU
                         </a>
                     </li>
                 </ul>

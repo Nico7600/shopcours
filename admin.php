@@ -299,7 +299,8 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             top: 0;
             left: 0;
             z-index: 1000;
-            margin-bottom: 20px; 
+            margin-bottom: 20px;
+        }
         .navbar a {
             color: #ffffff;
             text-decoration: none;
@@ -316,13 +317,13 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             color: #ffffff;
             text-decoration: none;
             font-size: 1.2rem;
-            margin: 0 5px; 
+            margin: 0 5px;
             text-align: center;
         }
         .navbar .menu button, .navbar .menu form button {
-            margin: 0 5px; 
-            font-size: 1rem; 
-            padding: 10px 20px; 
+            margin: 0 5px;
+            font-size: 1rem;
+            padding: 10px 20px;
             border-radius: 5px;
         }
         .admin-container {
@@ -400,6 +401,12 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             background-color: #dc3545;
             color: #ffffff;
             margin: 5px;
+        }
+        .btn-toggle-on:hover {
+            background-color: #218838;
+        }
+        .btn-toggle-off:hover {
+            background-color: #c82333;
         }
         .modal {
             display: none;
@@ -488,6 +495,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         }
         .btn-secondary {
             background-color: #6c757d;
+            color: #ffffff;
             cursor: pointer;
         }
         .btn-secondary:hover {
@@ -1091,6 +1099,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         restoreTableVisibility('listeTable');
         restoreTableVisibility('logsTable');
         updateAdminContainerVisibility();
+        restoreOptionsMenuState();
     });
 
     function filterLogs() {
@@ -1259,5 +1268,8 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <footer>
+        <p>&copy; 2024-2025 Valomazone. Tous droits réservés.</p>
+    </footer>
 </body>
 </html>

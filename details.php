@@ -506,6 +506,9 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         </section>
     </div>
 </main>
+<footer>
+    <p>&copy; 2024-2025 Valomazone. Tous droits réservés.</p>
+</footer>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('commentForm');

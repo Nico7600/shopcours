@@ -11,6 +11,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    error_log('Produit: ' . $_POST['produit']);
+    error_log('Description: ' . $_POST['description']);
+    error_log('Prix: ' . $_POST['prix']);
+    error_log('Nombre: ' . $_POST['nombre']);
+    error_log('Badge: ' . $_POST['badge']);
+    error_log('Promo: ' . $_POST['Promo']);
+    error_log('Production Company ID: ' . $_POST['production_company_id']);
+
     if (!isset($_FILES['image_produit']) || $_FILES['image_produit']['error'] !== UPLOAD_ERR_OK) {
         $_SESSION['erreur'] = 'Erreur lors du téléchargement de l’image.';
         header('Location: add.php');
@@ -61,6 +69,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $query->bindValue(':badge', $badge, PDO::PARAM_STR);
         $query->bindValue(':Promo', $promo, PDO::PARAM_INT);
         $query->bindValue(':production_company_id', $production_company_id, PDO::PARAM_INT);
+
+        // Debugging: Log the SQL query and the bound values
+        error_log('SQL Query: ' . $sql);
+        error_log('Bound Values: ' . json_encode([
+            'produit' => $produit,
+            'description' => $description,
+            'prix' => $prix,
+            'nombre' => $nombre,
+            'image_produit' => $newFilename,
+            'badge' => $badge,
+            'Promo' => $promo,
+            'production_company_id' => $production_company_id
+        ]));
 
         $query->execute();
 

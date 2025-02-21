@@ -23,8 +23,13 @@ if (!$sessionId) {
 
 try {
     $session = \Stripe\Checkout\Session::retrieve($sessionId);
+    error_log("Session ID: $sessionId, Payment Status: " . $session->payment_status);
     if ($session->payment_status !== 'paid') {
         throw new Exception("Le paiement n'a pas été validé.");
+    }
+
+    if (!$db) {
+        throw new Exception("Connexion à la base de données échouée.");
     }
 
     $sql = '

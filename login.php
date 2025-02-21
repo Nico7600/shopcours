@@ -112,7 +112,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     </div>
 
     <footer>
-    	<p>&copy; 2024 Valomazone. Tous droits réservés.</p>
+    	<p>&copy; 2024-2025 Valomazone. Tous droits réservés.</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
