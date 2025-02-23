@@ -35,7 +35,7 @@ $isPrime = false;
 if (isset($_SESSION['id'])) {
     require_once 'connect.php';
 
-    $sql = 'SELECT fname, is_prime FROM users WHERE id = :id';
+    $sql = 'SELECT fname, is_prime, admin FROM users WHERE id = :id';
     $query = $db->prepare($sql);
     $query->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
     $query->execute();
@@ -44,6 +44,7 @@ if (isset($_SESSION['id'])) {
     if ($user) {
         $userName = $user['fname'];
         $isPrime = (bool)$user['is_prime'];
+        $_SESSION['admin'] = $user['admin'];
     }
 
     $banSql = 'SELECT id FROM bans WHERE user_id = :id';
