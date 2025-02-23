@@ -12,13 +12,14 @@ if (file_exists('maintenance.flag')) {
         $query->execute();
         $user = $query->fetch(PDO::FETCH_ASSOC);
 
-        if ($user && $user['admin'] == 1) {
-            // Admin user, bypass maintenance mode
-            return;
+        if (!($user && $user['admin'] == 1)) {
+            header('Location: maintenance.php');
+            exit();
         }
+    } else {
+        header('Location: maintenance.php');
+        exit();
     }
-    header('Location: maintenance.php');
-    exit();
 }
 
 $message = null;
