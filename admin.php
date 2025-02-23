@@ -1138,23 +1138,25 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     function openPatchNoteModal() {
-        // ...existing code...
+        document.getElementById('patchNoteModal').style.display = 'block';
     }
 
     function closePatchNoteModal() {
-        // ...existing code...
+        document.getElementById('patchNoteModal').style.display = 'none';
     }
 
     function openBanModal(userId) {
-        // ...existing code...
+        document.getElementById('banUserId').value = userId;
+        document.getElementById('banModal').style.display = 'block';
     }
 
     function closeBanModal() {
-        // ...existing code...
+        document.getElementById('banModal').style.display = 'none';
     }
 
     function openUnbanPage(banId) {
-        // ...existing code...
+        document.getElementById('unbanBanId').value = banId;
+        document.getElementById('unbanModal').style.display = 'block';
     }
 
     function openMaintenanceModal() {
@@ -1180,7 +1182,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             navbar.classList.remove('collapsed');
         }
     }
-    </script>
+</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     <footer>
         <p>&copy; 2024-2025 Valomazone. Tous droits réservés.</p>
