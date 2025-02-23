@@ -1002,7 +1002,14 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                     </tr>
                 </thead>
                 <tbody id="logsTableBody">
-                    <!-- Logs will be dynamically loaded here -->
+                    <?php foreach ($logs as $log): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($log['id']); ?></td>
+                            <td><?php echo htmlspecialchars($log['username']); ?></td>
+                            <td><?php echo htmlspecialchars($log['action']); ?></td>
+                            <td><?php echo htmlspecialchars($log['created_at']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>

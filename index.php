@@ -1,26 +1,6 @@
 <?php
 require_once 'bootstrap.php';
 
-// Check for maintenance mode
-if (file_exists('maintenance.flag')) {
-    session_start();
-    if (!isset($_SESSION['id'])) {
-        header('Location: maintenance.php');
-        exit();
-    } else {
-        $sql = 'SELECT admin FROM users WHERE id = :id';
-        $query = $db->prepare($sql);
-        $query->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
-        $query->execute();
-        $user = $query->fetch(PDO::FETCH_ASSOC);
-
-        if (!$user || $user['admin'] != 1) {
-            header('Location: maintenance.php');
-            exit();
-        }
-    }
-}
-
 $category = isset($_GET['category']) ? $_GET['category'] : ''; // Fixed syntax error
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 

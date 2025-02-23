@@ -9,10 +9,10 @@ if (!defined('BOOTSTRAP_LOADED')) {
     $dotenv = Dotenv::createImmutable(__DIR__);
     $dotenv->load();
 
-    if (empty($_ENV['DB_HOST']) || empty($_ENV['DB_NAME']) || empty($_ENV['DB_USER']) || empty($_ENV['DB_PASSWORD'])) {
+    if (!isset($_ENV['DB_HOST']) || !isset($_ENV['DB_NAME']) || !isset($_ENV['DB_USER']) || !isset($_ENV['DB_PASSWORD'])) {
         throw new Exception("Les variables d'environnement pour la base de données ne sont pas correctement définies.");
     }
-
+    
     require_once 'session.php';
 
     require_once 'connect.php';
