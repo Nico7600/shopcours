@@ -1,7 +1,27 @@
 <?php
 require_once 'bootstrap.php';
 
-$category = isset($_GET['category']) ? $_GET['category'] : '';
+// Check for maintenance mode
+if (file_exists('maintenance.flag')) {
+    session_start();
+    if (!isset($_SESSION['id'])) {
+        header('Location: maintenance.php');
+        exit();
+    } else {
+        $sql = 'SELECT admin FROM users WHERE id = :id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
+        $query->execute();
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user || $user['admin'] != 1) {
+            header('Location: maintenance.php');
+            exit();
+        }
+    }
+}
+
+$category = isset($_GET['category']) ? $_GET['category'] : ''; // Fixed syntax error
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 
 if ($search) {
@@ -54,6 +74,8 @@ if ($message === 'T') {
 } elseif ($message === 'prime_cancel') {
     echo '<div class="alert alert-danger">Votre adhésion Prime a été annulée.</div>';
 }
+
+$isPrime = false; // Initialize $isPrime
 ?>
 <!DOCTYPE html>
 <html lang="fr">

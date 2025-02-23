@@ -4,6 +4,19 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (file_exists('maintenance.flag')) {
+    if (isset($_SESSION['id'])) {
+        require_once 'connect.php';
+        $sql = 'SELECT admin FROM users WHERE id = :id';
+        $query = $db->prepare($sql);
+        $query->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
+        $query->execute();
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && $user['admin'] == 1) {
+            // Admin user, bypass maintenance mode
+            return;
+        }
+    }
     header('Location: maintenance.php');
     exit();
 }

@@ -1014,93 +1014,31 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://cdn.datatables.net/2.2.1/js/dataTables.bootstrap5.js"></script>
     <script>
     $(document).ready(function() {
-        // Initialize tables based on cookie visibility
-
-        var salesChartData = {
-            labels: salesLabels.reverse(),
-            datasets: [{
-                label: 'Ventes',
-                data: salesTotals.reverse(),
-                backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                borderColor: 'rgba(153, 102, 255, 1)',
-                borderWidth: 1
-            }]
-        };
-
-        // Initialize charts
-        var ctx1 = document.getElementById('registrationsChart').getContext('2d');
-        var registrationsChart = new Chart(ctx1, {
-            type: 'line',
-            data: registrationsChartData,
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            font: {
-                                family: 'Ubuntu'
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        var ctx2 = document.getElementById('salesChart').getContext('2d');
-        var salesChart = new Chart(ctx2, {
-            type: 'line',
-            data: salesChartData,
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            font: {
-                                family: 'Ubuntu'
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        function fetchLogs() {
-            $.post('admin.php', { fetch_logs: true }, function(data) {
-                var logs = JSON.parse(data);
-                var logsTableBody = $('#logsTableBody');
-                logsTableBody.empty();
-                logs.forEach(function(log) {
-                    var row = '<tr>' +
-                        '<td>' + log.id + '</td>' +
-                        '<td>' + log.username + '</td>' +
-                        '<td>' + log.action + '</td>' +
-                        '<td class="date">' + new Date(log.created_at).toLocaleString() + '</td>' +
-                        '</tr>';
-                    logsTableBody.append(row);
-                });
-            });
-        }
-
-        setInterval(fetchLogs, 5000);
-        restoreChartsVisibility();
-        restoreTableVisibility('recentUsersTable');
-        restoreTableVisibility('recentSalesTable');
-        restoreTableVisibility('recentPrimeMembersTable');
-        restoreTableVisibility('bannedUsersTable');
-        restoreTableVisibility('banHistoryTable');
-        restoreTableVisibility('listeTable');
-        restoreTableVisibility('logsTable');
+        initializeAllTables();
+        $('#adminContainer').show();
         updateAdminContainerVisibility();
         restoreOptionsMenuState();
     });
+
+    function initializeAllTables() {
+        initializeDataTable('recentUsersTable');
+        initializeDataTable('recentSalesTable');
+        initializeDataTable('recentPrimeMembersTable');
+        initializeDataTable('bannedUsersTable');
+        initializeDataTable('banHistoryTable');
+        initializeDataTable('listeTable');
+        initializeDataTable('logsTable');
+        $('#chartsContainer').show();
+        $('#statsTitle').show();
+        $('#toggleChartsButton').text('Masquer les graphiques').removeClass('btn-danger').addClass('btn-success');
+        updateToggleButton('recentUsersTable', true);
+        updateToggleButton('recentSalesTable', true);
+        updateToggleButton('recentPrimeMembersTable', true);
+        updateToggleButton('bannedUsersTable', true);
+        updateToggleButton('banHistoryTable', true);
+        updateToggleButton('listeTable', true);
+        updateToggleButton('logsTable', true);
+    }
 
     function filterLogs() {
         var filterValue = $('#logFilter').val().toLowerCase();
@@ -1128,27 +1066,8 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             toggleButton.classList.add('btn-danger');
             Cookies.set('chartsVisible', 'false');
         }
+        $('#adminContainer').show(); // Ensure adminContainer is displayed
         updateAdminContainerVisibility();
-    }
-
-    function restoreChartsVisibility() {
-        var isVisible = Cookies.get('chartsVisible') === 'true';
-        var chartsContainer = document.getElementById('chartsContainer');
-        var statsTitle = document.getElementById('statsTitle');
-        var toggleButton = document.getElementById('toggleChartsButton');
-        if (isVisible) {
-            chartsContainer.style.display = 'flex';
-            statsTitle.style.display = 'block';
-            toggleButton.textContent = 'Masquer les graphiques';
-            toggleButton.classList.remove('btn-danger');
-            toggleButton.classList.add('btn-success');
-        } else {
-            chartsContainer.style.display = 'none';
-            statsTitle.style.display = 'none';
-            toggleButton.textContent = 'Afficher les graphiques';
-            toggleButton.classList.remove('btn-success');
-            toggleButton.classList.add('btn-danger');
-        }
     }
 
     function initializeDataTable(tableId) {
@@ -1182,6 +1101,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             initializeDataTable(tableId);
             Cookies.set(tableId + 'Visible', 'true');
         }
+        $('#adminContainer').show();
         updateAdminContainerVisibility();
     }
 
@@ -1191,19 +1111,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             button.removeClass('btn-danger').addClass('btn-success').text('Désactiver ' + button.data('label'));
         } else {
             button.removeClass('btn-success').addClass('btn-danger').text('Activer ' + button.data('label'));
-        }
-    }
-
-    function restoreTableVisibility(tableId) {
-        var isVisible = Cookies.get(tableId + 'Visible') === 'true';
-        if (isVisible) {
-            $('#' + tableId + 'Container').show();
-            $('#' + tableId + 'Container').prev('.table-title').show();
-            initializeDataTable(tableId);
-        } else {
-            $('#' + tableId + 'Container').hide();
-            $('#' + tableId + 'Container').prev('.table-title').hide();
-            updateToggleButton(tableId, false);
         }
     }
 
@@ -1244,11 +1151,11 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     function openMaintenanceModal() {
-        // ...existing code...
+        document.getElementById('maintenanceModal').style.display = 'block';
     }
 
     function closeMaintenanceModal() {
-        // ...existing code...
+        document.getElementById('maintenanceModal').style.display = 'none';
     }
 
     function toggleSecondaryNavbar() {
