@@ -484,15 +484,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             vertical-align: middle;
         }
         .charts-container {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .chart-wrapper {
-            width: 100%;
-            max-width: 45%;
-            margin-bottom: 20px;
+            display: none; /* Hide charts container */
         }
         .btn-secondary {
             background-color: #6c757d;
@@ -710,7 +702,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="secondary-navbar">
         <div class="menu">
-            <button id="toggleChartsButton" class="btn btn-secondary" onclick="toggleCharts()">Afficher/Masquer les graphiques</button>
             <button id="toggleRecentUsersTable" class="btn btn-secondary" data-label="Derniers inscrits" onclick="toggleDataTable('recentUsersTable')">Activer Derniers inscrits</button>
             <button id="toggleRecentSalesTable" class="btn btn-secondary" data-label="Dernières ventes" onclick="toggleDataTable('recentSalesTable')">Activer Dernières ventes</button>
             <button id="toggleRecentPrimeMembersTable" class="btn btn-secondary" onclick="toggleDataTable('recentPrimeMembersTable')" data-label="Derniers membres Prime">Activer/Désactiver Derniers membres Prime</button>
@@ -721,15 +712,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     <div id="adminContainer" class="admin-container" style="display: none;">
-        <h1 id="statsTitle">Statistiques</h1>
-        <div id="chartsContainer" class="charts-container">
-            <div class="chart-wrapper">
-                <canvas id="registrationsChart" width="400" height="200"></canvas>
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="salesChart" width="400" height="200"></canvas>
-            </div>
-        </div>
         <div class="user-list">
             <div class="table-title">
                 <h2>Derniers inscrits</h2>
@@ -1080,9 +1062,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         initializeDataTable('banHistoryTable');
         initializeDataTable('listeTable');
         initializeDataTable('logsTable');
-        $('#chartsContainer').show();
-        $('#statsTitle').show();
-        $('#toggleChartsButton').text('Masquer les graphiques').removeClass('btn-danger').addClass('btn-success');
         updateToggleButton('recentUsersTable', true);
         updateToggleButton('recentSalesTable', true);
         updateToggleButton('recentPrimeMembersTable', true);
@@ -1097,29 +1076,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         $('#logsTableBody tr').filter(function() {
             $(this).toggle($(this).text().toLowerCase().indexOf(filterValue) > -1)
         });
-    }
-
-    function toggleCharts() {
-        var chartsContainer = document.getElementById('chartsContainer');
-        var statsTitle = document.getElementById('statsTitle');
-        var toggleButton = document.getElementById('toggleChartsButton');
-        if (chartsContainer.style.display === 'none' || chartsContainer.style.display === '') {
-            chartsContainer.style.display = 'flex';
-            statsTitle.style.display = 'block';
-            toggleButton.textContent = 'Masquer les graphiques';
-            toggleButton.classList.remove('btn-danger');
-            toggleButton.classList.add('btn-success');
-            Cookies.set('chartsVisible', 'true');
-        } else {
-            chartsContainer.style.display = 'none';
-            statsTitle.style.display = 'none';
-            toggleButton.textContent = 'Afficher les graphiques';
-            toggleButton.classList.remove('btn-success');
-            toggleButton.classList.add('btn-danger');
-            Cookies.set('chartsVisible', 'false');
-        }
-        $('#adminContainer').show(); // Ensure adminContainer is displayed
-        updateAdminContainerVisibility();
     }
 
     function initializeDataTable(tableId) {
