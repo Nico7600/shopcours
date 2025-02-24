@@ -608,6 +608,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             margin-bottom: 20px;
         }
         .logs-container {
+            display: none;
             flex-direction: column;
             align-items: center;
             margin-top: 40px;
@@ -1129,7 +1130,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                         $('#listeTableContainer').is(':visible') ||
                         $('#logsTableContainer').is(':visible') ||
                         $('#chartsContainer').is(':visible');
-                        $('#adminContainer').toggle(isVisible);
+        $('#adminContainer').toggle(isVisible);
     }
 
     function capitalizeFirstLetter(string) {
@@ -1137,25 +1138,23 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     function openPatchNoteModal() {
-        document.getElementById('patchNoteModal').style.display = 'block';
+        // ...existing code...
     }
 
     function closePatchNoteModal() {
-        document.getElementById('patchNoteModal').style.display = 'none';
+        // ...existing code...
     }
 
     function openBanModal(userId) {
-        document.getElementById('banUserId').value = userId;
-        document.getElementById('banModal').style.display = 'block';
+        // ...existing code...
     }
 
     function closeBanModal() {
-        document.getElementById('banModal').style.display = 'none';
+        // ...existing code...
     }
 
     function openUnbanPage(banId) {
-        document.getElementById('unbanBanId').value = banId;
-        document.getElementById('unbanModal').style.display = 'block';
+        // ...existing code...
     }
 
     function openMaintenanceModal() {
@@ -1181,7 +1180,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             navbar.classList.remove('collapsed');
         }
     }
-</script>
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     <footer>
         <p>&copy; 2024-2025 Valomazone. Tous droits réservés.</p>
