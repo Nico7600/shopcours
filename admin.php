@@ -923,49 +923,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                 </table>
             </div>
         </div>
-        <div class="logs-container" id="logsTableContainer">
-        <div class="table-title">
-            <h2>Logs des actions</h2>
-        </div>
-        <div class="filter-container">
-            <label for="logFilter">Filtrer par action:</label>
-            <select id="logFilter" onchange="filterLogs()">
-                <option value="">Tous</option>
-                <option value="Maintenance activée">Maintenance activée</option>
-                <option value="Maintenance désactivée">Maintenance désactivée</option>
-                <option value="Prime activé">Prime activé</option>
-                <option value="Prime désactivé">Prime désactivé</option>
-                <option value="Admin activé">Admin activé</option>
-                <option value="Admin désactivé">Admin désactivé</option>
-                <option value="Utilisateur banni">Utilisateur banni</option>
-                <option value="Utilisateur débanni">Utilisateur débanni</option>
-                <option value="Patch note ajouté">Patch note ajouté</option>
-            </select>
-        </div>
-        <div class="table-container">
-            <table id="logsTable" class="logs-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Utilisateur</th>
-                        <th>Action</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="logsTableBody">
-                    <?php foreach ($logs as $log): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($log['id']); ?></td>
-                            <td><?php echo htmlspecialchars($log['username']); ?></td>
-                            <td><?php echo htmlspecialchars($log['action']); ?></td>
-                            <td><?php echo htmlspecialchars($log['created_at']); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-        
         <!-- Ban Modal -->
         <div id="banModal" class="modal">
             <div class="modal-content">
@@ -1012,6 +969,48 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                 <textarea name="update" required class="form-control mb-3"></textarea>
                 <button type="submit" class="btn btn-primary btn-block">Submit</button>
             </form>
+        </div>
+    </div>
+    <div class="logs-container" id="logsTableContainer">
+        <div class="table-title">
+            <h2>Logs des actions</h2>
+        </div>
+        <div class="filter-container">
+            <label for="logFilter">Filtrer par action:</label>
+            <select id="logFilter" onchange="filterLogs()">
+                <option value="">Tous</option>
+                <option value="Maintenance activée">Maintenance activée</option>
+                <option value="Maintenance désactivée">Maintenance désactivée</option>
+                <option value="Prime activé">Prime activé</option>
+                <option value="Prime désactivé">Prime désactivé</option>
+                <option value="Admin activé">Admin activé</option>
+                <option value="Admin désactivé">Admin désactivé</option>
+                <option value="Utilisateur banni">Utilisateur banni</option>
+                <option value="Utilisateur débanni">Utilisateur débanni</option>
+                <option value="Patch note ajouté">Patch note ajouté</option>
+            </select>
+        </div>
+        <div class="table-container">
+            <table id="logsTable" class="logs-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Utilisateur</th>
+                        <th>Action</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                    <?php foreach ($logs as $log): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($log['id']); ?></td>
+                            <td><?php echo htmlspecialchars($log['username']); ?></td>
+                            <td><?php echo htmlspecialchars($log['action']); ?></td>
+                            <td><?php echo htmlspecialchars($log['created_at']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
