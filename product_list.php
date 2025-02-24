@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -25,3 +26,25 @@ try {
     exit();
 }
 ?>
+
+<table>
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($products as $product): ?>
+        <tr>
+            <td><?php echo htmlspecialchars($product['name']); ?></td>
+            <td><?php echo htmlspecialchars($product['price']); ?></td>
+            <td>
+                <a href="edit_product.php?id=<?php echo $product['id']; ?>">Edit</a>
+                <a href="delete_product.php?id=<?php echo $product['id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');">Delete</a>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
