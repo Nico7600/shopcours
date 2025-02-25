@@ -165,6 +165,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $query->execute();
 
+        foreach ($bannedUsers as $key => $ban) {
+            if ($ban['user_id'] == $userId) {
+                unset($bannedUsers[$key]);
+                break;
+            }
+        }
+
         foreach ($recentUsers as &$user) {
             if ($user['id'] == $userId) {
                 $user['banned'] = 0;
@@ -176,39 +183,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: admin.php');
         exit;
     }
-
-    if (isset($_POST['update'])) {
-        $message = filter_input(INPUT_POST, 'update', FILTER_SANITIZE_STRING);
-        $userId = $_SESSION['id'];
-        $sql = 'INSERT INTO updates (user_id, message, created_at) VALUES (:user_id, :message, NOW())';
-        $query = $db->prepare($sql);
-        $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
-        $query->bindValue(':message', $message, PDO::PARAM_STR);
-        $query->execute();
-        logAction($_SESSION['id'], 'Patch note ajouté');
-        header('Location: admin.php');
-        exit;
-    }
-
-    if (isset($_POST['fetch_logs'])) {
-        $sql = 'SELECT logs.id, logs.action, logs.created_at, users.username FROM logs JOIN users ON logs.user_id = users.id ORDER BY logs.created_at DESC';
-        $query = $db->prepare($sql);
-        $query->execute();
-        $logs = $query->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($logs);
-        exit;
-    }
 }
 
-$sql = 'SELECT id, fname, username, is_prime, admin, date, banned, last_ip FROM users ORDER BY id DESC LIMIT 10';
+$sql = 'SELECT id, user_id FROM bans WHERE ban_end_date <= NOW()';
 $query = $db->prepare($sql);
 $query->execute();
-$recentUsers = $query->fetchAll(PDO::FETCH_ASSOC);
+$expiredBans = $query->fetchAll(PDO::FETCH_ASSOC);
 
-$sql = 'SELECT id, order_date, total_amount FROM orders ORDER BY order_date DESC LIMIT 10';
-$query = $db->prepare($sql);
-$query->execute();
-$recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
+foreach ($expiredBans as $ban) {
+    $banId = $ban['id'];
+    $userId = $ban['user_id'];
+
+    $sql = 'INSERT INTO ban_history (user_id, reason, ban_end_date, banned_by)
+            SELECT user_id, reason, ban_end_date, banned_by FROM bans WHERE id = :ban_id';
+    $query = $db->prepare($sql);
+    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+    $query->execute();
+
+    $sql = 'DELETE FROM bans WHERE id = :ban_id';
+    $query = $db->prepare($sql);
+    $query->bindValue(':ban_id', $banId, PDO::PARAM_INT);
+    $query->execute();
+
+    $sql = 'UPDATE users SET banned = 0 WHERE id = :user_id';
+    $query = $db->prepare($sql);
+    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
+    $query->execute();
+}
 
 $sql = 'SELECT bans.id AS ban_id, bans.user_id, users.username, bans.reason, bans.ban_end_date, admin.username AS banned_by_username 
         FROM bans 
@@ -612,7 +613,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             vertical-align: middle;
         }
         .logs-container {
-            display: none;
+            display: flex; /* Change from display: none; to display: flex; */
             flex-direction: column;
             align-items: center;
             margin-top: 40px;
@@ -1052,6 +1053,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         $('#adminContainer').show();
         updateAdminContainerVisibility();
         restoreOptionsMenuState();
+        $('#logsTableContainer').show(); // Ensure logs container is displayed by default
     });
 
     function initializeAllTables() {
@@ -1129,8 +1131,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                         $('#bannedUsersTableContainer').is(':visible') ||
                         $('#banHistoryTableContainer').is(':visible') ||
                         $('#listeTableContainer').is(':visible') ||
-                        $('#logsTableContainer').is(':visible') ||
-                        $('#chartsContainer').is(':visible');
+                        $('#logsTableContainer').is(':visible');
         $('#adminContainer').toggle(isVisible);
     }
 
@@ -1139,23 +1140,25 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     function openPatchNoteModal() {
-        // ...existing code...
+        document.getElementById('patchNoteModal').style.display = 'block';
     }
 
     function closePatchNoteModal() {
-        // ...existing code...
+        document.getElementById('patchNoteModal').style.display = 'none';
     }
 
     function openBanModal(userId) {
-        // ...existing code...
+        document.getElementById('banUserId').value = userId;
+        document.getElementById('banModal').style.display = 'block';
     }
 
     function closeBanModal() {
-        // ...existing code...
+        document.getElementById('banModal').style.display = 'none';
     }
 
     function openUnbanPage(banId) {
-        // ...existing code...
+        document.getElementById('unbanBanId').value = banId;
+        document.getElementById('unbanForm').submit();
     }
 
     function openMaintenanceModal() {
@@ -1183,13 +1186,11 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     function editProduct(productId) {
-        // Redirect to the edit product page with the product ID
         window.location.href = 'edit.php?id=' + productId;
     }
 
     function deleteProduct(productId) {
         if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
-            // Redirect to the delete product page with the product ID
             window.location.href = 'delete_product.php?id=' + productId;
         }
     }
@@ -1201,7 +1202,12 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             console.error('Could not copy text: ', err);
         });
     }
-    </script>
+</script>
+<form id="unbanForm" method="post" style="display:none;">
+    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+    <input type="hidden" name="ban_id" id="unbanBanId">
+    <button type="submit" name="unban_user"></button>
+</form>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     <footer>
         <p>&copy; 2024-2025 Valomazone. Tous droits réservés.</p>

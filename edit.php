@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-if ($_POST) {
-    if (isset($_POST['produit']) && !empty($_POST['produit'])
-        && isset($_POST['Description']) && !empty($_POST['Description'])
-        && isset($_POST['prix']) && !empty($_POST['prix'])
-        && isset($_POST['nombre']) && is_numeric($_POST['nombre'])
-        && isset($_POST['badge']) && !empty($_POST['badge'])
-        && isset($_POST['Promo']) && is_numeric($_POST['Promo'])) {
+if($_POST){
+    if(isset($_POST['produit']) && !empty($_POST['produit'])
+    && isset($_POST['Description']) && !empty($_POST['Description'])
+    && isset($_POST['prix']) && !empty($_POST['prix'])
+    && isset($_POST['nombre']) && is_numeric($_POST['nombre'])
+    && isset($_POST['badge']) && !empty($_POST['badge'])
+    && isset($_POST['Promo']) && is_numeric($_POST['Promo'])){
         require_once('connect.php');
         $db->exec("SET NAMES 'utf8mb4'");
 
@@ -18,8 +18,16 @@ if ($_POST) {
         $badge = strip_tags($_POST['badge']);
         $promo = strip_tags($_POST['Promo']);
 
+        if(isset($_FILES['image']) && $_FILES['image']['error'] == 0){
+            $image = $_FILES['image'];
+            $imagePath = 'uploads/' . basename($image['name']);
+            move_uploaded_file($image['tmp_name'], $imagePath);
+        } else {
+            $imagePath = isset($_POST['current_image']) ? $_POST['current_image'] : '';
+        }
+
         try {
-            $sql = 'UPDATE `liste` SET `produit`=:produit, `Description`=:Description, `prix`=:prix, `nombre`=:nombre, `badge`=:badge, `Promo`=:Promo WHERE `id`=:id;';
+            $sql = 'UPDATE `liste` SET `produit`=:produit, `Description`=:Description, `prix`=:prix, `nombre`=:nombre, `badge`=:badge, `Promo`=:Promo, `image_produit`=:image WHERE `id`=:id;';
             $query = $db->prepare($sql);
 
             $query->bindValue(':produit', $produit, PDO::PARAM_STR);
@@ -28,6 +36,7 @@ if ($_POST) {
             $query->bindValue(':nombre', $nombre, PDO::PARAM_INT);
             $query->bindValue(':badge', $badge, PDO::PARAM_STR);
             $query->bindValue(':Promo', $promo, PDO::PARAM_INT);
+            $query->bindValue(':image', $imagePath, PDO::PARAM_STR);
             $query->bindValue(':id', $_GET['id'], PDO::PARAM_INT);
 
             $query->execute();
@@ -36,16 +45,17 @@ if ($_POST) {
             require_once('close.php');
 
             header('Location: index.php');
+            exit;
         } catch (PDOException $e) {
             $_SESSION['erreur'] = "Erreur : " . $e->getMessage();
             header('Location: edit.php?id=' . $_GET['id']);
             exit;
         }
-    } else {
+    }else{
         $_SESSION['erreur'] = "Le formulaire est incomplet";
     }
-} else {
-    if (isset($_GET['id']) && !empty($_GET['id'])) {
+}else{
+    if(isset($_GET['id']) && !empty($_GET['id'])){
         require_once('connect.php');
         $db->exec("SET NAMES 'utf8mb4'");
 
@@ -59,12 +69,12 @@ if ($_POST) {
 
         $produit = $query->fetch();
 
-        if (!$produit) {
+        if(!$produit){
             $_SESSION['erreur'] = "Cet id n'existe pas";
             header('Location: index.php');
             exit;
         }
-    } else {
+    }else{
         $_SESSION['erreur'] = "URL invalide";
         header('Location: index.php');
         exit;
@@ -77,6 +87,7 @@ if ($_POST) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier un produit</title>
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
@@ -106,13 +117,16 @@ if ($_POST) {
         <div class="row">
             <section class="col-12">
                 <?php
-                    if (!empty($_SESSION['erreur'])) {
-                        echo '<div class="alert alert-danger" role="alert">' . $_SESSION['erreur'] . '</div>';
+                    if(!empty($_SESSION['erreur'])){
+                        echo '<div class="alert alert-danger" role="alert">
+                                '. $_SESSION['erreur'].'
+                            </div>';
                         $_SESSION['erreur'] = "";
                     }
                 ?>
                 <h1>Modifier un Produit</h1>
-                <form method="post" action="edit.php?id=<?= $produit['id'] ?>">
+                <form method="post" action="edit.php?id=<?= $produit['id'] ?>" enctype="multipart/form-data">
+                    <input type="hidden" name="current_image" value="<?= $produit['image_produit'] ?>">
                     <div class="form-group">
                         <label for="produit">Produit</label>
                         <input type="text" id="produit" name="produit" class="form-control" value="<?= $produit['produit'] ?>">
@@ -157,6 +171,13 @@ if ($_POST) {
                     <div class="form-group">
                         <label for="Promo">Promo (%)</label>
                         <input type="number" id="Promo" name="Promo" class="form-control" value="<?= $produit['Promo'] ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="image">Image (optionnel)</label>
+                        <input type="file" id="image" name="image" class="form-control">
+                        <?php if (!empty($produit['image_produit'])): ?>
+                            <img src="<?= $produit['image_produit'] ?>" alt="Image actuelle" style="max-width: 100px; margin-top: 10px;">
+                        <?php endif; ?>
                     </div>
                     <button type="submit" class="btn btn-primary">Modifier</button>
                 </form>
