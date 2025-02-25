@@ -95,7 +95,7 @@ $isPrime = false; // Initialize $isPrime
                     }
                 ?>
                     <div class="carousel-item <?= $active ?>">
-                        <img src="<?= $image_path ?>" class="d-block w-100 fixed-height img-fluid" alt="<?= $produit['produit'] ?>" onclick="window.location.href='details.php?id=<?= $produit['id'] ?>'">
+                        <img src="<?= htmlspecialchars($image_path); ?>" class="d-block w-100 fixed-height img-fluid" alt="<?= htmlspecialchars($produit['produit']); ?>" onclick="window.location.href='details.php?id=<?= $produit['id'] ?>'">
                         <div class="carousel-caption d-md-block">
                             <h5><?= $produit['produit'] ?></h5>
                             <p>A seulement : <?= $produit['prix'] ?> €</p>

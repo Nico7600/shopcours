@@ -2,13 +2,27 @@
 require_once 'bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $requiredFields = ['produit', 'description', 'prix', 'nombre', 'badge', 'Promo', 'production_company_id'];
+    // Debugging: Log the POST data
+    error_log('POST Data: ' . json_encode($_POST));
+
+    $requiredFields = ['produit', 'description', 'prix', 'nombre', 'badge', 'production_company_id'];
     foreach ($requiredFields as $field) {
-        if (empty($_POST[$field]) || (!is_numeric($_POST[$field]) && in_array($field, ['prix', 'nombre', 'Promo', 'production_company_id']))) {
-            $_SESSION['erreur'] = 'Tous les champs obligatoires doivent être remplis correctement.';
+        if (empty($_POST[$field])) {
+            $_SESSION['erreur'] = 'Le champ ' . $field . ' est obligatoire.';
             header('Location: add.php');
             exit;
         }
+        if (!is_numeric($_POST[$field]) && in_array($field, ['prix', 'nombre', 'production_company_id'])) {
+            $_SESSION['erreur'] = 'Le champ ' . $field . ' doit être un nombre.';
+            header('Location: add.php');
+            exit;
+        }
+    }
+
+    if (isset($_POST['Promo']) && !is_numeric($_POST['Promo'])) {
+        $_SESSION['erreur'] = 'Le champ Promo doit être un nombre.';
+        header('Location: add.php');
+        exit;
     }
 
     error_log('Produit: ' . $_POST['produit']);
@@ -30,12 +44,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $prix = (float)$_POST['prix'];
     $nombre = (int)$_POST['nombre'];
     $badge = strip_tags($_POST['badge']);
-    $promo = (int)$_POST['Promo'];
+    $promo = isset($_POST['Promo']) ? (int)$_POST['Promo'] : 0;
     $production_company_id = (int)$_POST['production_company_id'];
 
-    $uploadsDir = 'uploads';
+    $uploadsDir = 'image_produit';
     if (!is_dir($uploadsDir)) {
-        mkdir($uploadsDir, 0777, true);
+        if (!mkdir($uploadsDir, 0777, true)) {
+            error_log('Erreur lors de la création du répertoire ' . $uploadsDir);
+            $_SESSION['erreur'] = 'Erreur lors de la création du répertoire pour les images.';
+            header('Location: add.php');
+            exit;
+        }
+    }
+    $uploadsDirSecondary = 'uploads';
+    if (!is_dir($uploadsDirSecondary)) {
+        if (!mkdir($uploadsDirSecondary, 0777, true)) {
+            error_log('Erreur lors de la création du répertoire ' . $uploadsDirSecondary);
+            $_SESSION['erreur'] = 'Erreur lors de la création du répertoire pour les images.';
+            header('Location: add.php');
+            exit;
+        }
     }
 
     $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
@@ -51,7 +79,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newFilename = uniqid() . '.' . $fileExtension;
     $filePath = $uploadsDir . '/' . $newFilename;
     if (!move_uploaded_file($_FILES['image_produit']['tmp_name'], $filePath)) {
+        error_log('Erreur lors du déplacement du fichier téléchargé vers ' . $filePath);
         $_SESSION['erreur'] = 'Erreur lors de l’enregistrement de l’image.';
+        header('Location: add.php');
+        exit;
+    }
+    $secondaryFilePath = $uploadsDirSecondary . '/' . $newFilename;
+    if (!copy($filePath, $secondaryFilePath)) {
+        error_log('Erreur lors de la copie du fichier vers ' . $secondaryFilePath);
+        $_SESSION['erreur'] = 'Erreur lors de la copie de l’image.';
         header('Location: add.php');
         exit;
     }
@@ -65,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $query->bindValue(':description', $description, PDO::PARAM_STR);
         $query->bindValue(':prix', $prix, PDO::PARAM_STR);
         $query->bindValue(':nombre', $nombre, PDO::PARAM_INT);
-        $query->bindValue(':image_produit', $newFilename, PDO::PARAM_STR);
+        $query->bindValue(':image_produit', $filePath, PDO::PARAM_STR); // Réintroduire le chemin de l'image
         $query->bindValue(':badge', $badge, PDO::PARAM_STR);
         $query->bindValue(':Promo', $promo, PDO::PARAM_INT);
         $query->bindValue(':production_company_id', $production_company_id, PDO::PARAM_INT);
@@ -77,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'description' => $description,
             'prix' => $prix,
             'nombre' => $nombre,
-            'image_produit' => $newFilename,
+            'image_produit' => $filePath,
             'badge' => $badge,
             'Promo' => $promo,
             'production_company_id' => $production_company_id
@@ -175,20 +211,23 @@ try {
                         <label for="badge"><i class="fas fa-tag"></i> Badge</label>
                         <select class="form-control" id="badge" name="badge" required>
                             <option value="">Aucun</option>
-                            <option value="classic">Classic</option>
-                            <option value="ghost">Ghost</option>
-                            <option value="shorty">Shorty</option>
-                            <option value="frenzy">Frenzy</option>
-                            <option value="stinger">Stinger</option>
-                            <option value="spectre">Spectre</option>
-                            <option value="phantom">Phantom</option>
-                            <option value="vandal">Vandal</option>
-                            <option value="marshal">Marshal</option>
-                            <option value="operator">Operator</option>
-                            <option value="bucky">Bucky</option>
-                            <option value="judge">Judge</option>
-                            <option value="ares">Ares</option>
-                            <option value="odin">Odin</option>
+                            <option value="classic"><i class="fas fa-gun"></i> Classic</option>
+                            <option value="ghost"><i class="fas fa-ghost"></i> Ghost</option>
+                            <option value="shorty"><i class="fas fa-bolt"></i> Shorty</option>
+                            <option value="frenzy"><i class="fas fa-fire"></i> Frenzy</option>
+                            <option value="stinger"><i class="fas fa-bug"></i> Stinger</option>
+                            <option value="spectre"><i class="fas fa-eye"></i> Spectre</option>
+                            <option value="phantom"><i class="fas fa-mask"></i> Phantom</option>
+                            <option value="vandal"><i class="fas fa-skull"></i> Vandal</option>
+                            <option value="marshal"><i class="fas fa-shield-alt"></i> Marshal</option>
+                            <option value="operator"><i class="fas fa-crosshairs"></i> Operator</option>
+                            <option value="bucky"><i class="fas fa-bullseye"></i> Bucky</option>
+                            <option value="judge"><i class="fas fa-gavel"></i> Judge</option>
+                            <option value="ares"><i class="fas fa-archway"></i> Ares</option>
+                            <option value="odin"><i class="fas fa-hammer"></i> Odin</option>
+                            <option value="bouldog"><i class="fas fa-dog"></i> Bouldog</option>
+                            <option value="ensemble"><i class="fas fa-layer-group"></i> Ensemble</option>
+                            <option value="couteau"><i class="fas fa-knife"></i> Couteau</option> <!-- Ajout de l'option couteau -->
                         </select>
                     </div>
                     <div class="form-group">
@@ -198,10 +237,21 @@ try {
                     <div class="form-group">
                         <label for="production_company_id"><i class="fas fa-industry"></i> Société de production</label>
                         <select class="form-control" id="production_company_id" name="production_company_id" required>
+                            <option value="" disabled selected>Choisissez une société de production</option>
                             <?php
                             $sql = 'SELECT id, name FROM production_companies';
-                            foreach ($db->query($sql) as $company) {
-                                echo '<option value="' . htmlspecialchars($company['id']) . '">' . htmlspecialchars($company['name']) . '</option>';
+                            try {
+                                $companies = $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+                                if (!$companies) {
+                                    throw new Exception('No companies found');
+                                }
+                                foreach ($companies as $company) {
+                                    echo '<option value="' . htmlspecialchars($company['id']) . '">' . htmlspecialchars($company['name']) . '</option>';
+                                }
+                            } catch (Exception $e) {
+                                error_log('Erreur lors de la récupération des sociétés de production : ' . $e->getMessage());
+                                error_log('SQL Query: ' . $sql);
+                                echo '<option value="" disabled>Erreur lors de la récupération des sociétés</option>';
                             }
                             ?>
                         </select>
@@ -213,6 +263,9 @@ try {
                     <?php foreach ($products as $product): ?>
                         <li class="list-group-item">
                             <?php echo htmlspecialchars($product['produit']); ?> - Badge: <?php echo htmlspecialchars($product['badge']); ?>
+                            <?php if (!empty($product['image_produit'])): ?>
+                                <img src="<?php echo htmlspecialchars($product['image_produit']); ?>" alt="Image du produit" style="max-width: 100px; margin-top: 10px;">
+                            <?php endif; ?>
                         </li>
                     <?php endforeach; ?>
                 </ul>

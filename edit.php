@@ -7,7 +7,7 @@ if($_POST){
     && isset($_POST['prix']) && !empty($_POST['prix'])
     && isset($_POST['nombre']) && is_numeric($_POST['nombre'])
     && isset($_POST['badge']) && !empty($_POST['badge'])
-    && isset($_POST['Promo']) && is_numeric($_POST['Promo'])){
+    && (isset($_POST['Promo']) && is_numeric($_POST['Promo']) || $_POST['Promo'] == '')){
         require_once('connect.php');
         $db->exec("SET NAMES 'utf8mb4'");
 
@@ -16,7 +16,7 @@ if($_POST){
         $prix = strip_tags($_POST['prix']);
         $nombre = strip_tags($_POST['nombre']);
         $badge = strip_tags($_POST['badge']);
-        $promo = strip_tags($_POST['Promo']);
+        $promo = isset($_POST['Promo']) ? strip_tags($_POST['Promo']) : 0;
 
         if(isset($_FILES['image']) && $_FILES['image']['error'] == 0){
             $image = $_FILES['image'];
@@ -52,7 +52,7 @@ if($_POST){
             exit;
         }
     }else{
-        $_SESSION['erreur'] = "Le formulaire est incomplet";
+        $_SESSION['erreur'] = "Le formulaire est incomplet ou le champ Promo doit être un nombre.";
     }
 }else{
     if(isset($_GET['id']) && !empty($_GET['id'])){
@@ -80,6 +80,7 @@ if($_POST){
         exit;
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -87,9 +88,9 @@ if($_POST){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier un produit</title>
-
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
             font-family: 'Ubuntu', sans-serif;
@@ -147,25 +148,25 @@ if($_POST){
                         <label for="badge">Badge</label>
                         <select class="form-control" id="badge" name="badge">
                             <option value="">Aucun</option>
-                            <option value="couteau" <?= $produit['badge'] == 'couteau' ? 'selected' : '' ?> class="badge-danger">Couteau</option>
-                            <option value="classic" <?= $produit['badge'] == 'classic' ? 'selected' : '' ?> class="badge-primary">Classic</option>
-                            <option value="shorty" <?= $produit['badge'] == 'shorty' ? 'selected' : '' ?> class="badge-warning">Shorty</option>
-                            <option value="Frenzy" <?= $produit['badge'] == 'Frenzy' ? 'selected' : '' ?> class="badge-purple">Frenzy</option>
-                            <option value="Ghost" <?= $produit['badge'] == 'Ghost' ? 'selected' : '' ?> class="badge-yellow">Ghost</option>
-                            <option value="sherif" <?= $produit['badge'] == 'sherif' ? 'selected' : '' ?> class="badge-success">Sherif</option>
-                            <option value="Stinger" <?= $produit['badge'] == 'Stinger' ? 'selected' : '' ?> class="badge-peach">Stinger</option>
-                            <option value="spectre" <?= $produit['badge'] == 'spectre' ? 'selected' : '' ?> class="badge-fire">Spectre</option>
-                            <option value="Bucky" <?= $produit['badge'] == 'Bucky' ? 'selected' : '' ?> class="badge-pink">Bucky</option>
-                            <option value="Bouldog" <?= $produit['badge'] == 'Bouldog' ? 'selected' : '' ?> class="badge-light-red">Bouldog</option>
-                            <option value="guardian" <?= $produit['badge'] == 'guardian' ? 'selected' : '' ?> class="badge-dark-green">Guardian</option>
-                            <option value="Phantom" <?= $produit['badge'] == 'Phantom' ? 'selected' : '' ?> class="badge-sea-water">Phantom</option>
-                            <option value="Vandal" <?= $produit['badge'] == 'Vandal' ? 'selected' : '' ?> class="badge-gold">Vandal</option>
-                            <option value="marchal" <?= $produit['badge'] == 'marchal' ? 'selected' : '' ?> class="badge-cyan">Marchal</option>
-                            <option value="opérator" <?= $produit['badge'] == 'opérator' ? 'selected' : '' ?> class="badge-brown">Opérator</option>
-                            <option value="ares" <?= $produit['badge'] == 'ares' ? 'selected' : '' ?> class="badge-silver">Ares</option>
-                            <option value="odin" <?= $produit['badge'] == 'odin' ? 'selected' : '' ?> class="badge-black">Odin</option>
-                            <option value="Judges" <?= $produit['badge'] == 'Judges' ? 'selected' : '' ?> class="badge-white">Judges</option>
-                            <option value="ensemble" <?= $produit['badge'] == 'ensemble' ? 'selected' : '' ?> class="badge-primary">Ensemble</option>
+                            <option value="couteau" <?= $produit['badge'] == 'couteau' ? 'selected' : '' ?> class="badge-danger"><i class="fas fa-knife"></i> Couteau</option>
+                            <option value="classic" <?= $produit['badge'] == 'classic' ? 'selected' : '' ?> class="badge-primary"><i class="fas fa-gun"></i> Classic</option>
+                            <option value="shorty" <?= $produit['badge'] == 'shorty' ? 'selected' : '' ?> class="badge-warning"><i class="fas fa-bolt"></i> Shorty</option>
+                            <option value="Frenzy" <?= $produit['badge'] == 'Frenzy' ? 'selected' : '' ?> class="badge-purple"><i class="fas fa-fire"></i> Frenzy</option>
+                            <option value="Ghost" <?= $produit['badge'] == 'Ghost' ? 'selected' : '' ?> class="badge-yellow"><i class="fas fa-ghost"></i> Ghost</option>
+                            <option value="sherif" <?= $produit['badge'] == 'sherif' ? 'selected' : '' ?> class="badge-success"><i class="fas fa-star"></i> Sherif</option>
+                            <option value="Stinger" <?= $produit['badge'] == 'Stinger' ? 'selected' : '' ?> class="badge-peach"><i class="fas fa-bug"></i> Stinger</option>
+                            <option value="spectre" <?= $produit['badge'] == 'spectre' ? 'selected' : '' ?> class="badge-fire"><i class="fas fa-eye"></i> Spectre</option>
+                            <option value="Bucky" <?= $produit['badge'] == 'Bucky' ? 'selected' : '' ?> class="badge-pink"><i class="fas fa-bullseye"></i> Bucky</option>
+                            <option value="Bouldog" <?= $produit['badge'] == 'Bouldog' ? 'selected' : '' ?> class="badge-light-red"><i class="fas fa-dog"></i> Bouldog</option>
+                            <option value="guardian" <?= $produit['badge'] == 'guardian' ? 'selected' : '' ?> class="badge-dark-green"><i class="fas fa-shield-alt"></i> Guardian</option>
+                            <option value="Phantom" <?= $produit['badge'] == 'Phantom' ? 'selected' : '' ?> class="badge-sea-water"><i class="fas fa-mask"></i> Phantom</option>
+                            <option value="Vandal" <?= $produit['badge'] == 'Vandal' ? 'selected' : '' ?> class="badge-gold"><i class="fas fa-skull"></i> Vandal</option>
+                            <option value="marchal" <?= $produit['badge'] == 'marchal' ? 'selected' : '' ?> class="badge-cyan"><i class="fas fa-shield-alt"></i> Marchal</option>
+                            <option value="op��rator" <?= $produit['badge'] == 'opérator' ? 'selected' : '' ?> class="badge-brown"><i class="fas fa-crosshairs"></i> Opérator</option>
+                            <option value="ares" <?= $produit['badge'] == 'ares' ? 'selected' : '' ?> class="badge-silver"><i class="fas fa-archway"></i> Ares</option>
+                            <option value="odin" <?= $produit['badge'] == 'odin' ? 'selected' : '' ?> class="badge-black"><i class="fas fa-hammer"></i> Odin</option>
+                            <option value="Judges" <?= $produit['badge'] == 'Judges' ? 'selected' : '' ?> class="badge-white"><i class="fas fa-gavel"></i> Judges</option>
+                            <option value="ensemble" <?= $produit['badge'] == 'ensemble' ? 'selected' : '' ?> class="badge-primary"><i class="fas fa-users"></i> Ensemble</option>
                         </select>
                     </div>
                     <div class="form-group">

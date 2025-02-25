@@ -275,7 +275,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.2.1/css/dataTables.bootstrap5.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -485,7 +484,15 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             vertical-align: middle;
         }
         .charts-container {
-            display: none; /* Hide charts container */
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .chart-wrapper {
+            width: 100%;
+            max-width: 45%;
+            margin-bottom: 20px;
         }
         .btn-secondary {
             background-color: #6c757d;
@@ -600,17 +607,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         }
         .table-container {
             margin-bottom: 20px;
-            overflow-x: auto;
-        }
-        .table {
-            width: 100%;
-            min-width: 1000px; /* Adjust this value based on your table content */
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        .table td, .table th {
-            text-align: center;
-            vertical-align: middle;
         }
         .logs-container {
             display: flex; /* Change from display: none; to display: flex; */
@@ -664,26 +660,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             width: 100%;
             max-width: 300px;
         }
-        .table td, .table th {
-            text-align: center;
-            vertical-align: middle;
-        }
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        .btn-group .btn {
-            flex: 1;
-        }
-        .copy-ip {
-            cursor: pointer;
-            color: #007bff;
-            text-decoration: underline;
-        }
-        .copy-ip:hover {
-            color: #0056b3;
-        }
     </style>
 </head>
 <body>
@@ -703,6 +679,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="secondary-navbar">
         <div class="menu">
+            <button id="toggleChartsButton" class="btn btn-secondary" onclick="toggleCharts()">Afficher/Masquer les graphiques</button>
             <button id="toggleRecentUsersTable" class="btn btn-secondary" data-label="Derniers inscrits" onclick="toggleDataTable('recentUsersTable')">Activer Derniers inscrits</button>
             <button id="toggleRecentSalesTable" class="btn btn-secondary" data-label="Dernières ventes" onclick="toggleDataTable('recentSalesTable')">Activer Dernières ventes</button>
             <button id="toggleRecentPrimeMembersTable" class="btn btn-secondary" onclick="toggleDataTable('recentPrimeMembersTable')" data-label="Derniers membres Prime">Activer/Désactiver Derniers membres Prime</button>
@@ -713,12 +690,21 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     <div id="adminContainer" class="admin-container" style="display: none;">
+        <h1 id="statsTitle">Statistiques</h1>
+        <div id="chartsContainer" class="charts-container">
+            <div class="chart-wrapper">
+                <canvas id="registrationsChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="salesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
         <div class="user-list">
             <div class="table-title">
                 <h2>Derniers inscrits</h2>
             </div>
             <div id="recentUsersTableContainer" class="table-container">
-                <table id="recentUsersTable" class="table table-striped table-dark">
+                <table id="recentUsersTable" class="table table-striped table-dark" style="width:100%">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -740,43 +726,41 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?php echo $user['is_prime'] ? 'Oui' : 'Non'; ?></td>
                                 <td><?php echo $user['admin'] ? 'Oui' : 'Non'; ?></td>
                                 <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($user['date']))); ?></td>
-                                <td class="copy-ip" onclick="copyToClipboard('<?php echo htmlspecialchars($user['last_ip']); ?>')">Copier IP</td>
+                                <td><?php echo htmlspecialchars($user['last_ip']); ?></td>
                                 <td>
-                                    <div class="btn-group">
-                                        <form method="post" style="display:inline;">
-                                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                            <input type="hidden" name="is_prime" value="<?php echo $user['is_prime']; ?>">
-                                            <button type="submit" name="toggle_prime" class="btn <?php echo $user['is_prime'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
-                                                <?php echo $user['is_prime'] ? '<i class="fa fa-crown" style="color: gold;"></i> Prime On' : '<i class="fa fa-crown" style="color: white;"></i> Prime Off'; ?>
-                                            </button>
-                                        </form>
-                                        <form method="post" style="display:inline;">
-                                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                            <input type="hidden" name="is_admin" value="<?php echo $user['admin']; ?>">
-                                            <button type="submit" name="toggle_admin" class="btn <?php echo $user['admin'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
-                                                <?php echo $user['admin'] ? '<i class="fa fa-user-shield" style="color: blue;"></i> Admin On' : '<i class="fa fa-user-shield" style="color: white;"></i> Admin Off'; ?>
-                                            </button>
-                                        </form>
-                                        <?php if ($user['banned']): ?>
-                                            <?php foreach ($bannedUsers as $ban): ?>
-                                                <?php if ($ban['user_id'] == $user['id']): ?>
-                                                    <form method="post" style="display:inline;">
-                                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                                        <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
-                                                        <button type="submit" name="unban_user" class="btn btn-success">
-                                                            <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
-                                                        </button>
-                                                    </form>
-                                                <?php endif; ?>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <button class="btn btn-danger" onclick="openBanModal(<?php echo $user['id']; ?>)">
-                                                <i class="fa-solid fa-gavel" style="color: red;"></i> Ban
-                                            </button>
-                                        <?php endif; ?>
-                                    </div>
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                        <input type="hidden" name="is_prime" value="<?php echo $user['is_prime']; ?>">
+                                        <button type="submit" name="toggle_prime" class="btn <?php echo $user['is_prime'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
+                                            <?php echo $user['is_prime'] ? '<i class="fa fa-crown" style="color: gold;"></i> Prime On' : '<i class="fa fa-crown" style="color: white;"></i> Prime Off'; ?>
+                                        </button>
+                                    </form>
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                        <input type="hidden" name="is_admin" value="<?php echo $user['admin']; ?>">
+                                        <button type="submit" name="toggle_admin" class="btn <?php echo $user['admin'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
+                                            <?php echo $user['admin'] ? '<i class="fa fa-user-shield" style="color: blue;"></i> Admin On' : '<i class="fa fa-user-shield" style="color: white;"></i> Admin Off'; ?>
+                                        </button>
+                                    </form>
+                                    <?php if ($user['banned']): ?>
+                                        <?php foreach ($bannedUsers as $ban): ?>
+                                            <?php if ($ban['user_id'] == $user['id']): ?>
+                                                <form method="post" style="display:inline;">
+                                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                                    <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
+                                                    <button type="submit" name="unban_user" class="btn btn-success">
+                                                        <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-danger" onclick="openBanModal(<?php echo $user['id']; ?>)">
+                                            <i class="fa-solid fa-gavel" style="color: red;"></i> Ban
+                                        </button>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -832,7 +816,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?php echo htmlspecialchars($primeMember['fname']); ?></td>
                                 <td><?php echo htmlspecialchars($primeMember['username']); ?></td>
                                 <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($primeMember['date']))); ?></td>
-                                <td class="copy-ip" onclick="copyToClipboard('<?php echo htmlspecialchars($primeMember['last_ip']); ?>')">Copier IP</td>
+                                <td><?php echo htmlspecialchars($primeMember['last_ip']); ?></td>
                                 <td><?php echo $primeMember['total_amount'] == 9.99 ? '1 mois' : '1 an'; ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -923,7 +907,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                             <th>Description</th>
                             <th>Badge</th>
                             <th>Promo</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -936,16 +919,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?php echo htmlspecialchars($item['description']); ?></td>
                                 <td><?php echo htmlspecialchars($item['badge']); ?></td>
                                 <td><?php echo htmlspecialchars($item['promo']); ?></td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button class="btn btn-primary" onclick="editProduct(<?php echo $item['id']; ?>)">
-                                            <i class="fas fa-edit"></i> Modifier
-                                        </button>
-                                        <button class="btn btn-danger" onclick="deleteProduct(<?php echo $item['id']; ?>)">
-                                            <i class="fas fa-trash"></i> Supprimer
-                                        </button>
-                                    </div>
-                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -1064,6 +1037,9 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         initializeDataTable('banHistoryTable');
         initializeDataTable('listeTable');
         initializeDataTable('logsTable');
+        $('#chartsContainer').show();
+        $('#statsTitle').show();
+        $('#toggleChartsButton').text('Masquer les graphiques').removeClass('btn-danger').addClass('btn-success');
         updateToggleButton('recentUsersTable', true);
         updateToggleButton('recentSalesTable', true);
         updateToggleButton('recentPrimeMembersTable', true);
@@ -1078,6 +1054,29 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         $('#logsTableBody tr').filter(function() {
             $(this).toggle($(this).text().toLowerCase().indexOf(filterValue) > -1)
         });
+    }
+
+    function toggleCharts() {
+        var chartsContainer = document.getElementById('chartsContainer');
+        var statsTitle = document.getElementById('statsTitle');
+        var toggleButton = document.getElementById('toggleChartsButton');
+        if (chartsContainer.style.display === 'none' || chartsContainer.style.display === '') {
+            chartsContainer.style.display = 'flex';
+            statsTitle.style.display = 'block';
+            toggleButton.textContent = 'Masquer les graphiques';
+            toggleButton.classList.remove('btn-danger');
+            toggleButton.classList.add('btn-success');
+            Cookies.set('chartsVisible', 'true');
+        } else {
+            chartsContainer.style.display = 'none';
+            statsTitle.style.display = 'none';
+            toggleButton.textContent = 'Afficher les graphiques';
+            toggleButton.classList.remove('btn-success');
+            toggleButton.classList.add('btn-danger');
+            Cookies.set('chartsVisible', 'false');
+        }
+        $('#adminContainer').show(); // Ensure adminContainer is displayed
+        updateAdminContainerVisibility();
     }
 
     function initializeDataTable(tableId) {
@@ -1141,18 +1140,23 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
 
     function openPatchNoteModal() {
         document.getElementById('patchNoteModal').style.display = 'block';
+        document.getElementById('patchNoteModal').style.display = 'block';
     }
 
     function closePatchNoteModal() {
+        document.getElementById('patchNoteModal').style.display = 'none';
         document.getElementById('patchNoteModal').style.display = 'none';
     }
 
     function openBanModal(userId) {
         document.getElementById('banUserId').value = userId;
         document.getElementById('banModal').style.display = 'block';
+        document.getElementById('banUserId').value = userId;
+        document.getElementById('banModal').style.display = 'block';
     }
 
     function closeBanModal() {
+        document.getElementById('banModal').style.display = 'none';
         document.getElementById('banModal').style.display = 'none';
     }
 
