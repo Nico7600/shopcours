@@ -56,15 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
     }
-    $uploadsDirSecondary = 'uploads';
-    if (!is_dir($uploadsDirSecondary)) {
-        if (!mkdir($uploadsDirSecondary, 0777, true)) {
-            error_log('Erreur lors de la création du répertoire ' . $uploadsDirSecondary);
-            $_SESSION['erreur'] = 'Erreur lors de la création du répertoire pour les images.';
-            header('Location: add.php');
-            exit;
-        }
-    }
 
     $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
     $fileInfo = pathinfo($_FILES['image_produit']['name']);
@@ -77,17 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $newFilename = uniqid() . '.' . $fileExtension;
-    $filePath = $uploadsDir . '/' . $newFilename;
-    if (!move_uploaded_file($_FILES['image_produit']['tmp_name'], $filePath)) {
-        error_log('Erreur lors du déplacement du fichier téléchargé vers ' . $filePath);
+    $imagePath = $uploadsDir . '/' . $newFilename;
+    if (!move_uploaded_file($_FILES['image_produit']['tmp_name'], $imagePath)) {
+        error_log('Erreur lors du déplacement du fichier téléchargé vers ' . $imagePath);
         $_SESSION['erreur'] = 'Erreur lors de l’enregistrement de l’image.';
-        header('Location: add.php');
-        exit;
-    }
-    $secondaryFilePath = $uploadsDirSecondary . '/' . $newFilename;
-    if (!copy($filePath, $secondaryFilePath)) {
-        error_log('Erreur lors de la copie du fichier vers ' . $secondaryFilePath);
-        $_SESSION['erreur'] = 'Erreur lors de la copie de l’image.';
         header('Location: add.php');
         exit;
     }
@@ -101,19 +85,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $query->bindValue(':description', $description, PDO::PARAM_STR);
         $query->bindValue(':prix', $prix, PDO::PARAM_STR);
         $query->bindValue(':nombre', $nombre, PDO::PARAM_INT);
-        $query->bindValue(':image_produit', $filePath, PDO::PARAM_STR); // Réintroduire le chemin de l'image
+        $query->bindValue(':image_produit', $imagePath, PDO::PARAM_STR);
         $query->bindValue(':badge', $badge, PDO::PARAM_STR);
         $query->bindValue(':Promo', $promo, PDO::PARAM_INT);
         $query->bindValue(':production_company_id', $production_company_id, PDO::PARAM_INT);
 
-        // Debugging: Log the SQL query and the bound values
         error_log('SQL Query: ' . $sql);
         error_log('Bound Values: ' . json_encode([
             'produit' => $produit,
             'description' => $description,
             'prix' => $prix,
             'nombre' => $nombre,
-            'image_produit' => $filePath,
+            'image_produit' => $imagePath,
             'badge' => $badge,
             'Promo' => $promo,
             'production_company_id' => $production_company_id
@@ -227,7 +210,7 @@ try {
                             <option value="odin"><i class="fas fa-hammer"></i> Odin</option>
                             <option value="bouldog"><i class="fas fa-dog"></i> Bouldog</option>
                             <option value="ensemble"><i class="fas fa-layer-group"></i> Ensemble</option>
-                            <option value="couteau"><i class="fas fa-knife"></i> Couteau</option> <!-- Ajout de l'option couteau -->
+                            <option value="couteau"><i class="fas fa-knife"></i> Couteau</option>
                         </select>
                     </div>
                     <div class="form-group">

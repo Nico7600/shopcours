@@ -20,8 +20,8 @@ if($_POST){
 
         if(isset($_FILES['image']) && $_FILES['image']['error'] == 0){
             $image = $_FILES['image'];
-            $imagePath = 'uploads/' . basename($image['name']);
-            move_uploaded_file($image['tmp_name'], $imagePath);
+            $imagePath = basename($image['name']);
+            move_uploaded_file($image['tmp_name'], "image_produit/" . $imagePath);
         } else {
             $imagePath = isset($_POST['current_image']) ? $_POST['current_image'] : '';
         }
