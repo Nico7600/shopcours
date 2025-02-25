@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $query->bindValue(':description', $description, PDO::PARAM_STR);
         $query->bindValue(':prix', $prix, PDO::PARAM_STR);
         $query->bindValue(':nombre', $nombre, PDO::PARAM_INT);
-        $query->bindValue(':image_produit', $imagePath, PDO::PARAM_STR);
+        $query->bindValue(':image_produit', $newFilename, PDO::PARAM_STR);
         $query->bindValue(':badge', $badge, PDO::PARAM_STR);
         $query->bindValue(':Promo', $promo, PDO::PARAM_INT);
         $query->bindValue(':production_company_id', $production_company_id, PDO::PARAM_INT);
