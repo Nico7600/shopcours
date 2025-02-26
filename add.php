@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'description' => $description,
             'prix' => $prix,
             'nombre' => $nombre,
-            'image_produit' => $imagePath,
+            'image_produit' => $newFilename,
             'badge' => $badge,
             'Promo' => $promo,
             'production_company_id' => $production_company_id

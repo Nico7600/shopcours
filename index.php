@@ -186,7 +186,7 @@ $isPrime = false; // Initialize $isPrime
                 $stars .= str_repeat('<i class="fas fa-star-quarter"></i>', $quarterStar);
                 $stars .= str_repeat('<i class="far fa-star"></i>', $emptyStars);
             ?>
-                <div class="col-md-4 col-sm-6 mb-4">
+                <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
                     <div class="card" onclick="window.location.href='details.php?id=<?= htmlspecialchars($produit['id']); ?>'">
                         <div class="position-relative">
                         <img src="<?= htmlspecialchars($image_path); ?>" class="card-img-top fixed-height img-fluid" alt="<?= htmlspecialchars($produit['produit']); ?>">

@@ -387,7 +387,15 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         <section class="col-12">
             <div class="product-details">
                 <div class="product-image">
-                    <img src="image_produit/<?= htmlspecialchars($produit['image_produit']) ?>" alt="<?= htmlspecialchars($produit['produit']) ?>" class="img-fluid">
+                    <?php
+                    $image_path = 'image_produit/' . $produit['image_produit'];
+                    $default_image = 'image_produit/test.png';
+
+                    if (!file_exists($image_path) || empty($produit['image_produit'])) {
+                        $image_path = $default_image;
+                    }
+                    ?>
+                    <img src="<?= htmlspecialchars($image_path) ?>" alt="<?= htmlspecialchars($produit['produit']) ?>" class="img-fluid">
                     <span class="badge <?= $badgeClass ?> badge-bottom-right"><?= $emoji ?></span>
                 </div>
                 <div class="product-info">
