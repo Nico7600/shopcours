@@ -20,10 +20,8 @@ if (!$user || $user['admin'] != 1) {
     exit;
 }
 
-// Log user access to admin page
 logAction($userId, 'Accès à la page admin');
 
-// Bypass maintenance mode for admin users
 if (file_exists('maintenance.flag') && basename($_SERVER['PHP_SELF']) != 'admin.php') {
     $endTime = file_get_contents('maintenance.flag');
     if (time() > $endTime) {
@@ -55,6 +53,9 @@ function verifyCsrfToken($token) {
 }
 
 generateCsrfToken();
+
+$recentUsers = [];
+$recentSales = []; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verifyCsrfToken($_POST['csrf_token'])) {
@@ -266,6 +267,16 @@ $sql = 'SELECT logs.id, logs.action, logs.created_at, users.username FROM logs J
 $query = $db->prepare($sql);
 $query->execute();
 $logs = $query->fetchAll(PDO::FETCH_ASSOC);
+
+$sql = 'SELECT id, fname, username, date, last_ip, is_prime, admin, banned FROM users ORDER BY date DESC LIMIT 10';
+$query = $db->prepare($sql);
+$query->execute();
+$recentUsers = $query->fetchAll(PDO::FETCH_ASSOC);
+
+$sql = 'SELECT id, order_date, total_amount FROM orders ORDER BY order_date DESC LIMIT 10';
+$query = $db->prepare($sql);
+$query->execute();
+$recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -275,6 +286,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.2.1/css/dataTables.bootstrap5.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Added Font Awesome CDN link -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -337,6 +349,8 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             margin-top: 100px;
             border-radius: 10px;
             overflow-x: auto;
+            margin-left: auto; 
+            margin-right: auto;
         }
         h1 {
             font-size: 3rem;
@@ -368,11 +382,13 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             width: 100%;
             margin-top: 20px;
             border-collapse: collapse;
+            table-layout: auto; 
         }
         .table th, .table td {
             padding: 12px;
             border: 1px solid #ddd;
-            text-align: center;
+            word-wrap: break-word; 
+            text-align: center; /* Center align text */
         }
         .table th {
             background-color: #212529;
@@ -381,9 +397,89 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         .table tbody tr:nth-child(even) {
             background-color: #6c757d;
         }
+        .table-container {
+            margin-bottom: 20px;
+            width: 100%; 
+            text-align: left;
+            overflow-x: auto;
+        }
+        .table-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+        }
+        .table th:nth-child(1), .table td:nth-child(1) { width: 5%; } 
+        .table th:nth-child(2), .table td:nth-child(2) { width: 15%; } 
+        .table th:nth-child(3), .table td:nth-child(3) { width: 20%; } 
+        .table th:nth-child(4), .table td:nth-child(4) { width: 10%; } 
+        .table th:nth-child(5), .table td:nth-child(5) { width: 10%; } 
+        .table th:nth-child(6), .table td:nth-child(6) { width: 20%; } 
+        .table th:nth-child(7), .table td:nth-child(7) { width: 10%; } 
+        .table th:nth-child(8), .table td:nth-child(8) { width: 10%; } 
+        .logs-container {
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+            background-color: #495057;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1200px;
+        }
+        .logs-table {
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        .logs-table th, .logs-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .logs-table th {
+            background-color: #212529;
+            color: #ffffff;
+        }
+        .logs-table tbody tr:nth-child(even) {
+            background-color: #6c757d;
+        }
+        .logs-table tbody tr:hover {
+            background-color: #343a40;
+            color: #ffffff;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .filter-container select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: #495057;
+            color: #ffffff;
+            width: 100%;
+            max-width: 300px;
+        }
+        .sales-list .table td:nth-child(1), 
+        .sales-list .table td:nth-child(3), 
+        .sales-list .table th:nth-child(1), 
+        .sales-list .table th:nth-child(3) 
+        {
+            text-align: center;
+        }
         .table-title {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 20px; 
             font-size: 2rem;
             font-weight: 600;
             display: flex;
@@ -391,7 +487,7 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
             justify-content: center;
         }
         .user-list .table-title {
-            margin-top: 80px;
+            margin-top: 40px; 
         }
         .btn-toggle-on {
             background-color: #28a745;
@@ -538,6 +634,77 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         .btn-danger:hover {
             background-color: #c82333;
         }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn-group .btn {
+            flex: 1; 
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            min-width: 100px; 
+        }
+        .btn-group .btn-primary, .btn-group .btn-danger, .btn-group .btn-success, .btn-group .btn-toggle-on, .btn-group .btn-toggle-off {
+            width: auto;
+        }
+        .btn-group .btn-toggle-on {
+            background-color: #28a745;
+            color: #ffffff;
+        }
+        .btn-group .btn-toggle-off {
+            background-color: #dc3545;
+            color: #ffffff;
+        }
+        .btn-group .btn-toggle-on:hover {
+            background-color: #218838;
+        }
+        .btn-group .btn-toggle-off:hover {
+            background-color: #c82333;
+        }
+        .btn-group .btn-secondary {
+            background-color: #6c757d;
+            color: #ffffff;
+        }
+        .btn-group .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-group .btn-danger {
+            background-color: #dc3545;
+            color: #ffffff;
+        }
+        .btn-group .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-group .btn-success {
+            background-color: #28a745;
+            color: #ffffff;
+        }
+        .btn-group .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-group .btn i {
+            margin-right: 5px;
+            font-size: 1rem; /* Ensure all icons have the same size */
+        }
+        .btn-group .btn-toggle-on i {
+            color: gold; /* Color for Prime On icon */
+        }
+        .btn-group .btn-toggle-off i {
+            color: white; /* Color for Prime Off icon */
+        }
+        .btn-group .btn-toggle-on i.fa-user-shield {
+            color: blue; /* Color for Admin On icon */
+        }
+        .btn-group .btn-toggle-off i.fa-user-shield {
+            color: white; /* Color for Admin Off icon */
+        }
+        .btn-group .btn-success i {
+            color: white; /* Color for Unban icon */
+        }
+        .btn-group .btn-danger i {
+            color: red; /* Color for Ban icon */
+        }
         @media (max-width: 1200px) {
             .admin-container {
                 padding: 20px;
@@ -605,61 +772,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                 font-size: 1.2rem;
             }
         }
-        .table-container {
-            margin-bottom: 20px;
-        }
-        .logs-container {
-            display: flex; /* Change from display: none; to display: flex; */
-            flex-direction: column;
-            align-items: center;
-            margin-top: 40px;
-            background-color: #495057;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 1200px;
-        }
-        .logs-table {
-            width: 100%;
-            max-width: 1000px;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        .logs-table th, .logs-table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        .logs-table th {
-            background-color: #212529;
-            color: #ffffff;
-        }
-        .logs-table tbody tr:nth-child(even) {
-            background-color: #6c757d;
-        }
-        .logs-table tbody tr:hover {
-            background-color: #343a40;
-            color: #ffffff;
-        }
-        .filter-container {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            max-width: 1000px;
-        }
-        .filter-container select {
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            background-color: #495057;
-            color: #ffffff;
-            width: 100%;
-            max-width: 300px;
-        }
     </style>
 </head>
 <body>
@@ -679,7 +791,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="secondary-navbar">
         <div class="menu">
-            <button id="toggleChartsButton" class="btn btn-secondary" onclick="toggleCharts()">Afficher/Masquer les graphiques</button>
             <button id="toggleRecentUsersTable" class="btn btn-secondary" data-label="Derniers inscrits" onclick="toggleDataTable('recentUsersTable')">Activer Derniers inscrits</button>
             <button id="toggleRecentSalesTable" class="btn btn-secondary" data-label="Dernières ventes" onclick="toggleDataTable('recentSalesTable')">Activer Dernières ventes</button>
             <button id="toggleRecentPrimeMembersTable" class="btn btn-secondary" onclick="toggleDataTable('recentPrimeMembersTable')" data-label="Derniers membres Prime">Activer/Désactiver Derniers membres Prime</button>
@@ -690,260 +801,311 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     <div id="adminContainer" class="admin-container" style="display: none;">
-        <h1 id="statsTitle">Statistiques</h1>
-        <div id="chartsContainer" class="charts-container">
-            <div class="chart-wrapper">
-                <canvas id="registrationsChart" width="400" height="200"></canvas>
-            </div>
-            <div class="chart-wrapper">
-                <canvas id="salesChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-        <div class="user-list">
-            <div class="table-title">
-                <h2>Derniers inscrits</h2>
-            </div>
-            <div id="recentUsersTableContainer" class="table-container">
-                <table id="recentUsersTable" class="table table-striped table-dark" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nom</th>
-                            <th>Nom d'utilisateur</th>
-                            <th>Membre Prime</th>
-                            <th>Staff</th>
-                            <th>Date d'inscription</th>
-                            <th>Last IP</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($recentUsers as $user): ?>
+        <h1 id="statsTitle">Information Staff</h1>
+        <div class="table-wrapper">
+            <div class="user-list">
+                <div class="table-title">
+                    <h2>Derniers inscrits</h2>
+                </div>
+                <div id="recentUsersTableContainer" class="table-container">
+                    <table id="recentUsersTable" class="table table-striped table-dark" style="width:100%">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($user['id']); ?></td>
-                                <td><?php echo htmlspecialchars($user['fname']); ?></td>
-                                <td><?php echo htmlspecialchars($user['username']); ?></td>
-                                <td><?php echo $user['is_prime'] ? 'Oui' : 'Non'; ?></td>
-                                <td><?php echo $user['admin'] ? 'Oui' : 'Non'; ?></td>
-                                <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($user['date']))); ?></td>
-                                <td><?php echo htmlspecialchars($user['last_ip']); ?></td>
-                                <td>
-                                    <form method="post" style="display:inline;">
-                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                        <input type="hidden" name="is_prime" value="<?php echo $user['is_prime']; ?>">
-                                        <button type="submit" name="toggle_prime" class="btn <?php echo $user['is_prime'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
-                                            <?php echo $user['is_prime'] ? '<i class="fa fa-crown" style="color: gold;"></i> Prime On' : '<i class="fa fa-crown" style="color: white;"></i> Prime Off'; ?>
-                                        </button>
-                                    </form>
-                                    <form method="post" style="display:inline;">
-                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                        <input type="hidden" name="is_admin" value="<?php echo $user['admin']; ?>">
-                                        <button type="submit" name="toggle_admin" class="btn <?php echo $user['admin'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
-                                            <?php echo $user['admin'] ? '<i class="fa fa-user-shield" style="color: blue;"></i> Admin On' : '<i class="fa fa-user-shield" style="color: white;"></i> Admin Off'; ?>
-                                        </button>
-                                    </form>
-                                    <?php if ($user['banned']): ?>
-                                        <?php foreach ($bannedUsers as $ban): ?>
-                                            <?php if ($ban['user_id'] == $user['id']): ?>
-                                                <form method="post" style="display:inline;">
-                                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                                    <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
-                                                    <button type="submit" name="unban_user" class="btn btn-success">
-                                                        <i class="fa-solid fa-gavel" style="color: white;"></i> Unban
-                                                    </button>
-                                                </form>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Nom d'utilisateur</th>
+                                <th>Membre Prime</th>
+                                <th>Staff</th>
+                                <th>Date d'inscription</th>
+                                <th>IP</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recentUsers as $user): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($user['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($user['fname']); ?></td>
+                                    <td><?php echo htmlspecialchars($user['username']); ?></td>
+                                    <td><?php echo $user['is_prime'] ? 'Oui' : 'Non'; ?></td>
+                                    <td><?php echo $user['admin'] ? 'Oui' : 'Non'; ?></td>
+                                    <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($user['date']))); ?></td>
+                                    <td>
+                                        <button class="btn btn-secondary" onclick="copyToClipboard('<?php echo htmlspecialchars($user['last_ip']); ?>')">Copier l'IP</button>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <form method="post" style="display:inline;">
+                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="is_prime" value="<?php echo $user['is_prime']; ?>">
+                                                <button type="submit" name="toggle_prime" class="btn <?php echo $user['is_prime'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
+                                                    <i class="fa fa-crown"></i> <?php echo $user['is_prime'] ? 'Prime On' : 'Prime Off'; ?>
+                                                </button>
+                                            </form>
+                                            <form method="post" style="display:inline;">
+                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="is_admin" value="<?php echo $user['admin']; ?>">
+                                                <button type="submit" name="toggle_admin" class="btn <?php echo $user['admin'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
+                                                    <i class="fa fa-user-shield"></i> <?php echo $user['admin'] ? 'Admin On' : 'Admin Off'; ?>
+                                                </button>
+                                            </form>
+                                            <?php if ($user['banned']): ?>
+                                                <?php foreach ($bannedUsers as $ban): ?>
+                                                    <?php if ($ban['user_id'] == $user['id']): ?>
+                                                        <form method="post" style="display:inline;">
+                                                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                                            <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
+                                                            <button type="submit" name="unban_user" class="btn btn-toggle-on">
+                                                                <i class="fa-solid fa-gavel"></i> Unban
+                                                            </button>
+                                                        </form>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <button class="btn btn-toggle-off" onclick="openBanModal(<?php echo $user['id']; ?>)">
+                                                    <i class="fa-solid fa-gavel"></i> Ban
+                                                </button>
                                             <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <button class="btn btn-danger" onclick="openBanModal(<?php echo $user['id']; ?>)">
-                                            <i class="fa-solid fa-gavel" style="color: red;"></i> Ban
-                                        </button>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="sales-list">
-            <div class="table-title">
-                <h2>Dernières ventes</h2>
-            </div>
-            <div id="recentSalesTableContainer" class="table-container">
-                <table id="recentSalesTable" class="table table-striped table-dark" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Date</th>
-                            <th>Montant total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($recentSales as $sale): ?>
+            <div class="sales-list">
+                <div class="table-title">
+                    <h2>Dernières ventes</h2>
+                </div>
+                <div id="recentSalesTableContainer" class="table-container">
+                    <table id="recentSalesTable" class="table table-striped table-dark" style="width:100%">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($sale['id']); ?></td>
-                                <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($sale['order_date']))); ?></td>
-                                <td><?php echo htmlspecialchars($sale['total_amount']); ?> €</td>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Montant total</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recentSales as $sale): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($sale['id']); ?></td>
+                                    <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($sale['order_date']))); ?></td>
+                                    <td><?php echo htmlspecialchars($sale['total_amount']); ?> €</td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="prime-members">
-            <div class="table-title">
-                <h2>Derniers membres Prime</h2>
-            </div>
-            <div id="recentPrimeMembersTableContainer" class="table-container">
-                <table id="recentPrimeMembersTable" class="table table-striped table-dark" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nom</th>
-                            <th>Nom d'utilisateur</th>
-                            <th>Date d'inscription</th>
-                            <th>Last IP</th>
-                            <th>Type d'abonnement</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($recentPrimeMembers as $primeMember): ?>
+            <div class="prime-members">
+                <div class="table-title">
+                    <h2>Derniers membres Prime</h2>
+                </div>
+                <div id="recentPrimeMembersTableContainer" class="table-container">
+                    <table id="recentPrimeMembersTable" class="table table-striped table-dark" style="width:100%">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($primeMember['id']); ?></td>
-                                <td><?php echo htmlspecialchars($primeMember['fname']); ?></td>
-                                <td><?php echo htmlspecialchars($primeMember['username']); ?></td>
-                                <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($primeMember['date']))); ?></td>
-                                <td><?php echo htmlspecialchars($primeMember['last_ip']); ?></td>
-                                <td><?php echo $primeMember['total_amount'] == 9.99 ? '1 mois' : '1 an'; ?></td>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Nom d'utilisateur</th>
+                                <th>Date d'inscription</th>
+                                <th>IP</th> <!-- Changed from "Last IP" to "IP" -->
+                                <th>Type d'abonnement</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recentPrimeMembers as $primeMember): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($primeMember['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($primeMember['fname']); ?></td>
+                                    <td><?php echo htmlspecialchars($primeMember['username']); ?></td>
+                                    <td class="date"><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($primeMember['date']))); ?></td>
+                                    <td>
+                                        <button class="btn btn-secondary" onclick="copyToClipboard('<?php echo htmlspecialchars($primeMember['last_ip']); ?>')">Copier l'IP</button>
+                                    </td>
+                                    <td><?php echo $primeMember['total_amount'] == 9.99 ? '1 mois' : '1 an'; ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="ban-user">
-            <div class="table-title">
-                <h2>Liste des ban en cours</h2>
-            </div>
-            <div id="bannedUsersTableContainer" class="table-container">
-                <table id="bannedUsersTable" class="table table-striped table-dark" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID du ban</th>
-                            <th>Nom d'utilisateur</th>
-                            <th>Raison</th>
-                            <th>Date de fin</th>
-                            <th>Banni par</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($bannedUsers as $ban): ?>
+            <div class="ban-user">
+                <div class="table-title">
+                    <h2>Liste des ban en cours</h2>
+                </div>
+                <div id="bannedUsersTableContainer" class="table-container">
+                    <table id="bannedUsersTable" class="table table-striped table-dark" style="width:100%">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($ban['ban_id']); ?></td>
-                                <td><?php echo htmlspecialchars($ban['username']); ?></td>
-                                <td><?php echo htmlspecialchars($ban['reason']); ?></td>
-                                <td><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($ban['ban_end_date']))); ?></td>
-                                <td><?php echo htmlspecialchars($ban['banned_by_username']); ?></td>
-                                <td>
-                                    <?php if (strtotime($ban['ban_end_date']) > time()): ?>
-                                        <button class="btn btn-success" onclick="openUnbanPage(<?php echo $ban['ban_id']; ?>)">
-                                            Unban
-                                        </button>
-                                    <?php else: ?>
-                                        <span class="text-success">L'utilisateur n'est plus banni</span>
-                                    <?php endif; ?>
-                                </td>
+                                <th>ID du ban</th>
+                                <th>Nom d'utilisateur</th>
+                                <th>Raison</th>
+                                <th>Date de fin</th>
+                                <th>Banni par</th>
+                                <th>Action</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($bannedUsers as $ban): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($ban['ban_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($ban['username']); ?></td>
+                                    <td><?php echo htmlspecialchars($ban['reason']); ?></td>
+                                    <td><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($ban['ban_end_date']))); ?></td>
+                                    <td><?php echo htmlspecialchars($ban['banned_by_username']); ?></td>
+                                    <td>
+                                        <?php if (strtotime($ban['ban_end_date']) > time()): ?>
+                                            <button class="btn btn-success" onclick="openUnbanPage(<?php echo $ban['ban_id']; ?>)">
+                                                Unban
+                                            </button>
+                                        <?php else: ?>
+                                            <span class="text-success">L'utilisateur n'est plus banni</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="ban-history">
-            <div class="table-title">
-                <h2>Historique des bans</h2>
-            </div>
-            <div id="banHistoryTableContainer" class="table-container">
-                <table id="banHistoryTable" class="table table-striped table-dark" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID du ban</th>
-                            <th>Nom d'utilisateur</th>
-                            <th>Raison</th>
-                            <th>Date de fin</th>
-                            <th>Banni par</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($banHistory as $ban): ?>
+            <div class="ban-history">
+                <div class="table-title">
+                    <h2>Historique des bans</h2>
+                </div>
+                <div id="banHistoryTableContainer" class="table-container">
+                    <table id="banHistoryTable" class="table table-striped table-dark" style="width:100%">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($ban['ban_id']); ?></td>
-                                <td><?php echo htmlspecialchars($ban['username']); ?></td>
-                                <td><?php echo htmlspecialchars($ban['reason']); ?></td>
-                                <td><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($ban['ban_end_date']))); ?></td>
-                                <td><?php echo htmlspecialchars($ban['banned_by_username']); ?></td>
+                                <th>ID du ban</th>
+                                <th>Nom d'utilisateur</th>
+                                <th>Raison</th>
+                                <th>Date de fin</th>
+                                <th>Banni par</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($banHistory as $ban): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($ban['ban_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($ban['username']); ?></td>
+                                    <td><?php echo htmlspecialchars($ban['reason']); ?></td>
+                                    <td><?php echo htmlspecialchars(date('d/m/Y à H:i:s', strtotime($ban['ban_end_date']))); ?></td>
+                                    <td><?php echo htmlspecialchars($ban['banned_by_username']); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="liste-items">
-            <div class="table-title">
-                <h2>Liste des produits</h2>
-            </div>
-            <div id="listeTableContainer" class="table-container">
-                <table id="listeTable" class="table table-striped table-dark" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Produit</th>
-                            <th>Prix</th>
-                            <th>Nombre</th>
-                            <th>Description</th>
-                            <th>Badge</th>
-                            <th>Promo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($listeItems as $item): ?>
+            <div class="liste-items">
+                <div class="table-title">
+                    <h2>Liste des produits</h2>
+                </div>
+                <div id="listeTableContainer" class="table-container">
+                    <table id="listeTable" class="table table-striped table-dark" style="width:100%">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($item['id']); ?></td>
-                                <td><?php echo htmlspecialchars($item['produit']); ?></td>
-                                <td><?php echo htmlspecialchars($item['prix']); ?> €</td>
-                                <td><?php echo htmlspecialchars($item['nombre']); ?></td>
-                                <td><?php echo htmlspecialchars($item['description']); ?></td>
-                                <td><?php echo htmlspecialchars($item['badge']); ?></td>
-                                <td><?php echo htmlspecialchars($item['promo']); ?></td>
+                                <th>ID</th>
+                                <th>Produit</th>
+                                <th>Prix</th>
+                                <th>Nombre</th>
+                                <th>Badge</th>
+                                <th>Promo</th>
+                                <th>Action</th> 
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($listeItems as $item): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($item['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['produit']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['prix']); ?> €</td>
+                                    <td><?php echo htmlspecialchars($item['nombre']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['badge']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['promo']); ?>%</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button class="btn btn-primary" onclick="editProduct(<?php echo $item['id']; ?>)">
+                                                <i class="fa fa-edit"></i> Modifier
+                                            </button>
+                                            <button class="btn btn-danger" onclick="deleteProduct(<?php echo $item['id']; ?>)">
+                                                <i class="fa fa-trash"></i> Supprimer
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="logs-container" id="logsTableContainer">
+                <div class="table-title">
+                    <h2>Logs des actions</h2>
+                </div>
+                <div class="filter-container">
+                    <label for="logFilter">Filtrer par action:</label>
+                    <select id="logFilter" onchange="filterLogs()">
+                        <option value="">Tous</option>
+                        <option value="Maintenance activée">Maintenance activée</option>
+                        <option value="Maintenance désactivée">Maintenance désactivée</option>
+                        <option value="Prime activé">Prime activé</option>
+                        <option value="Prime désactivé">Prime désactivé</option>
+                        <option value="Admin activé">Admin activé</option>
+                        <option value="Admin désactivé">Admin désactivé</option>
+                        <option value="Utilisateur banni">Utilisateur banni</option>
+                        <option value="Utilisateur débanni">Utilisateur débanni</option>
+                        <option value="Patch note ajouté">Patch note ajouté</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table id="logsTable" class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Utilisateur</th>
+                                <th>Action</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <?php foreach ($logs as $log): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($log['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($log['username']); ?></td>
+                                    <td><?php echo htmlspecialchars($log['action']); ?></td>
+                                    <td><?php echo htmlspecialchars($log['created_at']); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        <!-- Ban Modal -->
-        <div id="banModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeBanModal()">&times;</span>
-                <h2>Ban User</h2>
-                <form method="post" action="admin.php">
-                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                    <input type="hidden" name="user_id" id="banUserId">
-                    <div class="form-group">
-                        <label for="reason">Raison</label>
-                        <input type="text" name="reason" id="reason" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="duration">Durée (jours)</label>
-                        <input type="number" name="duration" id="duration" class="form-control" required>
-                    </div>
-                    <button type="submit" name="ban_user" class="btn btn-danger">Ban</button>
-                </form>
-            </div>
+    </div>
+    <!-- Ban Modal -->
+    <div id="banModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBanModal()">&times;</span>
+            <h2>Ban User</h2>
+            <form method="post" action="admin.php">
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                <input type="hidden" name="user_id" id="banUserId">
+                <div class="form-group">
+                    <label for="reason">Raison</label>
+                    <input type="text" name="reason" id="reason" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="duration">Durée (jours)</label>
+                    <input type="number" name="duration" id="duration" class="form-control" required>
+                </div>
+                <button type="submit" name="ban_user" class="btn btn-danger">Ban</button>
+            </form>
         </div>
     </div>
     <!-- Maintenance Modal -->
@@ -971,48 +1133,6 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
                 <textarea name="update" required class="form-control mb-3"></textarea>
                 <button type="submit" class="btn btn-primary btn-block">Submit</button>
             </form>
-        </div>
-    </div>
-    <div class="logs-container" id="logsTableContainer">
-        <div class="table-title">
-            <h2>Logs des actions</h2>
-        </div>
-        <div class="filter-container">
-            <label for="logFilter">Filtrer par action:</label>
-            <select id="logFilter" onchange="filterLogs()">
-                <option value="">Tous</option>
-                <option value="Maintenance activée">Maintenance activée</option>
-                <option value="Maintenance désactivée">Maintenance désactivée</option>
-                <option value="Prime activé">Prime activé</option>
-                <option value="Prime désactivé">Prime désactivé</option>
-                <option value="Admin activé">Admin activé</option>
-                <option value="Admin désactivé">Admin désactivé</option>
-                <option value="Utilisateur banni">Utilisateur banni</option>
-                <option value="Utilisateur débanni">Utilisateur débanni</option>
-                <option value="Patch note ajouté">Patch note ajouté</option>
-            </select>
-        </div>
-        <div class="table-container">
-            <table id="logsTable" class="logs-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Utilisateur</th>
-                        <th>Action</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="logsTableBody">
-                    <?php foreach ($logs as $log): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($log['id']); ?></td>
-                            <td><?php echo htmlspecialchars($log['username']); ?></td>
-                            <td><?php echo htmlspecialchars($log['action']); ?></td>
-                            <td><?php echo htmlspecialchars($log['created_at']); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -1140,23 +1260,18 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
 
     function openPatchNoteModal() {
         document.getElementById('patchNoteModal').style.display = 'block';
-        document.getElementById('patchNoteModal').style.display = 'block';
     }
 
     function closePatchNoteModal() {
-        document.getElementById('patchNoteModal').style.display = 'none';
         document.getElementById('patchNoteModal').style.display = 'none';
     }
 
     function openBanModal(userId) {
         document.getElementById('banUserId').value = userId;
         document.getElementById('banModal').style.display = 'block';
-        document.getElementById('banUserId').value = userId;
-        document.getElementById('banModal').style.display = 'block';
     }
 
     function closeBanModal() {
-        document.getElementById('banModal').style.display = 'none';
         document.getElementById('banModal').style.display = 'none';
     }
 
@@ -1207,11 +1322,11 @@ $logs = $query->fetchAll(PDO::FETCH_ASSOC);
         });
     }
 </script>
-<form id="unbanForm" method="post" style="display:none;">
-    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-    <input type="hidden" name="ban_id" id="unbanBanId">
-    <button type="submit" name="unban_user"></button>
-</form>
+    <form id="unbanForm" method="post" style="display:none;">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+        <input type="hidden" name="ban_id" id="unbanBanId">
+        <button type="submit" name="unban_user"></button>
+    </form>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
     <footer>
         <p>&copy; 2024-2025 Valomazone. Tous droits réservés.</p>
