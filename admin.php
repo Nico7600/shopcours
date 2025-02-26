@@ -857,7 +857,7 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
                                                         <form method="post" style="display:inline;">
                                                             <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                                             <input type="hidden" name="ban_id" value="<?php echo $ban['ban_id']; ?>">
-                                                            <button type="submit" name="unban_user" class="btn btn-toggle-on">
+                                                            <button type="submit" name="unban_user" class="btn <?php echo $user['banned'] ? 'btn-toggle-on' : 'btn-toggle-off'; ?>">
                                                                 <i class="fa-solid fa-gavel"></i> Unban
                                                             </button>
                                                         </form>
