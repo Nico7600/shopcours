@@ -152,3 +152,10 @@ p {
 .error__close path {
     fill: #fff;
 }
+.cookie-consent-popup p {
+    margin: 0 0 10px;
+    color: #000000; /* Change text color to black */
+}
+.cookie-consent-popup a {
+    color: #FFA500; /* Change link color to orange using hex value */
+}

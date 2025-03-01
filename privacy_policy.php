@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Politique de Confidentialité</title>
     <link rel="stylesheet" href="path/to/index/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
     <style>
         body {
             background-color: #f0f0f0;
