@@ -685,25 +685,25 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
         }
         .btn-group .btn i {
             margin-right: 5px;
-            font-size: 1rem; /* Ensure all icons have the same size */
+            font-size: 1rem; 
         }
         .btn-group .btn-toggle-on i {
-            color: gold; /* Color for Prime On icon */
+            color: gold; 
         }
         .btn-group .btn-toggle-off i {
-            color: white; /* Color for Prime Off icon */
+            color: white; 
         }
         .btn-group .btn-toggle-on i.fa-user-shield {
-            color: blue; /* Color for Admin On icon */
+            color: blue; 
         }
         .btn-group .btn-toggle-off i.fa-user-shield {
-            color: white; /* Color for Admin Off icon */
+            color: white;
         }
         .btn-group .btn-success i {
-            color: white; /* Color for Unban icon */
+            color: white; 
         }
         .btn-group .btn-danger i {
-            color: red; /* Color for Ban icon */
+            color: red; 
         }
         @media (max-width: 1200px) {
             .admin-container {
@@ -913,7 +913,7 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
                                 <th>Nom</th>
                                 <th>Nom d'utilisateur</th>
                                 <th>Date d'inscription</th>
-                                <th>IP</th> <!-- Changed from "Last IP" to "IP" -->
+                                <th>IP</th>
                                 <th>Type d'abonnement</th>
                             </tr>
                         </thead>
@@ -1108,7 +1108,7 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
             </form>
         </div>
     </div>
-    <!-- Maintenance Modal -->
+
     <div id="maintenanceModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeMaintenanceModal()">&times;</span>
@@ -1123,7 +1123,7 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
             </form>
         </div>
     </div>
-    <!-- Patch Note Modal -->
+
     <div id="patchNoteModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closePatchNoteModal()">&times;</span>
@@ -1146,7 +1146,7 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
         $('#adminContainer').show();
         updateAdminContainerVisibility();
         restoreOptionsMenuState();
-        $('#logsTableContainer').show(); // Ensure logs container is displayed by default
+        $('#logsTableContainer').show(); 
     });
 
     function initializeAllTables() {
@@ -1195,7 +1195,7 @@ $recentSales = $query->fetchAll(PDO::FETCH_ASSOC);
             toggleButton.classList.add('btn-danger');
             Cookies.set('chartsVisible', 'false');
         }
-        $('#adminContainer').show(); // Ensure adminContainer is displayed
+        $('#adminContainer').show(); 
         updateAdminContainerVisibility();
     }
 
