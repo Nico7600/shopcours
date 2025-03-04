@@ -22,6 +22,13 @@
             font-size: 1rem;
             font-weight: 400;
         }
+        .modal-content {
+            background-color: #343a40; /* Dark background */
+            color: white; /* Ensure text is visible */
+        }
+        .modal-header, .modal-body, .modal-footer {
+            color: white; /* Ensure text is visible */
+        }
     </style>
 </head>
 <body>

@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
     <style>
         body {
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            background-color: #1e1e1e; /* Darker background */
+            font-family: 'Ubuntu', sans-serif;
             margin: 0;
             padding: 0;
         }
@@ -19,15 +19,33 @@
             background-color: #ffffff;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Stronger shadow */
         }
         h1, h2 {
             color: #333333;
-            font-family: 'Helvetica Neue', sans-serif;
+            font-family: 'Ubuntu', sans-serif;
+            text-align: center; /* Center the titles */
+        }
+        h1 {
+            color: #333333;
+            font-family: 'Ubuntu', sans-serif;
+            text-align: center; /* Center the titles */
+        }
+        .orange-blue {
+            color: #007bff; /* Set text to blue */
+        }
+        .orange-blue i {
+            color: #ff5733; /* Set logos to orange */
+        }
+        h2 {
+            color: #007bff; /* Set subtitles to blue */
+        }
+        h2 i {
+            color: #007bff; /* Set subtitle logos to blue */
         }
         p, ul {
-            color: #555555;
-            line-height: 1.6;
+            color: #666666; /* Slightly darker text */
+            line-height: 1.8; /* Increased line height */
         }
         .logo {
             display: block;
@@ -35,7 +53,7 @@
             width: 150px;
         }
         .text-container {
-            background-color: #f9f9f9;
+            background-color: #f0f0f0; /* Lighter background */
             padding: 20px;
             margin-bottom: 20px;
             border-left: 5px solid #007bff;
@@ -54,13 +72,13 @@
             justify-content: center;
             align-items: center;
             font-size: 24px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Stronger shadow */
             text-decoration: none;
             transition: background-color 0.3s, box-shadow 0.3s;
         }
         .home-button:hover {
             background-color: #0056b3;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); /* Stronger shadow on hover */
         }
         .home-button i {
             font-family: 'Font Awesome 5 Free';
@@ -73,12 +91,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Politique de Confidentialité</h1>
+        <h1 class="orange-blue"><i class="fas fa-user-shield"></i> Politique de <span>Confidentialité</span> <i class="fas fa-user-shield"></i></h1> <!-- Added logo at the end -->
         <div class="text-container">
             <p>Nous accordons une grande importance à votre vie privée et nous nous engageons à protéger vos données personnelles. Cette politique de confidentialité vous informera sur la manière dont nous gérons les cookies et les données que nous collectons lorsque vous utilisez notre site web.</p>
         </div>
         
-        <h2>Cookies</h2>
+        <h2><i class="fas fa-cookie-bite"></i> Cookies <i class="fas fa-cookie-bite"></i></h2>
         <div class="text-container">
             <p>Les cookies sont de petits fichiers texte qui sont placés sur votre appareil pour nous aider à améliorer votre expérience sur notre site web. Nous utilisons des cookies pour :</p>
             <ul>
@@ -87,7 +105,7 @@
             </ul>
         </div>
         
-        <h2>Collecte de Données</h2>
+        <h2><i class="fas fa-database"></i> Collecte de Données <i class="fas fa-database"></i></h2>
         <div class="text-container">
             <p>Nous collectons les données suivantes :</p>
             <ul>

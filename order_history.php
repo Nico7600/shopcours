@@ -70,14 +70,18 @@ $orderHistory = getOrderHistory($userId, $db);
     <style>
         body {
             font-family: 'Ubuntu', sans-serif;
+            color: white; /* Ensure all text is white */
+            text-align: center; /* Center all text */
         }
         h1 {
             font-size: 2.5rem;
             font-weight: 700;
+            text-align: center; /* Center the title */
         }
         .table th, .table td {
             font-size: 1rem;
             font-weight: 400;
+            text-align: center; /* Center text in the table */
         }
         .modal-title {
             font-size: 1.5rem;
@@ -91,6 +95,23 @@ $orderHistory = getOrderHistory($userId, $db);
             font-size: 1rem;
             font-weight: 700;
         }
+        .half-orange-blue {
+            background: linear-gradient(to right, #ff5733 50%, #007bff 50%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .orange-text {
+            color: #ff5733;
+        }
+        .blue-text {
+            color: #007bff;
+        }
+        .orange-icon {
+            color: #ff5733;
+        }
+        .blue-icon {
+            color: #007bff;
+        }
     </style>
 </head>
 
@@ -103,15 +124,17 @@ $orderHistory = getOrderHistory($userId, $db);
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">Fermer</button>
             </div>
         <?php endif; ?>
-        <h1 class="mb-4">Historique des commandes</h1>
+        <h1 class="mb-4">
+            <i class="fas fa-shopping-cart orange-icon"></i> <span class="orange-text">Historique</span> <span class="blue-text">des commandes</span> <i class="fas fa-shopping-cart blue-icon"></i>
+        </h1>
         <div class="table-responsive">
             <table class="table table-striped table-bordered">
                 <thead class="thead-dark">
                     <tr>
-                        <th scope="col">Numéro de commande</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Produit</th>
-                        <th scope="col">Total</th>
+                        <th scope="col" style="color: #ff5733;"><i class="fas fa-box" style="color: #33c1ff;"></i> Numéro de commande</th>
+                        <th scope="col" style="color: #ff5733;"><i class="fas fa-calendar-alt" style="color: #33c1ff;"></i> Date</th>
+                        <th scope="col" style="color: #ff5733;"><i class="fas fa-box" style="color: #33c1ff;"></i> Produit</th>
+                        <th scope="col" style="color: #ff5733;"><i class="fas fa-euro-sign" style="color: #33c1ff;"></i> Total</th>
                     </tr>
                 </thead>
                 <tbody>

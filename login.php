@@ -15,14 +15,8 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="css/style.css">
 	<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 	<style>
-		body {
-			font-family: 'Ubuntu', sans-serif;
-			background-image: url('images/background.jpg');
-			background-size: cover;
-			background-position: center;
-			animation: backgroundAnimation 20s infinite alternate;
-		}
 		@keyframes backgroundAnimation {
 			0% {
 				background-position: center;
@@ -37,6 +31,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 		h4 {
 			font-size: 1.5rem;
 			font-weight: 700;
+			color: #ff5733;
 		}
 		label {
 			font-size: 1rem;
@@ -45,13 +40,15 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 		.btn {
 			font-size: 1rem;
 			font-weight: 700;
+			background-color: #007bff;
+			border-color: #007bff;
 		}
 		.text-secondary {
 			font-size: 0.875rem;
 			font-weight: 400;
 		}
 		.form-container {
-			background: rgba(255, 255, 255, 0.9);
+			background: #2f4f4f;
 			padding: 2rem;
 			border-radius: 10px;
 			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -63,7 +60,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 			width: 100%;
 			text-align: center;
 			padding: 1rem;
-			background: rgba(255, 255, 255, 0.8);
+			background: #343a40;
 		}
 	</style>
 </head>
@@ -87,25 +84,33 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
 		  <div class="mb-3">
 		    <label for="uname" class="form-label">Nom d'utilisateur</label>
-		    <input type="text" 
-		           class="form-control" 
-		           id="uname" 
-		           name="uname" 
-		           placeholder="Entrez votre nom d'utilisateur"
-		           value="<?php echo isset($_SESSION['uname']) ? $_SESSION['uname'] : ''; ?>">
+		    <div class="input-group">
+		      <span class="input-group-text"><i class="fas fa-user"></i></span>
+		      <input type="text" 
+		             class="form-control" 
+		             id="uname" 
+		             name="uname" 
+		             placeholder="Entrez votre nom d'utilisateur"
+		             value="<?php echo isset($_SESSION['uname']) ? $_SESSION['uname'] : ''; ?>">
+		    </div>
 		  </div>
 
 		  <div class="mb-3">
 		    <label for="pass" class="form-label">Mot de passe</label>
-		    <input type="password" 
-		           class="form-control" 
-		           id="pass" 
-		           name="pass" 
-		           placeholder="Entrez votre mot de passe">
+		    <div class="input-group">
+		      <span class="input-group-text"><i class="fas fa-lock"></i></span>
+		      <input type="password" 
+		             class="form-control" 
+		             id="pass" 
+		             name="pass" 
+		             placeholder="Entrez votre mot de passe">
+		    </div>
 		  </div>
 		  
 		  <div class="d-flex justify-content-between align-items-center">
-		      <button type="submit" class="btn btn-primary">Se connecter</button>
+		      <button type="submit" class="btn btn-primary">
+		          <i class="fas fa-sign-in-alt"></i> Se connecter <i class="fas fa-sign-in-alt"></i>
+		      </button>
 		      <a href="register.php" class="text-secondary">Créer un compte</a>
 		  </div>
 		</form>

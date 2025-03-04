@@ -99,7 +99,7 @@ $isPrime = false;
         .card-body,
         .alert,
         .cookie-consent-popup {
-            color: black; /* Ensure text is visible on these elements */
+            color: white; /* Ensure text is visible on these elements */
         }
 
         .carousel-caption {
@@ -107,15 +107,15 @@ $isPrime = false;
         }
 
         .card-body {
-            background-color: #ffffff; /* Light background for better contrast */
+            background-color: #343a40; /* Changed to match the new background color */
         }
 
         .alert {
-            background-color: #ffffff; /* Light background for better contrast */
+            background-color: #343a40; /* Changed to match the new background color */
         }
 
         .cookie-consent-popup {
-            background-color: #ffffff; /* Light background for better contrast */
+            background-color: #343a40; /* Changed to match the new background color */
         }
 
         .carousel-item img {
@@ -387,8 +387,10 @@ $isPrime = false;
         document.getElementById('cookieConsent').style.display = 'none';
     });
 
-    if (document.cookie.indexOf('cookies_accepted') === -1) {
+    if (document.cookie.indexOf('cookies_accepted=true') === -1) {
         document.getElementById('cookieConsent').style.display = 'block';
+    } else {
+        document.getElementById('cookieConsent').style.display = 'none';
     }
 
     var carousel = document.getElementById('productCarousel');

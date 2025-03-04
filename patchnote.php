@@ -87,8 +87,8 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
         body {
             font-family: Arial, sans-serif;
             font-size: 16px;
-            background-color: #f8f9fa;
-            color: #343a40;
+            background-color: #343a40; /* Dark background color */
+            color: #f8f9fa; /* Light text color */
         }
         .developer {
             position: absolute;
@@ -108,7 +108,7 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
             font-weight: bold;
             font-size: 36px;
             margin-bottom: 30px;
-            color: #007bff;
+            color: #ffc107; /* Yellow color */
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
         .patch-note-container {
@@ -117,7 +117,7 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
             border: 1px solid #ddd;
             border-radius: 10px;
             margin-bottom: 20px;
-            background-color: #ffffff;
+            background-color: #495057; /* Darker background for cards */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .patch-note-container .card-body {
@@ -167,8 +167,8 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background-color: #007bff;
-            color: white;
+            background-color: #ffc107; /* Yellow color */
+            color: #343a40; /* Dark text color */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -176,12 +176,26 @@ $patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-decoration: none;
         }
+        .patch {
+            color: #ff5733; /* Orange color */
+        }
+        .note {
+            color: #007bff; /* Blue color */
+        }
+        .icon-orange {
+            color: #ff5733; /* Orange color */
+        }
     </style>
 </head>
 <body>
     <a href="index.php" class="home-button"><i class="fas fa-home"></i></a>
     <div class="container mt-5">
-        <h1 class="centered-bold">Patch Notes</h1>
+        <h1 class="centered-bold">
+            <i class="fas fa-clipboard-list icon-orange"></i>
+            <span class="patch">Patch</span> 
+            <span class="note">Notes</span> 
+            <i class="fas fa-clipboard-list note"></i>
+        </h1>
         <div class="patch-notes">
             <?php foreach ($patchNotes as $note): ?>
                 <div class="card mb-3 patch-note-container">

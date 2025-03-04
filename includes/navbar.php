@@ -45,10 +45,13 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
             color: #33c1ff;
         }
 
+        .nav-link, .dropdown-item, .btn-outline-light, .btn-outline-success, .search-container input[type="search"], .search-container select, .search-container button {
+            color: #ffffff; /* Set text color to white */
+        }
+
         .nav-link {
             font-size: 1rem;
             font-weight: 400;
-            color: #ffffff;
             transition: background-color 0.3s ease, color 0.3s ease;
             border-radius: 0.5rem;
         }
@@ -74,13 +77,13 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
         .dropdown-item {
             font-size: 0.9rem;
             font-weight: 400;
-            color: white; /* Ensure text is visible */
             transition: background-color 0.3s ease, color 0.3s ease;
             border-radius: 0.5rem;
         }
 
         .dropdown-item i {
             color: #33c1ff;
+            margin-right: 5px; /* Add some spacing between the icon and text */
         }
 
         .dropdown-item:hover {
@@ -93,11 +96,10 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
         .btn-outline-light, .btn-outline-success {
             font-size: 1rem;
             font-weight: 700;
-            color: #ffffff;
             border-color: #33c1ff;
             transition: background-color 0.3s ease, color 0.3s ease;
             border-radius: 0.5rem;
-            margin-left: 10px; /* Add spacing between buttons */
+            margin-left: 5px; /* Reduce spacing between buttons */
         }
 
         .btn-outline-light:hover, .btn-outline-success:hover {
@@ -133,7 +135,6 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 
         .search-container select {
             background-color: #343a40;
-            color: #ffffff;
         }
 
         .search-container select option {
@@ -148,11 +149,10 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 
         .search-container select:focus {
             background-color: #343a40;
-            color: #ffffff;
         }
 
         .search-container button {
-            margin-left: 10px; /* Add spacing between buttons */
+            margin-left: 5px; 
         }
 
         @media (max-width: 768px) {
@@ -211,6 +211,10 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
             background-color: #ffffff;
             color: #000000;
         }
+
+        .navbar-nav .nav-item {
+            margin-left: 5px; /* Reduce spacing between navigation links */
+        }
     </style>
 </head>
 
@@ -228,11 +232,6 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" href="prime_advantages.php">
-                            <i class="fas fa-star"></i> Avantage
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="cart_view.php">
                             <i class="fas fa-shopping-cart"></i> Panier
                         </a>
@@ -247,10 +246,14 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
                             <i class="fas fa-scroll"></i> Patch Notes
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="prime.php">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="primeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-crown"></i> Prime
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="primeDropdown">
+                            <li><a class="dropdown-item" href="prime.php"><i class="fas fa-gem"></i> Prime</a></li>
+                            <li><a class="dropdown-item" href="prime_advantages.php"><i class="fas fa-star"></i> Avantage</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="privacy_policy.php">
@@ -264,14 +267,16 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
                 <form class="form-inline my-2 my-lg-0" method="GET" action="index.php">
                     <input class="form-control mr-sm-2" type="search" placeholder="Rechercher" aria-label="Rechercher" name="search" value="<?= htmlspecialchars($search ?? ''); ?>">
                     <select class="form-control mr-sm-2" name="tag">
-                        <option value="">Tous les tags</option>
+                        <option value="">Type</option>
                         <?php foreach ($tags as $tagOption => $iconClass): ?>
                             <option value="<?= htmlspecialchars($tagOption); ?>" <?= $tag == $tagOption ? 'selected' : ''; ?> <?= $productCounts[$tagOption] == 0 ? 'disabled' : ''; ?>>
                                 <i class="<?= htmlspecialchars($iconClass); ?>"></i> <?= htmlspecialchars(ucfirst($tagOption)); ?> (<?= $productCounts[$tagOption]; ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" <?= array_sum($productCounts) == 0 ? 'disabled' : ''; ?>>Rechercher</button>
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" <?= array_sum($productCounts) == 0 ? 'disabled' : ''; ?>>
+                        <i class="fas fa-search"></i>
+                    </button>
                 </form>
             </div>
 

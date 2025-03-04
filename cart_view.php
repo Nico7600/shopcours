@@ -58,10 +58,11 @@ $total = 0;
         .card-title {
             font-size: 1.25rem;
             font-weight: bold;
+            color: #000000; /* Change title color to black */
         }
         .card-text {
             font-size: 1rem;
-            color: #6c757d;
+            color: #000000; /* Change text color to black */
         }
         .btn-primary {
             background-color: #007bff;
@@ -72,42 +73,62 @@ $total = 0;
             background-color: #0056b3;
             border-color: #0056b3;
         }
-        body {
-            font-family: 'Ubuntu', sans-serif;
+        .badge-bottom-right {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
         }
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
+        .fixed-height {
+            height: 200px;
+            object-fit: cover;
+        }
+        .star-rating i {
+            color: #ffc107;
+        }
+        .card-price-original {
+            text-decoration: line-through;
+            color: #dc3545;
+        }
+        .card-price-promo {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .card-quantity {
+            font-size: 0.9rem;
+        }
+        .out-of-stock {
+            color: #dc3545;
+        }
+        .low-quantity {
+            color: #ffc107;
+        }
+        .medium-quantity {
+            color: #17a2b8;
+        }
+        .high-quantity {
+            color: #28a745;
+        }
+        .very-high-quantity {
+            color: #6c757d;
+        }
+        .adhesion-prime-title {
+            color: #ff5733; /* Match the "Valo" color */
+        }
+        .adhesion-prime-subtitle {
+            color: #33c1ff; /* Match the "Mazone" color */
         }
         .table th, .table td {
-            vertical-align: middle;
-            font-size: 1rem;
-        }
-        .thead-dark {
-            background-color: #343a40;
-            color: #fff;
-            font-weight: 700;
-        }
-        .table-bordered {
-            border: 1px solid #dee2e6;
+            color: #ffffff; /* Change table text color to white */
         }
         .btn-modifier {
-            background-color: green;
+            background-color: #007bff !important; /* Default blue color for the "Modifier" button */
             color: white;
-            font-weight: 700;
+            font-weight: bold;
+            border: 1px solid #007bff; /* Add border */
         }
-        .btn-primary {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-        .btn-danger {
-            font-weight: 700;
-        }
-        .btn-disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-            pointer-events: none;
-            background-color: gray !important;
+        .btn-modifier:hover {
+            background-color: #28a745 !important; /* Green on hover */
+            border: 1px solid #28a745; /* Ensure border on hover */
         }
     </style>
 </head>
@@ -115,15 +136,17 @@ $total = 0;
     <?php include 'includes/navbar.php'; ?>
     
     <main class="container mt-5">
-        <h1>Votre Panier</h1>
+        <h1 style="text-align: center;">
+            <span style="color: #ff5733;">Votre</span><span style="color: #33c1ff;"> Panier</span>
+        </h1>
         <table class="table table-bordered">
             <thead class="thead-dark">
                 <tr>
-                    <th>Produit</th>
-                    <th>Prix unitaire</th>
-                    <th>Quantité</th>
-                    <th>Sous-total</th>
-                    <th>Actions</th>
+                    <th style="color: #ff5733;"><i class="fas fa-box" style="color: #33c1ff;"></i> Produit</th>
+                    <th style="color: #ff5733;"><i class="fas fa-euro-sign" style="color: #33c1ff;"></i> Prix unitaire</th>
+                    <th style="color: #ff5733;"><i class="fas fa-sort-numeric-up" style="color: #33c1ff;"></i> Quantité</th>
+                    <th style="color: #ff5733;"><i class="fas fa-calculator" style="color: #33c1ff;"></i> Sous-total</th>
+                    <th style="color: #ff5733;"><i class="fas fa-cogs" style="color: #33c1ff;"></i> Actions</th>
                 </tr>
             </thead>
             <tbody>

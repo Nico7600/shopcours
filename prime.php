@@ -95,10 +95,11 @@ $user = [];
         .card-title {
             font-size: 1.25rem;
             font-weight: bold;
+            color: #000000; /* Change title color to black */
         }
         .card-text {
             font-size: 1rem;
-            color: #6c757d;
+            color: #000000; /* Change text color to black */
         }
         .btn-primary {
             background-color: #007bff;
@@ -147,12 +148,18 @@ $user = [];
         .very-high-quantity {
             color: #6c757d;
         }
+        .adhesion-prime-title {
+            color: #ff5733; /* Match the "Valo" color */
+        }
+        .adhesion-prime-subtitle {
+            color: #33c1ff; /* Match the "Mazone" color */
+        }
     </style>
 </head>
 <body>
     <?php include 'includes/navbar.php'; ?>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Adhésion Prime</h1>
+        <h1 class="text-center mb-4 adhesion-prime-title">Adhésion <span class="adhesion-prime-subtitle">Prime</span></h1>
         <?php if ($error): ?>
             <div class="alert alert-danger text-center">
                 <?php echo $error; ?>

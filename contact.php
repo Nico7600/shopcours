@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap">
     <style> 
         body {
-            background-color: #f8f9fa;
+            background-color: #2f4f4f; /* Changed to #2f4f4f */
             color: #343a40;
             font-family: 'Ubuntu', Arial, sans-serif;
             display: flex;
@@ -22,7 +22,7 @@
             text-align: center;
             padding: 30px;
             border-radius: 10px;
-            background-color: #ffffff;
+            background-color: #3e3e3e; /* Changed to harmonize with the rest */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             max-width: 600px;
             width: 100%;
@@ -30,18 +30,22 @@
         .error-container h1 {
             font-size: 5rem;
             font-weight: 700;
-            color: #d3d3d3; /* Light gray */
+            color: #ffffff; /* Changed to match the container */
+        }
+        .error-container h1 i {
+            color: #ff5733; /* Changed to orange */
         }
         .error-container h2 {
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 20px;
+            color: #ffffff; /* Changed to match the container */
         }
         .error-container p {
             font-size: 1.2rem;
             font-weight: 400;
             margin-bottom: 30px;
-            color: #6c757d;
+            color: #d3d3d3; /* Changed to match the container */
         }
         .error-container a {
             font-size: 1.2rem;

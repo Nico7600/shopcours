@@ -199,15 +199,18 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
     <style>
         body {
             font-family: 'Ubuntu', sans-serif;
+            background-color: #2f4f4f; /* Changed background color */
+            color: #ffffff; /* Ensure text is readable on dark background */
         }
         .product-details {
             display: flex;
             flex-wrap: wrap;
             margin-top: 20px;
-            background-color: #ffffff;
+            background-color: #343a40; /* Changed background color */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #ffffff; /* Ensure text inside product details is light */
         }
         .product-image {
             flex: 1;
@@ -232,7 +235,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 10px;
-            color: #343a40;
+            color: #ffffff; /* Ensure title text is light */
         }
         .product-price {
             font-size: 1.8rem;
@@ -250,7 +253,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             font-size: 1.2rem;
             font-weight: 400;
             margin-bottom: 20px;
-            color: #6c757d;
+            color: #ffffff; 
             white-space: pre-wrap;
         }
         .btn-container {
@@ -311,15 +314,16 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             color: #ffc107;
         }
         .comment {
-            background-color: #f8f9fa;
+            background-color: #343a40; /* Dark background for comments */
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 15px;
             position: relative;
+            color: #ffffff; /* Ensure comment text is light */
         }
         .comment .username {
             font-weight: 700;
-            color: #343a40;
+            color: #ffffff;
         }
         .comment .rating {
             position: absolute;
@@ -330,7 +334,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         .comment .text {
             margin-top: 10px;
             font-weight: 400;
-            color: #6c757d;
+            color: #ffffff; /* Ensure comment text is light */
         }
         .comment .date {
             margin-top: 10px;
@@ -348,16 +352,19 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             cursor: not-allowed;
         }
         .comment-form {
-            background-color: #f8f9fa;
+            background-color: #343a40; /* Dark background for form */
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #ffffff; /* Ensure form text is light */
         }
         .card {
             height: 100%;
             display: flex;
             flex-direction: column;
+            background-color: #343a40; /* Dark background for related products */
+            color: #ffffff; /* Ensure related products text is light */
         }
         .card-body {
             flex: 1;
@@ -372,12 +379,12 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             margin-bottom: 20px;
         }
         .no-comments {
-            background-color: #f8f9fa;
+            background-color: #343a40; /* Dark background for no comments */
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 15px;
             text-align: center;
-            color: #6c757d;
+            color: #ffffff; /* Ensure no comments text is light */
         }
     </style>
 </head>
@@ -514,9 +521,6 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
         </section>
     </div>
 </main>
-<footer>
-    <p>&copy; 2024-2025 Valomazone. Tous droits réservés.</p>
-</footer>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('commentForm');
