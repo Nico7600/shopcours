@@ -28,10 +28,35 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 				background-position: center;
 			}
 		}
+		body {
+			font-family: 'Ubuntu', sans-serif;
+			background-color: #1a1a1a; /* New background color */
+			background-image: url('images/background.jpg');
+			background-size: cover;
+			background-position: center;
+			animation: backgroundAnimation 20s infinite alternate;
+		}
 		h4 {
 			font-size: 1.5rem;
 			font-weight: 700;
-			color: #ff5733;
+			background: linear-gradient(to right, #007bff 48%, #ff5733 52%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			position: relative;
+		}
+		h4::before, h4::after {
+			content: "\f007"; /* Font Awesome user icon */
+			font-family: "Font Awesome 5 Free";
+			font-weight: 900;
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+		}
+		h4::before {
+			left: -25px;
+		}
+		h4::after {
+			right: -25px;
 		}
 		label {
 			font-size: 1rem;
@@ -54,6 +79,24 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 			width: 500px; 
 		}
+		.form-control {
+			background-color: #343a40;
+			color: #ffffff;
+			border: 1px solid #007bff;
+		}
+		.form-control:focus {
+			background-color: #343a40;
+			color: #ffffff;
+			border-color: #ff5733;
+			box-shadow: 0 0 0 0.2rem rgba(255, 87, 51, 0.25);
+		}
+		.form-control::placeholder {
+			color: #cccccc;
+		}
+		.form-control:not(:placeholder-shown) {
+			background-color: #343a40;
+			color: #ffffff;
+		}
 		footer {
 			position: fixed;
 			bottom: 0;
@@ -70,7 +113,9 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     	      action="login_verify.php" 
     	      method="post">
 
-    		<h4 class="text-center mb-4">Connexion</h4>
+    		<h4 class="text-center mb-4">
+    		    <i class="fas fa-user-circle"></i> Connexion <i class="fas fa-user-circle"></i>
+    		</h4>
 
     		<?php 
             if (isset($_SESSION['error'])): ?>
@@ -109,7 +154,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 		  
 		  <div class="d-flex justify-content-between align-items-center">
 		      <button type="submit" class="btn btn-primary">
-		          <i class="fas fa-sign-in-alt"></i> Se connecter <i class="fas fa-sign-in-alt"></i>
+		          <i class="fas fa-sign-in-alt"></i> Se connecter
 		      </button>
 		      <a href="register.php" class="text-secondary">Créer un compte</a>
 		  </div>

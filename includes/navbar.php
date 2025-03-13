@@ -13,7 +13,7 @@ $query = $pdo->query('SELECT badge, COUNT(*) as count FROM liste GROUP BY badge 
 $tags = [];
 $productCounts = [];
 while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
-    $tags[$row['badge']] = 'fas fa-tag'; // Remplacez par les icônes appropriées
+    $tags[$row['badge']] = 'fas fa-tag';
     $productCounts[$row['badge']] = $row['count'];
 }
 ?>
@@ -46,7 +46,7 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
         }
 
         .nav-link, .dropdown-item, .btn-outline-light, .btn-outline-success, .search-container input[type="search"], .search-container select, .search-container button {
-            color: #ffffff; /* Set text color to white */
+            color: #ffffff;
         }
 
         .nav-link {
@@ -64,14 +64,14 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
             background-color: #ff5733;
             color: #ff5733;
             border-radius: 0.5rem;
-            animation: bounce 1.5s; /* Slower bounce animation */
+            animation: bounce 1.5s;
         }
 
         .navbar-nav .nav-item .nav-link:hover {
             background-color: #ff5733;
             color: #ffffff;
             border-radius: 0.5rem;
-            animation: bounce 1.5s; /* Slower bounce animation */
+            animation: bounce 1.5s;
         }
 
         .dropdown-item {
@@ -83,14 +83,14 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
 
         .dropdown-item i {
             color: #33c1ff;
-            margin-right: 5px; /* Add some spacing between the icon and text */
+            margin-right: 5px;
         }
 
         .dropdown-item:hover {
-            background-color: #ff5733; /* Match hover color */
-            color: white; /* Ensure text is visible */
+            background-color: #ff5733;
+            color: white;
             border-radius: 0.5rem;
-            animation: bounce 1.5s; /* Slower bounce animation */
+            animation: bounce 1.5s;
         }
 
         .btn-outline-light, .btn-outline-success {
@@ -99,7 +99,7 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
             border-color: #33c1ff;
             transition: background-color 0.3s ease, color 0.3s ease;
             border-radius: 0.5rem;
-            margin-left: 5px; /* Reduce spacing between buttons */
+            margin-left: 5px;
         }
 
         .btn-outline-light:hover, .btn-outline-success:hover {
@@ -122,12 +122,12 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
         .search-container {
             display: flex;
             align-items: center;
-            margin-right: 10px; /* Add spacing to the right of the search container */
+            margin-right: 10px;
         }
 
         .search-container input[type="search"] {
             margin-right: 10px;
-            padding-left: 30px; /* Add padding to make space for the icon */
+            padding-left: 30px;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" class="bi bi-search" viewBox="0 0 16 16"> <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.442 1.398a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/> </svg>');
             background-repeat: no-repeat;
             background-position: 10px center;
@@ -152,7 +152,7 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
         }
 
         .search-container button {
-            margin-left: 5px; 
+            margin-left: 5px;
         }
 
         @media (max-width: 768px) {
@@ -186,25 +186,25 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
         .search-container select,
         .search-container input[type="search"],
         .search-container button {
-            color: black; /* Ensure text is visible on these elements */
+            color: black;
         }
 
         .dropdown-menu {
-            background-color: #343a40; 
+            background-color: #343a40;
             color: white;
         }
 
         .search-container select,
         .search-container input[type="search"] {
-            background-color: #ffffff; /* Light background for better contrast */
+            background-color: #ffffff;
         }
 
         .search-container button {
-            background-color: #ffffff; /* Light background for better contrast */
+            background-color: #ffffff;
         }
 
         .form-control {
-            transition: background-color 0.5s ease, color 0.5s ease; /* Slower transition for form fields */
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
         .form-control:focus {
@@ -213,7 +213,7 @@ while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
         }
 
         .navbar-nav .nav-item {
-            margin-left: 5px; /* Reduce spacing between navigation links */
+            margin-left: 5px;
         }
     </style>
 </head>

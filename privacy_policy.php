@@ -16,7 +16,7 @@
         .container {
             max-width: 800px;
             margin: 40px auto;
-            background-color: #ffffff;
+            background-color: #2f4f4f; /* Changed background color */
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Stronger shadow */
@@ -53,7 +53,7 @@
             width: 150px;
         }
         .text-container {
-            background-color: #f0f0f0; /* Lighter background */
+            background-color: #d3d3d3; /* Changed background color */
             padding: 20px;
             margin-bottom: 20px;
             border-left: 5px solid #007bff;

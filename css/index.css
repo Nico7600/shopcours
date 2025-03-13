@@ -154,11 +154,11 @@ p {
 }
 .cookie-consent-popup p {
     margin: 0 0 10px;
-    color: #000000; /* Change text color to black */
+    color: #000000;
 }
 .cookie-consent-popup a {
-    color: #FFA500; /* Change link color to orange using hex value */
+    color: #FFA500;
 }
 .article-container {
-    background-color: #2f4f4f; /* Couleur gris foncé pour les conteneurs des articles */
+    background-color: #2f4f4f;
 }
