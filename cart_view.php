@@ -58,11 +58,11 @@ $total = 0;
         .card-title {
             font-size: 1.25rem;
             font-weight: bold;
-            color: #000000; /* Change title color to black */
+            color: #000000;
         }
         .card-text {
             font-size: 1rem;
-            color: #000000; /* Change text color to black */
+            color: #000000;
         }
         .btn-primary {
             background-color: #007bff;
@@ -112,23 +112,22 @@ $total = 0;
             color: #6c757d;
         }
         .adhesion-prime-title {
-            color: #ff5733; /* Match the "Valo" color */
+            color: #ff5733;
         }
         .adhesion-prime-subtitle {
-            color: #33c1ff; /* Match the "Mazone" color */
+            color: #33c1ff; 
         }
         .table th, .table td {
-            color: #ffffff; /* Change table text color to white */
+            color: #ffffff; 
         }
         .btn-modifier {
-            background-color: #007bff !important; /* Default blue color for the "Modifier" button */
+            background-color: #007bff !important; 
             color: white;
             font-weight: bold;
-            border: 1px solid #007bff; /* Add border */
         }
         .btn-modifier:hover {
-            background-color: #28a745 !important; /* Green on hover */
-            border: 1px solid #28a745; /* Ensure border on hover */
+            background-color: #28a745 !important; 
+            border: 1px solid #28a745; 
         }
     </style>
 </head>

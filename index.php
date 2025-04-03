@@ -92,23 +92,23 @@ $isPrime = false;
         .card-body,
         .alert,
         .cookie-consent-popup {
-            color: white; /* Ensure text is visible on these elements */
+            color: white;
         }
 
         .carousel-caption {
-            background-color: rgba(255, 255, 255, 0.7); /* Light background for better contrast */
+            background-color: rgba(255, 255, 255, 0.7);
         }
 
         .card-body {
-            background-color: #343a40; /* Changed to match the new background color */
+            background-color: #343a40;
         }
 
         .alert {
-            background-color: #343a40; /* Changed to match the new background color */
+            background-color: #343a40;
         }
 
         .cookie-consent-popup {
-            background-color: #343a40; /* Changed to match the new background color */
+            background-color: #343a40;
         }
 
         .carousel-item img {
@@ -190,7 +190,7 @@ $isPrime = false;
 
         .progress-bar {
             height: 10px;
-            background-color: #007bff; /* Same blue as the "Acheter" button */
+            background-color: #007bff;
             transition: width 0.1s linear;
         }
     </style>
@@ -211,12 +211,12 @@ $isPrime = false;
             $alertType = 'alert-warning';
             $alertMessage = 'Votre paiement a été annulé. Veuillez réessayer.';
             $alertIcon = '<i class="fas fa-exclamation-circle"></i>'; 
-            $textColor = 'color: #dc3545;'; // Red for error
+            $textColor = 'color: #dc3545;';
         } elseif ($message === 'prime_success') {
             $alertType = 'alert-success';
             $alertMessage = 'Félicitations ! Votre adhésion Prime a été activée avec succès.';
             $alertIcon = '<i class="fas fa-check-circle"></i>'; 
-            $textColor = 'color: #28a745;'; // Green for success
+            $textColor = 'color: #28a745;';
         }
         ?>
         <div id="notification" class="alert <?= $alertType; ?> text-center mt-5" role="alert" style="background-color: #343a40; <?= $textColor; ?> border: 1px solid #007bff;">
@@ -420,7 +420,7 @@ $isPrime = false;
     }
 
     var carousel = document.getElementById('productCarousel');
-    var interval = 10000; // 10 seconds
+    var interval = 10000;
 
     function getRandomSlide() {
         var items = carousel.querySelectorAll('.carousel-item');

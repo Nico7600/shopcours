@@ -58,10 +58,18 @@ require_once('close.php');
         .card {
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #6c757d;
+            color: #6c757d;
         }
         .card-header {
             border-top-left-radius: 10px;
             border-top-right-radius: 10px;
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            color: #ffffff;
+            text-align: center;
+        }
+        .card-body {
+            color: #343a40;
         }
         h3 {
             font-size: 1.75rem;
@@ -107,20 +115,23 @@ require_once('close.php');
         <div class="row">
             <div class="col-md-8 offset-md-2">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h3>Profil utilisateur</h3>
+                    <div class="card-header">
+                        <h3 class="text-center">Profil utilisateur</h3>
                     </div>
                     <div class="card-body">
-                        <p><strong>Nom complet :</strong> <?= htmlspecialchars($userName); ?></p>
+                        <p class="mb-4">
+                            <i class="fas fa-user text-primary"></i> <strong>Nom complet :</strong> <?= htmlspecialchars($userName); ?>
+                        </p>
                         <form method="post">
                             <div class="form-group">
-                                <label for="username"><strong>Nom d'utilisateur :</strong></label>
+                                <label for="username">
+                                    <i class="fas fa-user-edit text-warning"></i> <strong>Nom d'utilisateur :</strong>
+                                </label>
                                 <input type="text" id="username" name="username" class="form-control" value="<?= htmlspecialchars($user['username']); ?>" required>
                             </div>
-                            <button type="submit" class="btn btn-primary mt-3">Mettre à jour</button>
                         </form>
-                        <p>
-                            <strong>Abonnement Prime :</strong>
+                        <p class="mt-4">
+                            <i class="fas fa-star text-success"></i> <strong>Abonnement Prime :</strong>
                             <?php if ($isPrime): ?>
                                 <span class="badge badge-success">Oui</span>
                             <?php else: ?>
@@ -128,7 +139,12 @@ require_once('close.php');
                             <?php endif; ?>
                         </p>
                         <div class="text-center mt-4">
-                            <a href="logout.php" class="btn btn-danger">Se déconnecter</a>
+                            <button type="submit" class="btn btn-primary btn-block mt-3">
+                                <i class="fas fa-save text-white"></i> Mettre à jour
+                            </button>
+                            <a href="logout.php" class="btn btn-danger btn-block mt-3">
+                                <i class="fas fa-sign-out-alt text-white"></i> Se déconnecter
+                            </a>
                         </div>
                     </div>
                 </div>
