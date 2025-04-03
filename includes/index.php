@@ -1,7 +1,7 @@
 <?php
 require_once 'bootstrap.php';
 
-$category = isset($_GET['category']) ? $_GET['category'] : ''; // Fixed syntax error
+$category = isset($_GET['category']) ? $_GET['category'] : '';
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $tag = isset($_GET['tag']) ? $_GET['tag'] : '';
 

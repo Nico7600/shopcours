@@ -140,10 +140,10 @@ $orderHistory = getOrderHistory($userId, $db);
                 <tbody>
                     <?php foreach ($orderHistory as $order): ?>
                         <tr>
-                            <td><?= htmlspecialchars($order['order_id']) ?></td>
-                            <td><?= htmlspecialchars($order['order_date']) ?></td>
-                            <td><?= htmlspecialchars($order['items']) ?></td>
-                            <td><?= number_format($order['total_amount'], 2, ',', ' ') ?> €</td>
+                            <td style="color: white;"><?= htmlspecialchars($order['order_id']) ?></td>
+                            <td style="color: white;"><?= date('d/m/Y à H:i', strtotime($order['order_date'])) ?></td>
+                            <td style="color: white;"><?= htmlspecialchars($order['items']) ?></td>
+                            <td style="color: white;"><?= number_format($order['total_amount'], 2, ',', ' ') ?> €</td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
