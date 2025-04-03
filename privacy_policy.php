@@ -53,7 +53,7 @@
             width: 150px;
         }
         .text-container {
-            background-color: #d3d3d3; /* Changed background color */
+            background-color: #f0f0f0; /* Lighter background */
             padding: 20px;
             margin-bottom: 20px;
             border-left: 5px solid #007bff;

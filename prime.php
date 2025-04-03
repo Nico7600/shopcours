@@ -88,6 +88,8 @@ $user = [];
             background-color: #f8f9fa;
         }
         .card {
+            background-color: #6c757d; 
+            color: #ffffff; 
             border: none;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -95,11 +97,11 @@ $user = [];
         .card-title {
             font-size: 1.25rem;
             font-weight: bold;
-            color: #000000; /* Change title color to black */
+            color: #ffffff; 
         }
         .card-text {
             font-size: 1rem;
-            color: #000000; /* Change text color to black */
+            color: #ffffff;
         }
         .btn-primary {
             background-color: #007bff;
@@ -112,7 +114,7 @@ $user = [];
         }
         .badge-bottom-right {
             position: absolute;
-            bottom: 10px;
+            bottom: 1.2px; 
             right: 10px;
         }
         .fixed-height {
@@ -149,37 +151,72 @@ $user = [];
             color: #6c757d;
         }
         .adhesion-prime-title {
-            color: #ff5733; /* Match the "Valo" color */
+            color: #ff5733; 
         }
         .adhesion-prime-subtitle {
-            color: #33c1ff; /* Match the "Mazone" color */
+            color: #33c1ff;
         }
     </style>
 </head>
 <body>
     <?php include 'includes/navbar.php'; ?>
+    
+    <?php if ($error): ?>
+        <div class="alert alert-danger text-center mt-5" style="background-color: #343a40; color: #dc3545; border: 1px solid #dc3545;">
+            <i class="fas fa-exclamation-circle"></i> <?= $error; ?>
+        </div>
+    <?php endif; ?>
+
     <div class="container mt-5">
         <h1 class="text-center mb-4 adhesion-prime-title">Adhésion <span class="adhesion-prime-subtitle">Prime</span></h1>
-        <?php if ($error): ?>
-            <div class="alert alert-danger text-center">
-                <?php echo $error; ?>
-            </div>
-        <?php endif; ?>
-        <div class="row justify-content-center">
+        <div class="row mt-5">
             <div class="col-md-6">
                 <form method="POST" action="prime.php">
-                    <div class="card mb-3">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">1 mois de Prime</h5>
-                            <p class="card-text">Obtenez l'adhésion Prime 1 mois pour seulement 9.99 euros.</p>
-                            <button type="submit" name="prime_option" value="30_days" class="btn btn-primary btn-block">Acheter pour 9.99€</button>
+                    <div class="card mb-3" style="height: 100%; background-color: #6c757d; color: #ffffff;">
+                        <div class="position-relative">
+                            <span class="badge badge-success badge-bottom-right">Populaire</span>
+                        </div>
+                        <div class="card-body text-center d-flex flex-column justify-content-between" style="min-height: 350px;"> 
+                            <div>
+                                <h5 class="card-title">
+                                    <span style="color: #ff5733;">1 mois</span> 
+                                    <span style="color: #33c1ff;">de Prime</span>
+                                </h5>
+                                <p class="card-text">Obtenez l'adhésion Prime 1 mois pour seulement 9.99 euros.</p>
+                                <ul class="list-unstyled text-left">
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #28a745; font-weight: bold;">Livraison rapide gratuite</span></li>
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #ff8c00; font-weight: bold;">Accès à des offres exclusives</span></li> <!-- Updated color -->
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #ffc107; font-weight: bold;">Réduction de 20% sur tout les produits de nos partenaires</span></li>
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #00ced1; font-weight: bold;">Économies supplémentaires sur certains produits</span></li> <!-- Updated color -->
+                                </ul>
+                            </div>
+                            <button type="submit" name="prime_option" value="30_days" class="btn btn-primary btn-block mt-3">Acheter pour 9.99€</button>
                         </div>
                     </div>
-                    <div class="card mb-3">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">1 an de Prime</h5>
-                            <p class="card-text">Obtenez l'adhésion Prime 1 an a seulement 99.99 euros.</p>
-                            <button type="submit" name="prime_option" value="365_days" class="btn btn-primary btn-block">Acheter pour 99.99€</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <form method="POST" action="prime.php">
+                    <div class="card mb-3" style="height: 100%; background-color: #6c757d; color: #ffffff;"> <!-- Updated background and text color -->
+                        <div class="position-relative">
+                            <span class="badge badge-warning badge-bottom-right">Meilleure offre</span>
+                        </div>
+                        <div class="card-body text-center d-flex flex-column justify-content-between" style="min-height: 350px;"> <!-- Added consistent min-height and flex -->
+                            <div>
+                                <h5 class="card-title">
+                                    <span style="color: #ff5733;">1 an</span> 
+                                    <span style="color: #33c1ff;">de Prime</span>
+                                </h5>
+                                <p class="card-text">Obtenez l'adhésion Prime 1 an à seulement 99.99 euros.</p>
+                                <ul class="list-unstyled text-left">
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #28a745; font-weight: bold;">Livraison rapide gratuite</span></li>
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #ff8c00; font-weight: bold;">Accès à des offres exclusives</span></li> <!-- Updated color -->
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #ffc107; font-weight: bold;">Réduction de 20% sur tout les produits de nos partenaires</span></li>
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #00ced1; font-weight: bold;">Économies supplémentaires sur certains produits</span></li> <!-- Updated color -->
+                                    <li><i class="fas fa-check-circle text-success"></i> <span style="color: #ffffff; font-weight: bold;">2 mois de Prime offerts</span></li>
+                                </ul>
+                            </div>
+                            <button type="submit" name="prime_option" value="365_days" class="btn btn-primary btn-block mt-3">Acheter pour 99.99€</button>
                         </div>
                     </div>
                 </form>

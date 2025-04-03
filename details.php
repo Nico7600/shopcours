@@ -253,7 +253,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])){
             font-size: 1.2rem;
             font-weight: 400;
             margin-bottom: 20px;
-            color: #ffffff; 
+            color: #ffffff; /* Ensure description text is light */
             white-space: pre-wrap;
         }
         .btn-container {

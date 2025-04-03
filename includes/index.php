@@ -1,18 +1,9 @@
 <?php
 require_once 'bootstrap.php';
 
-$category = isset($_GET['category']) ? $_GET['category'] : '';
+$category = isset($_GET['category']) ? $_GET['category'] : ''; // Fixed syntax error
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $tag = isset($_GET['tag']) ? $_GET['tag'] : '';
-
-$tagCountsSql = '
-    SELECT badge, COUNT(*) as count
-    FROM liste
-    GROUP BY badge
-';
-$tagCountsQuery = $db->prepare($tagCountsSql);
-$tagCountsQuery->execute();
-$tagCounts = $tagCountsQuery->fetchAll(PDO::FETCH_KEY_PAIR);
 
 if ($search) {
     $sql = '
@@ -67,7 +58,14 @@ $ratings = $ratingsQuery->fetchAll(PDO::FETCH_KEY_PAIR);
 
 require_once('close.php');
 
-$isPrime = false;
+$message = isset($_GET['message']) ? $_GET['message'] : '';
+if ($message === 'T') {
+    echo '<div class="alert alert-success">Votre adhésion Prime a été réussie.</div>';
+} elseif ($message === 'prime_cancel') {
+    echo '<div class="alert alert-danger">Votre adhésion Prime a été annulée.</div>';
+}
+
+$isPrime = false; // Initialize $isPrime
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -82,156 +80,11 @@ $isPrime = false;
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap">
-    <style>
-        body {
-            background-color: #343a40;
-            color: white;
-        }
-
-        .carousel-caption,
-        .card-body,
-        .alert,
-        .cookie-consent-popup {
-            color: white; /* Ensure text is visible on these elements */
-        }
-
-        .carousel-caption {
-            background-color: rgba(255, 255, 255, 0.7); /* Light background for better contrast */
-        }
-
-        .card-body {
-            background-color: #343a40; /* Changed to match the new background color */
-        }
-
-        .alert {
-            background-color: #343a40; /* Changed to match the new background color */
-        }
-
-        .cookie-consent-popup {
-            background-color: #343a40; /* Changed to match the new background color */
-        }
-
-        .carousel-item img {
-            height: 50vh;
-            object-fit: cover;
-        }
-
-        .carousel-caption {
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
-
-        .card {
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: scale(1.05);
-        }
-
-        .card-price-original {
-            text-decoration: line-through;
-            color: #ff5733;
-        }
-
-        .card-price-promo {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .card-quantity {
-            font-weight: bold;
-        }
-
-        .out-of-stock {
-            color: #dc3545;
-        }
-
-        .low-quantity {
-            color: #ffc107;
-        }
-
-        .medium-quantity {
-            color: #17a2b8;
-        }
-
-        .high-quantity {
-            color: #28a745;
-        }
-
-        .very-high-quantity {
-            color: #007bff;
-        }
-
-        .badge-bottom-right {
-            position: absolute;
-            bottom: 1rem;
-            right: 1rem;
-            background-color: #ff5733;
-            color: #ffffff;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-        }
-
-        .star-rating i {
-            color: #ff5733;
-        }
-
-        @media (max-width: 768px) {
-            .carousel-item img {
-                height: 30vh;
-            }
-
-            .card {
-                margin-bottom: 1rem;
-            }
-        }
-
-        .progress-bar {
-            height: 10px;
-            background-color: #007bff; /* Same blue as the "Acheter" button */
-            transition: width 0.1s linear;
-        }
-    </style>
 </head>
 
 <body>
     <?php include 'includes/navbar.php'; ?>
     
-    <?php if (isset($_GET['message'])): ?>
-        <?php
-        $message = $_GET['message'];
-        $alertType = '';
-        $alertMessage = '';
-        $alertIcon = '';
-        $textColor = '';
-
-        if ($message === 'prime_cancel') {
-            $alertType = 'alert-warning';
-            $alertMessage = 'Votre paiement a été annulé. Veuillez réessayer.';
-            $alertIcon = '<i class="fas fa-exclamation-circle"></i>'; 
-            $textColor = 'color: #dc3545;'; // Red for error
-        } elseif ($message === 'prime_success') {
-            $alertType = 'alert-success';
-            $alertMessage = 'Félicitations ! Votre adhésion Prime a été activée avec succès.';
-            $alertIcon = '<i class="fas fa-check-circle"></i>'; 
-            $textColor = 'color: #28a745;'; // Green for success
-        }
-        ?>
-        <div id="notification" class="alert <?= $alertType; ?> text-center mt-5" role="alert" style="background-color: #343a40; <?= $textColor; ?> border: 1px solid #007bff;">
-            <?= $alertIcon; ?> <?= $alertMessage; ?>
-        </div>
-        <script>
-            setTimeout(function() {
-                var notification = document.getElementById('notification');
-                if (notification) {
-                    notification.style.display = 'none';
-                }
-            }, 10000); 
-        </script>
-    <?php endif; ?>
-
     <?php if (isset($_SESSION['erreur'])): ?>
         <div class="alert alert-danger alert-custom" role="alert">
             <?= htmlspecialchars($_SESSION['erreur']) ?>
@@ -239,7 +92,7 @@ $isPrime = false;
         <?php unset($_SESSION['erreur']); ?>
     <?php endif; ?>
     <main class="container mt-5">
-        <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div id="productCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000">
             <div class="carousel-inner">
                 <?php
                 $active = 'active';
@@ -252,7 +105,7 @@ $isPrime = false;
                     }
                 ?>
                     <div class="carousel-item <?= $active ?>">
-                        <img src="<?= htmlspecialchars($image_path); ?>" class="d-block w-100 img-fluid" alt="<?= htmlspecialchars($produit['produit']); ?>" onclick="window.location.href='details.php?id=<?= $produit['id'] ?>'">
+                        <img src="<?= htmlspecialchars($image_path); ?>" class="d-block w-100 fixed-height img-fluid" alt="<?= htmlspecialchars($produit['produit']); ?>" onclick="window.location.href='details.php?id=<?= $produit['id'] ?>'">
                         <div class="carousel-caption d-md-block">
                             <h5><?= $produit['produit'] ?></h5>
                             <p>A seulement : <?= $produit['prix'] ?> €</p>
@@ -263,6 +116,12 @@ $isPrime = false;
                 }
                 ?>
             </div>
+            <a class="carousel-control-prev" href="#productCarousel" role="button" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </a>
+            <a class="carousel-control-next" href="#productCarousel" role="button" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
         </div>
         
 
@@ -347,7 +206,7 @@ $isPrime = false;
                         <h5 class="card-title"><?= htmlspecialchars($produit['produit']); ?></h5>
                         <p class="card-text"><?= htmlspecialchars($description); ?></p>
                             <p class="card-text"><strong>Produit par :</strong> <?= htmlspecialchars($produit['production_company'] ?? 'Inconnu'); ?></p>
-                            <p class="card-text star-rating"><strong>Note moyenne :</strong> <?= $stars; ?> (<?= number_format((float)$averageRating, 1); ?>)</p>
+                            <p class="card-text star-rating"><strong>Note moyenne :</strong> <?= $stars; ?> (<?= number_format($averageRating, 1); ?>)</p>
 
                             <?php if ($promo > 0 || $primeDiscount > 0): ?>
                                 <p class="card-price">
@@ -413,25 +272,9 @@ $isPrime = false;
         document.getElementById('cookieConsent').style.display = 'none';
     });
 
-    if (document.cookie.indexOf('cookies_accepted=true') === -1) {
+    if (document.cookie.indexOf('cookies_accepted') === -1) {
         document.getElementById('cookieConsent').style.display = 'block';
-    } else {
-        document.getElementById('cookieConsent').style.display = 'none';
     }
-
-    var carousel = document.getElementById('productCarousel');
-    var interval = 10000; // 10 seconds
-
-    function getRandomSlide() {
-        var items = carousel.querySelectorAll('.carousel-item');
-        var randomIndex = Math.floor(Math.random() * items.length);
-        return randomIndex;
-    }
-
-    setInterval(function () {
-        var randomIndex = getRandomSlide();
-        $('#productCarousel').carousel(randomIndex);
-    }, interval);
 </script>
 
 <style>

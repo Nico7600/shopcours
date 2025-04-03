@@ -35,6 +35,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 			background-size: cover;
 			background-position: center;
 			animation: backgroundAnimation 20s infinite alternate;
+			color: #ffffff; /* Set text color to white */
 		}
 		h4 {
 			font-size: 1.5rem;
@@ -104,6 +105,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 			text-align: center;
 			padding: 1rem;
 			background: #343a40;
+			color: #ffffff; /* Set footer text color to white */
 		}
 	</style>
 </head>
