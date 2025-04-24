@@ -1,133 +1,190 @@
+<?php
+session_start();
+
+// Charger les variables d'environnement depuis le fichier .env
+require_once 'vendor/autoload.php'; // Assurez-vous que le package vlucas/phpdotenv est installé
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+try {
+    // Connexion à la base de données avec les informations du fichier .env
+    $pdo = new PDO(
+        sprintf('mysql:host=%s;dbname=%s', $_ENV['DB_HOST'], $_ENV['DB_NAME']),
+        $_ENV['DB_USER'],
+        $_ENV['DB_PASSWORD']
+    );
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die('Erreur de connexion à la base de données : ' . $e->getMessage());
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $confirm_password = trim($_POST['confirm_password'] ?? '');
+    $profile_picture = null;
+
+    if ($password !== $confirm_password) {
+        $error = 'Les mots de passe ne correspondent pas.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Adresse email invalide.';
+    } elseif (!empty($_FILES['profile_picture']['name'])) {
+        // Gestion de l'upload de l'image
+        $target_dir = "uploads/";
+        $target_file = $target_dir . basename($_FILES['profile_picture']['name']);
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+        $allowed_types = ['jpg', 'jpeg', 'png'];
+
+        // Vérifiez si le fichier a été correctement téléchargé
+        if ($_FILES['profile_picture']['error'] !== UPLOAD_ERR_OK) {
+            $error = 'Erreur lors du téléchargement de l\'image. Code d\'erreur : ' . $_FILES['profile_picture']['error'];
+        } elseif (!in_array($imageFileType, $allowed_types)) {
+            $error = 'Seules les images JPG, JPEG et PNG sont autorisées.';
+        } elseif (!is_uploaded_file($_FILES['profile_picture']['tmp_name'])) {
+            $error = 'Le fichier téléchargé est invalide.';
+        } elseif (!move_uploaded_file($_FILES['profile_picture']['tmp_name'], $target_file)) {
+            $error = 'Erreur lors du déplacement de l\'image vers le dossier de destination.';
+        } else {
+            $profile_picture = $target_file;
+        }
+    }
+
+    if (empty($error)) {
+        try {
+            // Vérifiez si l'utilisateur ou l'email existe déjà
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE name = :name OR email = :email');
+            $stmt->execute(['name' => $name, 'email' => $email]);
+            if ($stmt->fetchColumn() > 0) {
+                $error = 'Nom ou email déjà utilisé.';
+            } else {
+                // Insérez l'utilisateur dans la base de données
+                $stmt = $pdo->prepare('
+                    INSERT INTO users (name, email, phone, id_perm, password, ticket_count, open_ticket_count, closed_ticket_count, profile_picture, created_at, updated_at)
+                    VALUES (:name, :email, :phone, :id_perm, :password, :ticket_count, :open_ticket_count, :closed_ticket_count, :profile_picture, NOW(), NOW())
+                ');
+                $stmt->execute([
+                    'name' => $name,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'id_perm' => 1, // Par défaut, l'utilisateur a un rôle de base
+                    'password' => password_hash($password, PASSWORD_BCRYPT),
+                    'ticket_count' => 0,
+                    'open_ticket_count' => 0,
+                    'closed_ticket_count' => 0,
+                    'profile_picture' => $profile_picture ?: 'uploads/default.png', // Par défaut, une image générique
+                ]);
+
+                // Connectez l'utilisateur après l'inscription
+                $_SESSION['logged_in'] = true;
+$_SESSION['user'] = [
+    'id' => $userId,
+    'name' => $name,
+    'id_perm' => 1
+];                header('Location: index.php');
+                exit;
+            }
+        } catch (PDOException $e) {
+            $error = 'Erreur lors de l\'inscription : ' . $e->getMessage();
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Inscription</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="css/style.css">
-	<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
-	<style>
-		body {
-			font-family: 'Ubuntu', sans-serif;
-		}
-		h4 {
-			font-size: 2rem;
-			font-weight: 700;
-		}
-		label {
-			font-size: 1.2rem;
-			font-weight: 400;
-		}
-		.form-control {
-			font-size: 1.1rem;
-			font-weight: 300;
-		}
-		.btn {
-			font-size: 1.2rem;
-			font-weight: 700;
-		}
-		.text-secondary {
-			font-size: 1.1rem;
-			font-weight: 400;
-		}
-		.w-450 {
-			width: 600px !important;
-		}
-	</style>
+    <title>Inscription</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #1a202c;
+            /* Couleur de fond de l'index */
+        }
+
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.05);
+            /* Couleur des sections de l'index */
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-title {
+            color: #a5f3fc;
+            /* Couleur cyan clair utilisée dans l'index */
+        }
+
+        .form-label {
+            color: #e5e5e5;
+            /* Couleur gris clair */
+        }
+
+        .form-input {
+            background-color: #2d3748;
+            /* Couleur de fond des champs */
+            border-color: rgba(255, 255, 255, 0.1);
+            /* Bordure légère */
+            color: #ffffff;
+            /* Texte blanc */
+        }
+
+        .form-button {
+            background-color: #22c55e;
+            /* Vert utilisé dans l'index */
+        }
+
+        .form-button:hover {
+            background-color: #16a34a;
+            /* Vert plus foncé pour le hover */
+        }
+
+        .form-link {
+            color: #6d28d9;
+            /* Violet utilisé dans l'index */
+        }
+
+        .form-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<body>
-    <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
-    	
-    	<form class="shadow w-450 p-3 bg-white rounded" 
-    	      action="register.php" 
-    	      method="post">
 
-    		<h4 class="text-center mb-4">Créer un compte</h4>
-
-    		<?php 
-            session_start(); 
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $fname = $_POST['fname'];
-                $uname = $_POST['uname'];
-                $pass = $_POST['pass'];
-                $cpass = $_POST['cpass'];
-
-                if (empty($fname) || empty($uname) || empty($pass) || empty($cpass)) {
-                    $_SESSION['error'] = "Tous les champs sont obligatoires.";
-                } elseif ($pass !== $cpass) {
-                    $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
-                } else {
-                    try {
-						require_once 'bootstrap.php';                        
-                        $stmt = $db->prepare("INSERT INTO users (fname, username, password, date, last_ip) VALUES (?, ?, ?, NOW(), ?)");
-                        $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
-                        $last_ip = $_SERVER['REMOTE_ADDR'];
-                        $stmt->execute([$fname, $uname, $hashed_pass, $last_ip]);
-
-                        $_SESSION['success'] = "Inscription réussie. Vous pouvez maintenant vous connecter.";
-                        header("Location: login.php");
-                        exit();
-                    } catch (PDOException $e) {
-                        $_SESSION['error'] = "Erreur de connexion à la base de données: " . $e->getMessage();
-                    }
-                }
-            }
-            if (isset($_SESSION['error'])): ?>
-    		<div class="alert alert-danger alert-dismissible fade show" role="alert">
-			  <?php echo $_SESSION['error']; ?>
-			  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-			</div>
-		    <?php 
-            unset($_SESSION['error']);
-            endif; ?>
-
-            <div class="mb-3">
-		        <label for="fname" class="form-label">Prénom</label>
-		        <input type="text" 
-		               class="form-control" 
-		               id="fname" 
-		               name="fname" 
-		               placeholder="Entrez votre prénom"
-		               value="<?php echo isset($_SESSION['fname']) ? $_SESSION['fname'] : ''; ?>">
-		    </div>
-
-		  <div class="mb-3">
-		    <label for="uname" class="form-label">Nom d'utilisateur</label>
-		    <input type="text" 
-		           class="form-control" 
-		           id="uname" 
-		           name="uname" 
-		           placeholder="Choisissez un nom d'utilisateur"
-		           value="<?php echo isset($_SESSION['uname']) ? $_SESSION['uname'] : ''; ?>">
-		  </div>
-
-		  <div class="mb-3">
-		    <label for="pass" class="form-label">Mot de passe</label>
-		    <input type="password" 
-		           class="form-control" 
-		           id="pass" 
-		           name="pass" 
-		           placeholder="Choisissez un mot de passe">
-		  </div>
-
-		  <div class="mb-3">
-		    <label for="cpass" class="form-label">Confirmer le mot de passe</label>
-		    <input type="password" 
-		           class="form-control" 
-		           id="cpass" 
-		           name="cpass" 
-		           placeholder="Confirmez votre mot de passe">
-		  </div>
-		  
-		  <div class="d-flex justify-content-between align-items-center">
-		      <button type="submit" class="btn btn-primary">S'inscrire</button>
-		      <a href="login.php" class="text-secondary">Connexion</a>
-		  </div>
-		</form>
+<body class="flex items-center justify-center h-screen">
+    <div class="form-container p-8 w-96">
+        <h1 class="form-title text-2xl font-bold mb-4">Inscription</h1>
+        <?php if (!empty($error)): ?>
+            <p class="text-red-500 mb-4"><?= htmlspecialchars($error) ?></p>
+        <?php endif; ?>
+        <form method="POST" action="register.php" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label for="name" class="form-label block">Nom</label>
+                <input type="text" id="name" name="name" class="form-input w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="form-label block">Adresse email</label>
+                <input type="email" id="email" name="email" class="form-input w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="phone" class="form-label block">Numéro de téléphone</label>
+                <input type="text" id="phone" name="phone" class="form-input w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="form-label block">Mot de passe</label>
+                <input type="password" id="password" name="password" class="form-input w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="confirm_password" class="form-label block">Confirmer le mot de passe</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-input w-full px-4 py-2 border rounded-lg" required>
+            </div>
+            <div class="mb-4">
+                <label for="profile_picture" class="form-label block">Image de profil</label>
+                <input type="file" id="profile_picture" name="profile_picture" class="form-input w-full px-4 py-2 border rounded-lg">
+            </div>
+            <button type="submit" class="form-button w-full text-white py-2 px-4 rounded-lg">S'inscrire</button>
+        </form>
+        <p class="mt-4 text-gray-400">Déjà inscrit ? <a href="login.php" class="form-link">Se connecter</a></p>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
-</html>
+
+</html>	

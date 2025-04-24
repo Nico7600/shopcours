@@ -1,234 +1,119 @@
 <?php
-require_once 'bootstrap.php';
+include 'header.php';
 
-$userName = null;
-$isPrime = false;
-if (isset($_SESSION['id'])) {
-    $sql = 'SELECT fname, is_prime FROM users WHERE id = :id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':id', $_SESSION['id'], PDO::PARAM_INT);
-    $query->execute();
-    $user = $query->fetch(PDO::FETCH_ASSOC);
-    if ($user) {
-        $userName = $user['fname'];
-        $isPrime = (bool)$user['is_prime'];
-    }
+$lang = $_GET['lang'] ?? 'fr';
+
+// Langues disponibles
+$available_languages = ['fr', 'en', 'nl'];
+
+if (!in_array($lang, $available_languages)) {
+    die('Langue non supportée.');
 }
 
-if (!isset($_SESSION['id'])) {
-    $_SESSION['erreur'] = "Vous devez être connecté pour accéder à cette page";
-    header('Location: index.php');
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
-    $message = $_POST['update'];
-    $userId = $_SESSION['id'];
-    $sql = 'INSERT INTO updates (user_id, message, created_at, vote) VALUES (:user_id, :message, NOW(), 0)';
-    $query = $db->prepare($sql);
-    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $query->bindValue(':message', $message, PDO::PARAM_STR);
-    $query->execute();
-    header('Location: admin.php');
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vote'])) {
-    $vote = $_POST['vote'];
-    $updateId = $_POST['update_id'];
-    $userId = $_SESSION['id'];
-
-    // Check if the user has already voted for this update
-    $sql = 'SELECT vote FROM updates WHERE user_id = :user_id AND id = :update_id';
-    $query = $db->prepare($sql);
-    $query->bindValue(':user_id', $userId, PDO::PARAM_INT);
-    $query->bindValue(':update_id', $updateId, PDO::PARAM_INT);
-    $query->execute();
-    $existingVote = $query->fetchColumn();
-
-    if ($existingVote === false) {
-        // Insert the vote if the user hasn't voted yet
-        $sql = 'UPDATE updates SET vote = vote + :vote WHERE id = :update_id';
-        $query = $db->prepare($sql);
-        $query->bindValue(':vote', $vote, PDO::PARAM_INT);
-        $query->bindValue(':update_id', $updateId, PDO::PARAM_INT);
-        $query->execute();
-    } elseif ($existingVote != $vote) {
-        // Update the vote if the user changes their vote
-        $sql = 'UPDATE updates SET vote = vote + :vote - :existing_vote WHERE id = :update_id';
-        $query = $db->prepare($sql);
-        $query->bindValue(':vote', $vote, PDO::PARAM_INT);
-        $query->bindValue(':existing_vote', $existingVote, PDO::PARAM_INT);
-        $query->bindValue(':update_id', $updateId, PDO::PARAM_INT);
-        $query->execute();
-    }
-}
-
-// Fetch patch notes
-$sql = 'SELECT updates.id, updates.message, updates.created_at, users.username, 
-        updates.vote as votes 
-        FROM updates 
-        JOIN users ON updates.user_id = users.id 
-        ORDER BY updates.created_at DESC';
-$query = $db->prepare($sql);
-$query->execute();
-$patchNotes = $query->fetchAll(PDO::FETCH_ASSOC);
+$translations = [
+    'fr' => [
+        'title' => 'Patch Notes',
+        'no_patchnotes' => 'Aucun patch note disponible pour le moment.',
+        'posted_by' => 'Posté par :',
+        'date' => 'Date :',
+        'error_vote' => 'Erreur lors du vote.',
+    ],
+    'en' => [
+        'title' => 'Patch Notes',
+        'no_patchnotes' => 'No patch notes available at the moment.',
+        'posted_by' => 'Posted by:',
+        'date' => 'Date:',
+        'error_vote' => 'Error while voting.',
+    ],
+    'nl' => [
+        'title' => 'Patchnotities',
+        'no_patchnotes' => 'Momenteel geen patchnotities beschikbaar.',
+        'posted_by' => 'Geplaatst door:',
+        'date' => 'Datum:',
+        'error_vote' => 'Fout bij het stemmen.',
+    ],
+];
+$text = $translations[$lang];
 ?>
-<!DOCTYPE html>
-<html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patch Notes</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title><?= htmlspecialchars($text['title']) ?></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            background-color: #343a40; /* Dark background color */
-            color: #f8f9fa; /* Light text color */
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
         }
-        .developer {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            font-weight: bold;
-            font-size: 14px;
+        .patchnote-container {
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
         }
-        .current-date {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            font-size: 14px;
+        .patchnote {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #d1d5db;
         }
-        .centered-bold {
-            text-align: center;
-            font-weight: bold;
-            font-size: 36px;
-            margin-bottom: 30px;
-            color: #ffc107; /* Yellow color */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        .patchnote h2 {
+            color: #38bdf8;
         }
-        .patch-note-container {
-            position: relative;
-            padding: 30px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            background-color: #495057; /* Darker background for cards */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .patchnote p {
+            color: #9ca3af;
         }
-        .patch-note-container .card-body {
-            position: relative;
-        }
-        .formatted-text ul {
-            padding-left: 20px;
-        }
-        .formatted-text ul li {
-            list-style-type: disc;
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        .formatted-text .highlight {
-            text-align: center;
-            font-weight: bold;
-            font-size: 22px;
-            margin-bottom: 15px;
-        }
-        .vote-buttons {
-            display: flex;
-            justify-content: center;
+        .votes span {
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .vote-buttons .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            font-size: 20px;
-            transition: transform 0.2s;
-        }
-        .vote-buttons .btn-success:hover {
-            transform: scale(1.2);
-        }
-        .vote-buttons .btn-danger:hover {
-            transform: scale(1.2);
-        }
-        .home-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #ffc107; /* Yellow color */
-            color: #343a40; /* Dark text color */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-decoration: none;
-        }
-        .patch {
-            color: #ff5733; /* Orange color */
-        }
-        .note {
-            color: #007bff; /* Blue color */
-        }
-        .icon-orange {
-            color: #ff5733; /* Orange color */
+            gap: 0.5rem;
         }
     </style>
 </head>
-<body>
-    <a href="index.php" class="home-button"><i class="fas fa-home"></i></a>
-    <div class="container mt-5">
-        <h1 class="centered-bold">
-            <i class="fas fa-clipboard-list icon-orange"></i>
-            <span class="patch">Patch</span> 
-            <span class="note">Notes</span> 
-            <i class="fas fa-clipboard-list note"></i>
-        </h1>
-        <div class="patch-notes">
-            <?php foreach ($patchNotes as $note): ?>
-                <div class="card mb-3 patch-note-container">
-                    <div class="card-body">
-                        <div class="formatted-text">
-                            <?php
-                            $lines = explode("\n", htmlspecialchars($note['message']));
-                            foreach ($lines as $line) {
-                                if (strpos($line, '#') === 0) {
-                                    echo '<p class="highlight">' . substr($line, 1) . '</p>';
-                                } else {
-                                    echo '<ul><li>' . $line . '</li></ul>';
-                                }
-                            }
-                            ?>
-                        </div>
-                        <div class="developer">Développeur : <?php echo htmlspecialchars($note['username']); ?></div>
-                        <div class="current-date">Posté le <?php echo htmlspecialchars(date('d/m/Y', strtotime($note['created_at']))); ?> à <?php echo htmlspecialchars(date('H:i:s', strtotime($note['created_at']))); ?></div>
-                        <div class="vote-buttons">
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="update_id" value="<?php echo $note['id']; ?>">
-                                <button type="submit" name="vote" value="1" class="btn btn-success"><i class="fas fa-arrow-up"></i></button>
-                            </form>
-                            <span>Votes: <?php echo $note['votes']; ?></span>
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="update_id" value="<?php echo $note['id']; ?>">
-                                <button type="submit" name="vote" value="-1" class="btn btn-danger"><i class="fas fa-arrow-down"></i></button>
-                            </form>
+<body class="flex flex-col min-h-screen bg-gray-900 text-gray-100 font-orbitron">
+    <div class="container mx-auto flex-grow p-6 font-orbitron h-full">
+        <h1 class="text-4xl font-bold text-center mb-8"><?= htmlspecialchars($text['title']) ?></h1>
+        <div class="patchnote-container">
+            <?php if (empty($patchnotes)): ?>
+                <p class="text-center text-gray-500"><?= htmlspecialchars($text['no_patchnotes']) ?></p>
+            <?php else: ?>
+                <?php foreach ($patchnotes as $note): ?>
+                    <div class="patchnote shadow-md rounded-lg p-6 mb-6 relative">
+                        <h2 class="text-2xl font-semibold mb-4"><?= htmlspecialchars($note['title']) ?></h2>
+                        <p class="mb-4"><?= nl2br(htmlspecialchars($note['message'])) ?></p>
+                        <p class="text-sm mb-2">
+                            <strong><?= htmlspecialchars($text['posted_by']) ?></strong> <?= htmlspecialchars($note['grade']) ?> <?= htmlspecialchars($note['posted_by']) ?> | 
+                            <strong><?= htmlspecialchars($text['date']) ?></strong> <?= htmlspecialchars($note['posted_date']) ?>
+                        </p>
+                        <div class="votes text-sm absolute bottom-4 right-4 flex items-center gap-4">
+                            <button class="text-green-500 flex items-center gap-1" onclick="vote('up', <?= $note['id'] ?>)">
+                                <i class="fas fa-thumbs-up"></i> <span id="up-vote-<?= $note['id'] ?>"><?= $note['up_vote'] ?></span>
+                            </button>
+                            <button class="text-red-500 flex items-center gap-1" onclick="vote('down', <?= $note['id'] ?>)">
+                                <i class="fas fa-thumbs-down"></i> <span id="down-vote-<?= $note['id'] ?>"><?= $note['down_vote'] ?></span>
+                            </button>
                         </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
+    <?php include 'footer.php'; ?>
 </body>
-</html>
+<script>
+    function vote(type, id) {
+        fetch(`/vote.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`${type}-vote-${id}`).textContent = data.newCount;
+            } else {
+                alert('<?= htmlspecialchars($text['error_vote']) ?>');
+            }
+        })
+        .catch(() => alert('<?= htmlspecialchars($text['error_vote']) ?>'));
+    }
+</script>
