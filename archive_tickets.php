@@ -42,59 +42,55 @@ $text_ui = $translations[$lang];
 $userId = $_SESSION['user']['id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents("php://input"), true);
-    $ticketId = isset($input['id']) ? (int)$input['id'] : null;
+    $data = json_decode(file_get_contents('php://input'), true);
 
-    if (!$ticketId) {
+    if (!isset($data['id'])) {
         http_response_code(400);
-        exit("ID de ticket manquant.");
-    }
-
-    try {
-        $db->beginTransaction();
-
-        $stmt = $db->prepare("SELECT * FROM ticket WHERE id = :id AND creator = :creator");
-        $stmt->bindParam(':id', $ticketId, PDO::PARAM_INT);
-        $stmt->bindParam(':creator', $userId, PDO::PARAM_INT);
-        $stmt->execute();
-        $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($ticket) {
-            $archiveStmt = $db->prepare("INSERT INTO archive_ticket (id, ticket_name, message, created_at, creator) VALUES (:id, :ticket_name, :message, :created_at, :creator)");
-            $archiveStmt->bindParam(':id', $ticket['id'], PDO::PARAM_INT);
-            $archiveStmt->bindParam(':ticket_name', $ticket['ticket_name'], PDO::PARAM_STR);
-            $archiveStmt->bindParam(':message', $ticket['message'], PDO::PARAM_STR);
-            $archiveStmt->bindParam(':created_at', $ticket['created_at'], PDO::PARAM_STR);
-            $archiveStmt->bindParam(':creator', $ticket['creator'], PDO::PARAM_INT);
-            $archiveStmt->execute();
-
-            $deleteStmt = $db->prepare("DELETE FROM ticket WHERE id = :id");
-            $deleteStmt->bindParam(':id', $ticketId, PDO::PARAM_INT);
-            $deleteStmt->execute();
-
-            // Update user counts
-            $updateUserStmt = $db->prepare("UPDATE users SET closed_ticket_count = closed_ticket_count + 1, open_ticket_count = open_ticket_count - 1 WHERE id = :userId");
-            $updateUserStmt->bindParam(':userId', $userId, PDO::PARAM_INT);
-            $updateUserStmt->execute();
-
-            $db->commit();
-            http_response_code(200);
-            exit("Ticket archived successfully");
-        } else {
-            $db->rollBack();
-            http_response_code(404);
-            exit("Ticket not found");
-        }
-    } catch (PDOException $e) {
-        $db->rollBack();
-        http_response_code(500);
-        echo "Erreur PDO : " . $e->getMessage();
+        echo "ID du ticket manquant.";
         exit;
-    } catch (Exception $e) {
-        $db->rollBack();
-        http_response_code(500);
-        exit("Une erreur inattendue s'est produite.");
     }
+
+    $ticketId = (int)$data['id'];
+
+    // Vérifiez si le ticket existe
+    $stmt = $db->prepare("SELECT * FROM ticket WHERE id = :id AND is_close = 0");
+    $stmt->bindParam(':id', $ticketId, PDO::PARAM_INT);
+    $stmt->execute();
+    $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$ticket) {
+        http_response_code(404);
+        echo "Ticket introuvable ou déjà archivé.";
+        exit;
+    }
+
+    // Insérer dans la table archive_ticket
+    $stmt = $db->prepare("INSERT INTO archive_ticket (creator, ticket_name, message, created_at, closed_by) VALUES (:creator, :ticket_name, :message, :created_at, :closed_by)");
+    $stmt->bindParam(':creator', $ticket['creator'], PDO::PARAM_INT);
+    $stmt->bindParam(':ticket_name', $ticket['ticket_name'], PDO::PARAM_STR);
+    $stmt->bindParam(':message', $ticket['message'], PDO::PARAM_STR);
+    $stmt->bindParam(':created_at', $ticket['created_at'], PDO::PARAM_STR);
+    $stmt->bindParam(':closed_by', $userId, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $stmt = $db->prepare("
+        UPDATE users
+        SET 
+            open_ticket_count = IF(open_ticket_count IS NULL OR open_ticket_count < 1, 0, open_ticket_count - 1), 
+            closed_ticket_count = IF(closed_ticket_count IS NULL, 1, closed_ticket_count + 1) 
+        WHERE id = :creatorId
+    ");
+    $stmt->bindParam(':creatorId', $ticket['creator'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Supprimer le ticket de la table ticket
+    $stmt = $db->prepare("DELETE FROM ticket WHERE id = :id");
+    $stmt->bindParam(':id', $ticketId, PDO::PARAM_INT);
+    $stmt->execute();
+
+    http_response_code(200);
+    echo "Ticket archivé avec succès.";
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -157,11 +153,6 @@ include 'header.php';
                             <p class="text-sm text-gray-500 absolute bottom-2 left-4 text-left">
                                 <?= htmlspecialchars($text_ui['created_at']) ?>: <?= date('d/m/Y à H:i:s', strtotime($ticket['created_at'])) ?>
                             </p>
-                            <?php if ($ticket['is_closed']): ?>
-                                <p class="text-sm text-gray-400 absolute bottom-2 right-4 text-right">
-                                    Fermé le: <?= date('d/m/Y à H:i:s', strtotime($ticket['closed_at'])) ?>
-                                </p>
-                            <?php endif; ?>
                             <div class="absolute inset-y-0 right-4 flex items-center space-x-4">
                                 <a href="view_archive_ticket.php?id=<?= urlencode($ticket['id']) ?>" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-6 py-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                     <i class="fas fa-eye"></i> Voir

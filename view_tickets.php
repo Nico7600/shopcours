@@ -32,6 +32,14 @@ $translations = [
         'confirm_archive' => 'Êtes-vous sûr de vouloir archiver ce ticket ?',
         'yes' => 'Oui',
         'no' => 'Non',
+        'new_reply' => 'Nouvelle réponse',
+        'status' => [
+            'pending' => 'En attente',
+            'in_progress' => 'En cours',
+            'taken' => 'Pris en charge',
+            'validated' => 'Validé',
+            'refused' => 'Refusé',
+        ],
     ],
     'en' => [
         'my_tickets' => 'My Tickets',
@@ -48,6 +56,14 @@ $translations = [
         'confirm_archive' => 'Are you sure you want to archive this ticket?',
         'yes' => 'Yes',
         'no' => 'No',
+        'new_reply' => 'New reply',
+        'status' => [
+            'pending' => 'Pending',
+            'in_progress' => 'In progress',
+            'taken' => 'Taken',
+            'validated' => 'Validated',
+            'refused' => 'Refused',
+        ],
     ],
     'nl' => [
         'my_tickets' => 'Mijn Tickets',
@@ -64,6 +80,14 @@ $translations = [
         'confirm_archive' => 'Weet u zeker dat u dit ticket wilt archiveren?',
         'yes' => 'Ja',
         'no' => 'Nee',
+        'new_reply' => 'Nieuw antwoord',
+        'status' => [
+            'pending' => 'In afwachting',
+            'in_progress' => 'Bezig',
+            'taken' => 'Opgenomen',
+            'validated' => 'Goedgekeurd',
+            'refused' => 'Geweigerd',
+        ],
     ],
 ];
 
@@ -77,11 +101,23 @@ if (!isset($_SESSION['user']['id'])) {
 $userId = $_SESSION['user']['id'];
 $isAdmin = $_SESSION['user']['is_admin'] ?? false;
 
+// Récupérer les permissions de l'utilisateur
+$roleId = $_SESSION['user']['role_id'] ?? null;
+$canViewAll = false;
+if ($roleId) {
+    $stmt = $db->prepare("SELECT can_view_all_tickets FROM role WHERE id = :role_id");
+    $stmt->bindParam(":role_id", $roleId, PDO::PARAM_INT);
+    $stmt->execute();
+    $canViewAll = (bool)$stmt->fetchColumn();
+}
+
 $itemsPerPage = 8;
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $itemsPerPage;
 
-if ($isAdmin) {
+if ($canViewAll) {
+    $stmt = $db->prepare("SELECT COUNT(*) FROM ticket WHERE is_close = 0");
+} else if ($isAdmin) {
     $stmt = $db->prepare("SELECT COUNT(*) FROM ticket WHERE is_close = 0");
 } else {
     $stmt = $db->prepare("SELECT COUNT(*) FROM ticket WHERE creator = :creator AND is_close = 0");
@@ -90,10 +126,12 @@ if ($isAdmin) {
 $stmt->execute();
 $totalTickets = $stmt->fetchColumn();
 
-if ($isAdmin) {
-    $stmt = $db->prepare("SELECT id, ticket_name, message, created_at FROM ticket WHERE is_close = 0 ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+if ($canViewAll) {
+    $stmt = $db->prepare("SELECT id, ticket_name, message, created_at, status, has_new_staff_reply, claimed_by FROM ticket WHERE is_close = 0 ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+} else if ($isAdmin) {
+    $stmt = $db->prepare("SELECT id, ticket_name, message, created_at, status, has_new_staff_reply, claimed_by FROM ticket WHERE is_close = 0 ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
 } else {
-    $stmt = $db->prepare("SELECT id, ticket_name, message, created_at FROM ticket WHERE creator = :creator AND is_close = 0 ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+    $stmt = $db->prepare("SELECT id, ticket_name, message, created_at, status, has_new_staff_reply, claimed_by FROM ticket WHERE creator = :creator AND is_close = 0 ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
     $stmt->bindParam(":creator", $userId, PDO::PARAM_INT);
 }
 $stmt->bindValue(":limit", $itemsPerPage, PDO::PARAM_INT);
@@ -191,9 +229,53 @@ include 'header.php';
                 <div class="tickets-grid">
                     <?php foreach ($tickets as $ticket): ?>
                         <div class="ticket-container bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow font-orbitron relative">
-                            <h2 class="text-2xl font-semibold text-cyan-400 font-bold text-left">
-                                <?= htmlspecialchars($ticket['ticket_name']) ?>
-                            </h2>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <h2 class="text-2xl font-semibold text-cyan-400 font-bold text-left">
+                                    <?= htmlspecialchars($ticket['ticket_name']) ?>
+                                </h2>
+                                <?php if (!$isAdmin && !empty($ticket['has_new_staff_reply'])): ?>
+                                    <span class="ml-2 px-2 py-1 bg-yellow-500 text-black text-xs rounded-full font-bold"><?= $text_ui['new_reply'] ?></span>
+                                <?php endif; ?>
+                                <?php
+                                    $status = $ticket['status'] ?? 'pending';
+                                    $statusColors = [
+                                        'pending' => 'bg-gray-500',
+                                        'in_progress' => 'bg-blue-500',
+                                        'taken' => 'bg-purple-500',
+                                        'validated' => 'bg-green-500',
+                                        'refused' => 'bg-red-500',
+                                    ];
+                                    $color = $statusColors[$status] ?? 'bg-gray-500';
+                                ?>
+                                <span class="ml-2 px-2 py-1 <?= $color ?> text-white text-xs rounded-full font-bold">
+                                    <?= $text_ui['status'][$status] ?? ucfirst($status) ?>
+                                </span>
+                                <?php if ($canViewAll && empty($ticket['claimed_by'])): ?>
+                                    <form method="post" action="claim_ticket.php" class="inline ml-2">
+                                        <input type="hidden" name="ticket_id" value="<?= $ticket['id'] ?>">
+                                        <button type="submit" class="px-2 py-1 bg-orange-500 text-white text-xs rounded-full font-bold hover:bg-orange-600">
+                                            Claim
+                                        </button>
+                                    </form>
+                                <?php elseif ($canViewAll && !empty($ticket['claimed_by'])): ?>
+                                    <span class="ml-2 px-2 py-1 bg-indigo-500 text-white text-xs rounded-full font-bold">
+                                        Claimed by <?= htmlspecialchars($ticket['claimed_by']) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($canViewAll): ?>
+                                <form method="post" action="change_ticket_status.php" class="mb-2">
+                                    <input type="hidden" name="ticket_id" value="<?= $ticket['id'] ?>">
+                                    <select name="status" class="text-black rounded px-2 py-1 text-xs">
+                                        <?php foreach ($text_ui['status'] as $key => $label): ?>
+                                            <option value="<?= $key ?>" <?= $status === $key ? 'selected' : '' ?>><?= $label ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="submit" class="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-full font-bold hover:bg-blue-600">
+                                        Changer
+                                    </button>
+                                </form>
+                            <?php endif; ?>
                             <p class="text-sm text-gray-500 absolute bottom-2 left-4 text-left">
                                 <?= $text_ui['created_at'] ?>: <?= date('d/m/Y à H:i:s', strtotime($ticket['created_at'])) ?>
                             </p>
@@ -258,7 +340,7 @@ include 'header.php';
                 fetch('archive_tickets.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: ticketToArchive, userId: <?= $userId ?> })
+                    body: JSON.stringify({ id: ticketToArchive })
                 }).then(response => {
                     if (response.ok) {
                         alert("Le ticket a été archivé avec succès.");

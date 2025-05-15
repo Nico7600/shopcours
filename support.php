@@ -1,139 +1,168 @@
 <?php
+include 'header.php';
+
 $supportedLangs = ['fr', 'en', 'nl'];
-$lang = $_COOKIE['lang'] ?? 'fr';
+$lang = $_GET['lang'] ?? $_COOKIE['lang'] ?? 'fr';
+if (!in_array($lang, $supportedLangs)) {
+    $lang = 'fr'; // Définit le français comme langue par défaut
+}
+setcookie('lang', $lang, time() + (86400 * 30), "/");
+
 $translations = [
     'fr' => [
-        'support_title' => 'Support',
-        'support_intro' => 'Nous sommes là pour vous aider. Veuillez remplir le formulaire ci-dessous.',
-        'name' => 'Nom',
-        'email' => 'Email',
-        'message' => 'Message',
-        'submit' => 'Envoyer',
-        'contact' => 'Contact',
-        'messages' => 'Messages',
+        'title' => 'Support',
+        'email' => 'Email : support@Mytickets.be',
+        'phone' => 'Téléphone : +32 475 12 34 56',
+        'address' => 'Adresse : Sq. des Martyrs 1, 6000 Charleroi',
+        'email_text' => 'Pour toute question ou assistance, n\'hésitez pas à nous envoyer un email. Nous vous répondrons dans les plus brefs délais.',
+        'phone_text' => 'Appelez-nous pour une assistance immédiate. Notre équipe est disponible pour répondre à vos besoins.',
+        'address_text' => 'Venez nous rendre visite à notre magasin physique. Nous serons ravis de vous accueillir et de vous aider en personne.',
     ],
     'en' => [
-        'support_title' => 'Support',
-        'support_intro' => 'We are here to help. Please fill out the form below.',
-        'name' => 'Name',
-        'email' => 'Email',
-        'message' => 'Message',
-        'submit' => 'Submit',
-        'contact' => 'Contact',
-        'messages' => 'Messages',
+        'title' => 'Support',
+        'email' => 'Email: support@Mytickets.be',
+        'phone' => 'Phone: +32 475 12 34 56',
+        'address' => 'Address: Sq. des Martyrs 1, 6000 Charleroi',
+        'email_text' => 'For any questions or assistance, feel free to send us an email. We will respond as quickly as possible.',
+        'phone_text' => 'Call us for immediate assistance. Our team is available to meet your needs.',
+        'address_text' => 'Visit us at our physical store. We will be happy to welcome you and assist you in person.',
     ],
     'nl' => [
-        'support_title' => 'Ondersteuning',
-        'support_intro' => 'Wij zijn hier om te helpen. Vul het onderstaande formulier in.',
-        'name' => 'Naam',
-        'email' => 'E-mail',
-        'message' => 'Bericht',
-        'submit' => 'Verzenden',
-        'contact' => 'Contact',
-        'messages' => 'Berichten',
+        'title' => 'Ondersteuning',
+        'email' => 'E-mail: support@Mytickets.be',
+        'phone' => 'Telefoon: +32 475 12 34 56',
+        'address' => 'Adres: Sq. des Martyrs 1, 6000 Charleroi',
+        'email_text' => 'Voor vragen of hulp kunt u ons een e-mail sturen. We zullen zo snel mogelijk reageren.',
+        'phone_text' => 'Bel ons voor directe hulp. Ons team staat klaar om aan uw behoeften te voldoen.',
+        'address_text' => 'Bezoek ons in onze fysieke winkel. We verwelkomen u graag en helpen u persoonlijk verder.',
     ],
 ];
+
 $text = $translations[$lang];
 ?>
-<!DOCTYPE html>
-<html lang="<?= $lang ?>">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --purple-dark: #4c1d95;
+        --red: #ef4444;
+        --green: #22c55e;
+        --purple: #6d28d9;
+        --cyan-light: #a5f3fc;
+        --blue: #3b82f6;
+        --gray-light: #e5e5e5;
+        --hover-green: #22c55e;
+        --white: #ffffff;
+    }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $text['support_title'] ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --purple-dark: #4c1d95;
-            --red: #ef4444;
-            --green: #22c55e;
-            --purple: #6d28d9;
-            --cyan-light: #a5f3fc;
-            --gray-light: #e5e5e5;
-            --hover-green: #22c55e;
-            --white: #ffffff;
-        }
+    body {
+        font-family: 'Orbitron', sans-serif;
+        background-color: #1a202c;
+        color: var(--white);
+    }
 
-        body {
-            background-color: #1a202c;
-            font-family: 'Orbitron', sans-serif;
-        }
+    .section-container {
+        padding: 2rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-        .fade-in {
-            opacity: 0;
-            animation: fadeIn 1s ease-in-out forwards;
-        }
+    .section-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+    }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
+    .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
 
-            to {
-                opacity: 1;
-            }
-        }
+    .icon-email {
+        color: var(--blue);
+    }
 
-        .text-animate {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: textFadeIn 1s ease-in-out forwards;
-        }
+    .icon-phone {
+        color: var(--green);
+    }
 
-        @keyframes textFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
+    .icon-address {
+        color: var(--red);
+    }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    iframe {
+        border: 0;
+        width: 100%;
+        height: 300px;
+        border-radius: 15px;
+        margin-top: 1rem;
+    }
 
-        .text-animate-delay {
-            animation-delay: 0.5s;
-        }
+    .font-bold {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
 
-        .section-container {
-            padding: 2rem;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-    </style>
-</head>
+    .text-center {
+        text-align: center;
+    }
 
-<body class="text-gray-100 fade-in flex flex-col min-h-screen">
-    <?php include 'header.php'; ?>
-    <main class="p-4 flex-grow">
-        <section class="text-center py-12 bg-gradient-to-r from-purple-dark via-purple to-cyan-light text-white max-w-4xl mx-auto">
-            <h1 class="text-4xl font-bold mb-4 text-animate"><?= $text['support_title'] ?></h1>
-            <p class="text-lg text-animate text-animate-delay"><?= $text['support_intro'] ?></p>
-        </section>
-        <section class="section-container mt-8">
-            <form method="POST" action="support_handler.php" class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm mx-auto">
-                <div class="mb-4">
-                    <label for="name" class="block text-sm font-medium text-gray-300"><?= $text['name'] ?>Contact</label>
-                    <input type="text" id="name" name="name" placeholder="<?= $text['contact'] ?>" class="mt-1 block w-full bg-gray-700 text-white border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-300"><?= $text['email'] ?>Adresse mail</label>
-                    <input type="email" id="email" name="email" placeholder="<?= $text['email'] ?>" class="mt-1 block w-full bg-gray-700 text-white border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="message" class="block text-sm font-medium text-gray-300"><?= $text['message'] ?>Message</label>
-                    <textarea id="message" name="message" rows="4" placeholder="<?= $text['message'] ?>" class="mt-1 block w-full bg-gray-700 text-white border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required></textarea>
-                </div>
-                <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"><?= $text['submit'] ?>Envoyez</button>
-            </form>
-        </section>
-    </main>
-    <?php include 'footer.php'; ?>
-</body>
+    .text-lg {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+</style>
 
-</html>
+<section class="text-center py-12 bg-gradient-to-r from-purple-dark via-purple to-cyan-light text-white">
+    <h1 class="text-4xl font-bold"><?= $text['title'] ?></h1>
+</section>
+
+<section class="section-container text-center">
+    <div>
+        <i class="fas fa-envelope icon icon-email"></i>
+        <p class="font-bold">
+            <a href="mailto:support@Mytickets.be" class="hover:underline"><?= $text['email'] ?></a>
+        </p>
+        <p class="text-lg"><?= $text['email_text'] ?></p>
+    </div>
+</section>
+
+<section class="section-container text-center">
+    <div>
+        <i class="fas fa-phone-alt icon icon-phone"></i>
+        <p class="font-bold"><?= $text['phone'] ?></p>
+        <p class="text-lg"><?= $text['phone_text'] ?></p>
+    </div>
+</section>
+
+<section class="section-container text-center">
+    <div>
+        <i class="fas fa-map-marker-alt icon icon-address"></i>
+        <p class="font-bold"><?= $text['address'] ?></p>
+        <p class="text-lg"><?= $text['address_text'] ?></p>
+        <div class="flex flex-col md:flex-row justify-between items-start">
+            <div class="text-left md:w-1/2">
+                <p><i class="fas fa-calendar-alt text-blue-400"></i> <span class="font-bold">Lundi :</span> 8h - 12h30, 14h - 20h</p>
+                <p><i class="fas fa-calendar-alt text-blue-400"></i> <span class="font-bold">Mardi :</span> 8h - 12h30, 14h - 19h</p>
+                <p><i class="fas fa-calendar-alt text-blue-400"></i> <span class="font-bold">Mercredi :</span> 14h - 20h</p>
+                <p><i class="fas fa-calendar-alt text-blue-400"></i> <span class="font-bold">Jeudi :</span> 8h - 12h30, 14h - 20h</p>
+                <p><i class="fas fa-calendar-alt text-blue-400"></i> <span class="font-bold">Vendredi :</span> 9h - 13h30, 15h - 21h</p>
+                <p><i class="fas fa-calendar-alt text-red-400"></i> <span class="font-bold">Samedi :</span> Fermé</p>
+                <p><i class="fas fa-calendar-alt text-blue-400"></i> <span class="font-bold">Dimanche :</span> 10h - 12h30</p>
+            </div>
+            <div class="md:w-1/2 mt-4 md:mt-0 md:ml-4">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2530.9739376345801!2d4.43941865654716!3d50.40517694644672!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c23c0b6f6f6f6f%3A0x123456789abcdef!2sSq.%20des%20Martyrs%201%2C%206000%20Charleroi!5e0!3m2!1sfr!2sbe!4v1696445960462!5m2!1sfr!2sbe" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    class="w-full h-64 md:h-full rounded-lg">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php include 'footer.php'; ?>

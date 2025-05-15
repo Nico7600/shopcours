@@ -73,7 +73,10 @@ $text = $translations[$lang];
 <body>
     <nav class="bg-gray-800 shadow-md">
         <div class="container mx-auto flex justify-between items-center px-4 py-3">
-            <a class="text-white text-xl font-bold uppercase" href="index.php">Myticket</a>
+            <a class="text-white text-xl font-bold uppercase flex items-center space-x-2" href="index.php">
+                <img src="uploads/logo.png" alt="Logo" class="w-8 h-8">
+                <span>MyTicket</span>
+            </a>
 
             <div class="flex items-center space-x-6">
                 <div class="relative">

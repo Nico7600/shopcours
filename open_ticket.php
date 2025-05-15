@@ -428,7 +428,7 @@ $query = $db->prepare("
 
     JOIN users u ON t.creator = u.id
 
-    WHERE t.id = ? AND t.deleted_at IS NULL
+    WHERE t.id = ?
 
 ");
 

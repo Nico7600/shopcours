@@ -138,10 +138,6 @@ include 'header.php';
             <p class="text-lg"><strong class="text-cyan-400"><?= htmlspecialchars($text_ui['title']) ?>:</strong> <?= htmlspecialchars($ticket['ticket_name']) ?></p>
             <p class="text-lg"><strong class="text-cyan-400"><?= htmlspecialchars($text_ui['message']) ?>:</strong> <?= nl2br(htmlspecialchars($ticket['message'], ENT_QUOTES, 'UTF-8')) ?></p>
             <p class="text-lg"><strong class="text-cyan-400"><?= htmlspecialchars($text_ui['created_at']) ?>:</strong> <?= date('d/m/Y à H:i:s', strtotime($ticket['created_at'])) ?></p>
-            <?php if ($ticket['is_closed']): ?>
-                <p class="text-lg"><strong class="text-cyan-400"><?= htmlspecialchars($text_ui['closed_at']) ?>:</strong> <?= date('d/m/Y à H:i:s', strtotime($ticket['closed_at'])) ?></p>
-                <p class="text-lg"><strong class="text-cyan-400"><?= htmlspecialchars($text_ui['closed_by']) ?>:</strong> <?= htmlspecialchars($ticket['closed_by_name'] ?? 'N/A') ?></p>
-            <?php endif; ?>
         </div>
         <div class="flex justify-center mt-8">
             <a href="archive_tickets.php?lang=<?= htmlspecialchars($lang) ?>" class="btn text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-lg px-8 py-4 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
