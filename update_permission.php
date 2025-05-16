@@ -48,7 +48,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $column = $_POST['column'];
 
     // Vérification de la colonne pour éviter les injections SQL
-    $allowedColumns = ['can_reply_ticket', 'can_ban_permanently', 'can_ban_temporarily', 'can_post_patchnotes', 'can_manage_users', 'can_view_reports', 'can_edit_roles', 'can_delete_tickets'];
+    $allowedColumns = [
+        'can_reply_ticket',
+        'can_ban_permanently',
+        'can_ban_temporarily',
+        'can_post_patchnotes',
+        'can_manage_users',
+        'can_view_reports',
+        'can_edit_roles',
+        'can_delete_tickets',
+        'can_claim_ticket',
+        'can_archive_ticket',
+        'can_view_patchnotes',
+        'can_create_ticket',
+        'can_update_ticket',
+        'can_delete_patchnotes',
+        'can_update_patchnotes',
+        'can_unban_user',
+        'can_view_users',
+        'can_view_bans',
+    ];
     if (!in_array($column, $allowedColumns)) {
         die($trans['unauthorized_column']);
     }

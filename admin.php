@@ -699,7 +699,7 @@ function userHasPermission($id_perm, $permissionCol, $pdo) {
                                         $roleModalId = "roleModal-" . $row['id'];
 
                                         // Permissions pour chaque action
-                                        $canView = userHasPermission($id_perm, 'can_manage_users', $pdo);
+                                        $canView = userHasPermission($id_perm, 'can_view_users', $pdo);
                                         $canBan = userHasPermission($id_perm, 'can_ban_permanently', $pdo) || userHasPermission($id_perm, 'can_ban_temporarily', $pdo);
                                         $canRole = userHasPermission($id_perm, 'can_edit_roles', $pdo);
 
@@ -709,17 +709,17 @@ function userHasPermission($id_perm, $permissionCol, $pdo) {
 
                                         echo "<td class='px-6 py-4 text-center'>
                                                 <div class='flex justify-center items-center gap-4'>
-                                                    <button onclick=\"openModal('$viewModalId')\" class='flex items-center justify-center w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400 " . ($canView ? $enabledBtn : $disabledBtn) . "' " . ($canView ? "" : "tabindex='-1' aria-disabled='true'") . ">
+                                                    <button onclick=\"openModal('$viewModalId')\" class='flex items-center justify-center w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400 " . ($canView ? "" : $disabledBtn) . "\" " . ($canView ? "" : "tabindex='-1' aria-disabled='true'") . ">
                                                         <span class='flex items-center justify-center w-full h-full'>
                                                             <i class='fas fa-eye text-xl'></i>
                                                         </span>
                                                     </button>
-                                                    <button onclick=\"openModal('$banModalId')\" class='flex items-center justify-center w-12 h-12 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-400 " . ($canBan ? $enabledBtn : $disabledBtn) . "' " . ($canBan ? "" : "tabindex='-1' aria-disabled='true'") . ">
+                                                    <button onclick=\"openModal('$banModalId')\" class='flex items-center justify-center w-12 h-12 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-400 " . ($canBan ? "" : $disabledBtn) . "\" " . ($canBan ? "" : "tabindex='-1' aria-disabled='true'") . ">
                                                         <span class='flex items-center justify-center w-full h-full'>
                                                             <i class='fas fa-ban text-xl'></i>
                                                         </span>
                                                     </button>
-                                                    <button onclick=\"openModal('$roleModalId')\" class='flex items-center justify-center w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 " . ($canRole ? $enabledBtn : $disabledBtn) . "' " . ($canRole ? "" : "tabindex='-1' aria-disabled='true'") . ">
+                                                    <button onclick=\"openModal('$roleModalId')\" class='flex items-center justify-center w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 " . ($canRole ? "" : $disabledBtn) . "\" " . ($canRole ? "" : "tabindex='-1' aria-disabled='true'") . ">
                                                         <span class='flex items-center justify-center w-full h-full'>
                                                             <i class='fas fa-user-cog text-xl'></i>
                                                         </span>

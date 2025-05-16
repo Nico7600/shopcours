@@ -78,11 +78,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Connectez l'utilisateur après l'inscription
                 $_SESSION['logged_in'] = true;
-$_SESSION['user'] = [
-    'id' => $userId,
-    'name' => $name,
-    'id_perm' => 1
-];                header('Location: index.php');
+                $_SESSION['user'] = [
+                    'id' => $userId,
+                    'name' => $name,
+                    'id_perm' => 1
+                ];
+                header('Location: index.php');
                 exit;
             }
         } catch (PDOException $e) {
@@ -167,7 +168,7 @@ $_SESSION['user'] = [
             </div>
             <div class="mb-4">
                 <label for="phone" class="form-label block">Numéro de téléphone</label>
-                <input type="text" id="phone" name="phone" class="form-input w-full px-4 py-2 border rounded-lg" required>
+                <input type="text" id="phone" name="phone" class="form-input w-full px-4 py-2 border rounded-lg" required inputmode="numeric" pattern="\d*">
             </div>
             <div class="mb-4">
                 <label for="password" class="form-label block">Mot de passe</label>
@@ -187,4 +188,4 @@ $_SESSION['user'] = [
     </div>
 </body>
 
-</html>	
+</html>
